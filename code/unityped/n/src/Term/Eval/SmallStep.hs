@@ -37,7 +37,12 @@ eSucc step t = do
   return $ TmSucc v
 
 smallSteps :: [Term -> Maybe Term]
-smallSteps = [ePredZero, ePredSucc, ePred smallStep, eSucc smallStep]
+smallSteps =
+  [ ePredZero
+  , ePredSucc
+  , ePred smallStep
+  , eSucc smallStep
+  ]
 
 smallStep :: Term
           -> Maybe Term

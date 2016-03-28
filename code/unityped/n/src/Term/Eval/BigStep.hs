@@ -7,6 +7,12 @@ import Data.Maybe (fromMaybe)
 import Term
 import Term.Eval.Value (value)
 
+eZero :: Term
+      -> Maybe Term
+eZero t = do
+  _ <- preview _TmZero t
+  return TmZero
+
 eSucc :: (Term -> Maybe Term)
       -> Term
       -> Maybe Term
@@ -33,7 +39,12 @@ ePredSucc step t = do
   preview _TmSucc v
 
 bigSteps :: [Term -> Maybe Term]
-bigSteps = [value, eSucc bigStep, ePredZero bigStep, ePredSucc bigStep]
+bigSteps =
+  [ eZero
+  , eSucc bigStep
+  , ePredZero bigStep
+  , ePredSucc bigStep
+  ]
 
 bigStep :: Term
         -> Maybe Term
@@ -44,5 +55,8 @@ bigStep t =
 
 bEval :: Term
       -> Term
-bEval t = fromMaybe t . bigStep $ t
+bEval t =
+  fromMaybe t .
+  bigStep $
+  t
 
