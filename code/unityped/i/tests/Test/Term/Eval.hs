@@ -23,10 +23,11 @@ evalTests =
 propSmallUnique :: AnyTerm
                 -> Property
 propSmallUnique (AnyTerm t) =
-    isValue .||. uniqueMatch
+    (isValue .&&. matches === 0) .||.
+    (not isValue .&&. matches === 1)
   where
     isValue = isJust . value $ t
-    uniqueMatch = (=== 1) . length . mapMaybe ($ t) $ smallSteps
+    matches = length . mapMaybe ($ t) $ smallSteps
 
 propSmallShrinks :: AnyTerm
                  -> Bool
@@ -38,7 +39,9 @@ propSmallShrinks (AnyTerm t) =
 propBigUnique :: AnyTerm
               -> Property
 propBigUnique (AnyTerm t) =
-  (=== 1) . length . mapMaybe ($ t) $ bigSteps
+    matches === 1
+  where
+    matches = length . mapMaybe ($ t) $ bigSteps
 
 propSmallBig :: AnyTerm
              -> Property
