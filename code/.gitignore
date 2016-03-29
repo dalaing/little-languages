@@ -1,0 +1,5 @@
+dist
+cabal.sandbox.config
+sandbox
+TAGS
+*.tix
