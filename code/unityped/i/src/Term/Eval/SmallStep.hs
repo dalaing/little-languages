@@ -110,8 +110,8 @@ eExp2 step t = do
   y' <- step y
   return $ TmExp x y'
 
-smallSteps :: [Term -> Maybe Term]
-smallSteps =
+smallStepRules :: [Term -> Maybe Term]
+smallStepRules =
   [ eAddIntInt
   , eAdd1 smallStep
   , eAdd2 smallStep
@@ -131,7 +131,7 @@ smallStep :: Term
 smallStep t =
   asum .
   map ($ t) $
-  smallSteps
+  smallStepRules
 
 sEval :: Term
       -> Term

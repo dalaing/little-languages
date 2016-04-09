@@ -23,11 +23,12 @@ evalTests =
 propSmallUnique :: AnyTerm
                 -> Property
 propSmallUnique (AnyTerm t) =
-    (isValue .&&. matches === 0) .||.
-    (not isValue .&&. matches === 1)
+    matches === 1
   where
-    isValue = isJust . value $ t
-    matches = length . mapMaybe ($ t) $ smallSteps
+    matches = 
+      length . 
+      mapMaybe ($ t) $ 
+        valueRules ++ smallStepRules
 
 propSmallShrinks :: AnyTerm
                  -> Bool

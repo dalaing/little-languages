@@ -27,8 +27,8 @@ eIf step t = do
     u1 <- step t1
     return $ TmIf u1 t2 t3
 
-smallSteps :: [Term -> Maybe Term]
-smallSteps =
+smallStepRules :: [Term -> Maybe Term]
+smallStepRules =
   [ eIfTrue
   , eIfFalse
   , eIf smallStep
@@ -39,7 +39,7 @@ smallStep :: Term
 smallStep t =
   asum .
   map ($ t) $
-  smallSteps
+  smallStepRules
 
 sEval :: Term
       -> Term

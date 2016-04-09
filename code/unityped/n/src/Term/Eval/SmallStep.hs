@@ -36,8 +36,8 @@ eSucc step t = do
   v <- step u
   return $ TmSucc v
 
-smallSteps :: [Term -> Maybe Term]
-smallSteps =
+smallStepRules :: [Term -> Maybe Term]
+smallStepRules =
   [ ePredZero
   , ePredSucc
   , ePred smallStep
@@ -49,7 +49,7 @@ smallStep :: Term
 smallStep t =
   asum .
   map ($ t) $
-  smallSteps
+  smallStepRules
 
 sEval :: Term
       -> Term

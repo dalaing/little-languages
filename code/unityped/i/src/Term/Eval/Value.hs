@@ -1,7 +1,23 @@
 module Term.Eval.Value where
 
+import Data.Foldable (asum)
+
 import Term
 
-value :: Term -> Maybe Term
-value (TmInt i) = Just $ TmInt i
-value _ = Nothing
+valueTmInt :: Term 
+           -> Maybe Term
+valueTmInt (TmInt i) = 
+  Just $ TmInt i
+valueTmInt _ = 
+  Nothing
+
+valueRules :: [Term -> Maybe Term]
+valueRules =
+  [valueTmInt]
+
+value :: Term 
+      -> Maybe Term
+value tm =
+  asum .
+  map ($ tm) $
+  valueRules

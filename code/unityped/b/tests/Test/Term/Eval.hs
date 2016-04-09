@@ -3,7 +3,7 @@ module Test.Term.Eval where
 import Test.Tasty
 import Test.Tasty.QuickCheck
 
-import Data.Maybe (isJust, mapMaybe)
+import Data.Maybe (mapMaybe)
 
 import Term.Gen
 import Term
@@ -23,11 +23,12 @@ evalTests =
 propSmallUnique :: AnyTerm
                 -> Property
 propSmallUnique (AnyTerm t) =
-    (isValue .&&. matches === 0) .||.
-    (not isValue .&&. matches === 1)
+    matches === 1
   where
-    isValue = isJust . value $ t
-    matches = length . mapMaybe ($ t) $ smallSteps
+    matches = 
+      length . 
+      mapMaybe ($ t) $ 
+        valueRules ++ smallStepRules 
 
 propSmallShrinks :: AnyTerm
                  -> Bool

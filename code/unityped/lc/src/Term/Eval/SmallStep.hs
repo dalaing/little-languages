@@ -50,8 +50,8 @@ smallStepsLazy =
   ]
 -}
 
-smallSteps :: [Term n a -> Maybe (Term n a)]
-smallSteps =
+smallStepRules :: [Term n a -> Maybe (Term n a)]
+smallStepRules =
   [ eAppLam
   , eApp1 smallStep
   , eApp2 smallStep
@@ -62,7 +62,7 @@ smallStep :: Term n a
 smallStep t =
   asum .
   map ($ t) $
-  smallSteps
+  smallStepRules
 
 sEval :: Term n a
       -> Term n a
