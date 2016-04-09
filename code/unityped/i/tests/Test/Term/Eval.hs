@@ -42,7 +42,10 @@ propBigUnique :: AnyTerm
 propBigUnique (AnyTerm t) =
     matches === 1
   where
-    matches = length . mapMaybe ($ t) $ bigSteps
+    matches = 
+      length . 
+      mapMaybe ($ t) $ 
+        bigStepRules
 
 propSmallBig :: AnyTerm
              -> Property

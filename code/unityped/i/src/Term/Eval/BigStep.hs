@@ -56,8 +56,8 @@ eExp step t = do
     -- this is bad, and we should feel bad
     return $ TmInt 0
 
-bigSteps :: [Term -> Maybe Term]
-bigSteps =
+bigStepRules :: [Term -> Maybe Term]
+bigStepRules =
   [ value
   , eAdd bigStep
   , eSub bigStep
@@ -70,7 +70,7 @@ bigStep :: Term
 bigStep t =
   asum .
   map ($ t) $
-  bigSteps
+  bigStepRules
 
 bEval :: Term
       -> Term

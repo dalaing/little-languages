@@ -18,8 +18,8 @@ eApp step t = do
   (_, e) <- preview _TmLam f'
   step $ instantiate1 x e
 
-bigSteps :: [Term n a -> Maybe (Term n a)]
-bigSteps =
+bigStepRules :: [Term n a -> Maybe (Term n a)]
+bigStepRules =
   [ value
   , eApp bigStep
   ]
@@ -29,7 +29,7 @@ bigStep :: Term n a
 bigStep t =
   asum .
   map ($ t) $
-  bigSteps
+  bigStepRules
 
 bEval :: Term n a
       -> Term n a

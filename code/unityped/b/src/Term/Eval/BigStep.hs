@@ -25,8 +25,8 @@ eIfFalse step t = do
     preview _TmFalse u1
     step t3
 
-bigSteps :: [Term -> Maybe Term]
-bigSteps =
+bigStepRules :: [Term -> Maybe Term]
+bigStepRules =
   [ value
   , eIfTrue bigStep
   , eIfFalse bigStep
@@ -37,7 +37,7 @@ bigStep :: Term
 bigStep t =
   asum .
   map ($ t) $
-  bigSteps
+  bigStepRules
 
 bEval :: Term
       -> Term

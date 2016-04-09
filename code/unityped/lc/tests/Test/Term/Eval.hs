@@ -3,7 +3,7 @@ module Test.Term.Eval where
 import Test.Tasty
 import Test.Tasty.QuickCheck
 
-import Data.Maybe (isJust, mapMaybe)
+import Data.Maybe (mapMaybe)
 
 import Term.Gen
 import Term
@@ -42,7 +42,10 @@ propBigUnique :: AnyTerm
 propBigUnique (AnyTerm t) =
     matches === 1
   where
-    matches = length . mapMaybe ($ t) $ bigSteps
+    matches = 
+      length . 
+      mapMaybe ($ t) $ 
+      bigStepRules
 
 propSmallBig :: AnyTerm
              -> Property

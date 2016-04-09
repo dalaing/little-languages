@@ -38,8 +38,8 @@ ePredSucc step t = do
   v <- step u
   preview _TmSucc v
 
-bigSteps :: [Term -> Maybe Term]
-bigSteps =
+bigStepRules :: [Term -> Maybe Term]
+bigStepRules =
   [ eZero
   , eSucc bigStep
   , ePredZero bigStep
@@ -51,7 +51,7 @@ bigStep :: Term
 bigStep t =
   asum .
   map ($ t) $
-  bigSteps
+  bigStepRules
 
 bEval :: Term
       -> Term
