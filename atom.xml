@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>The Cachething Chronicles</title>
+    <link href="http://dlaing.org/cachething/atom.xml" rel="self" />
+    <link href="http://dlaing.org/cachething" />
+    <id>http://dlaing.org/cachething/atom.xml</id>
+    <author>
+        <name>Dave Laing</name>
+        <email>dave.laing.80@gmail.com</email>
+    </author>
+    <updated>Unknown</updated>
+    
+</feed>

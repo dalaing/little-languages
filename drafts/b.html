@@ -1,0 +1,144 @@
+<!DOCTYPE html> 
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Dave Laing - B - the language of Booleans</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="../css/custom.css">
+        <link rel="stylesheet" href="../css/syntax.css">
+        <link rel="alternate" type="application/atom+xml" title="Atom - Little Languages" href="../atom.xml" />
+        <link rel="alternate" type="application/rss+xml" title="RSS - Little Languages" href="../rss.xml" />
+    </head>
+    <body>
+        <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a href="../">Little Languages</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li role="presentation"><a href="http://dlaing.org">Back to my main site</a></li>
+            </ul>
+        </div>
+
+        </div>
+        </nav>
+
+        <div class="container">
+            <div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><a href="../drafts/b.html">B - the language of Booleans</a></h3>
+    </div>
+    <div class="panel-body">
+        <h1 id="introducing-b">Introducing B</h1>
+<p>Throughout this series, I’ll be introducing the mathematical notational and the Haskell code side-by-side.</p>
+<p>For an easy win, let’s start with the type system.</p>
+<p>We’ll refer to the types using variants on <img width="14" alt="T" height="11" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAXCAQAAABdAYziAAAAlUlEQVR4nO2UMRWAMAxEzwpKaqQ6kIEJPNRCHdRAZ0YWBqBk6INchjDDz5T07iW3FLiTkB2VQAQcrdabaJVJ6X3FLgoit4fxMalNuD0mQ+srWzdlhOwotCBrY8RCk+vcmawTn6t3JrEG0kVt1TutpKYucAIzKQwdYSd1YSd1YSd1YSd18Cd18JWkQc59ZR3EwKU/gM4J3UV3ja/+u54AAAAASUVORK5CYII=" class="inline-math" style="margin:0; vertical-align:-0px;" />, like <img width="17" alt="T_1" height="14" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACMAAAAcCAQAAABB/M6qAAAA20lEQVR4nN2VwQ3DIAxFvUomYZHMkTG6RHdgBW/AApx75MKhretWFcGOMa3UQz+XYJmH/WURgFYR0LEimApwo1WaA4Uj6b3PcOUMU0hJ2y6S6VDdRRbaZxtTOwjw3UlchhZkhYuIPFo6C8zJwqCoJTImiLzVwvS1aM7oeY2C0rHmDNjOSOnOTEt3Zlq6M9PSnZnUj5wJvkqPndmoxsQtO3TsDBIm0BA6MGNnXJjxzLgw45lxYcYz48B4ZmaICdzSx5iFD8vVP2bOanz6S0z5FoNUyfNvWunr9cDfAUSsnModsafGAAAAAElFTkSuQmCC" class="inline-math" style="margin:0; vertical-align:-3px;" />, <img width="18" alt="T_2" height="14" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAcCAQAAACjINXTAAABC0lEQVR4nL1UwRGEIAxMK1RCI9RhGTZxPdACHdgAb59+fHgXM3qCCQGZm1vGB5hswrITgBQeQsPyUIGFN64lSVnoZPruI2wUUUHAsCE7iZi2ZicG97FGtN5ogOpPrFzQaRzM7GS/2IsRjTpRYP14IrIszulE934kheS4DFa4uaQQ1BTikBXqgKxQB2SFOiAr9Bh/UWjAl5vxaypTVigclhzx/1ozZ1mhMfGRpWJGoykrFHGIXF3MNR3LCu2pV08h24l1Swo5TDRZnDov2zxkKE7xfquHgt6PpYbrRK7UtaF0vu7j7qTZfuF7K8z3Dhg0weml4fmgu2imxJK+tzODzl6wo3N1j77IHuPAB5gTshe2989PAAAAAElFTkSuQmCC" class="inline-math" style="margin:0; vertical-align:-3px;" />, etc…</p>
+<p>The first thing we do is define what types we’ll have in our language:</p>
+<p><img width="73" alt=" \begin{aligned} T =&amp; \ \text{Bool} \\ \end{aligned} " height="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJIAAAAYCAQAAAC7WWy7AAACTElEQVR4nM1ZzZmDIBClFSqhEeqgjG3CHmzBDmjAc45ePGx2gMTwM8g4K5rHt/kieZHJG+YJrBA1jGIitLH6/XMwiAfa3Ng/HcYLd/+FPwKUeEJbIjkW32O36xlu5Rh9oYSJxjZbG+HqCRGcnSR3ZzcaSaQJAjBJzwxfXZMeCdfzefHtRuNEyqF9mmyX0UgirZlEAg3IzagrgIvkLMH1nx0DUSRdkLQPZyhu18MXStRECqn77TAaQaSpmEchZ6rg6bMia8RTE+nhPzk3CqJIJaV0JJzXB18okkKqHLfIaxypLpL0/WXy/j8aI/24I12Hmkihv/RFDZ+49Y6teuYegykS7kjXARdpQFMnwRqWl6cq/z4vxhaDKRLuSNchF0lB/q03gDxxEn7yAq8fWLAKfYjBFOnooi0s82iNsoiYXuuhuLliGQuR5mLGS4hljURpM1gicRzJkJts36xSbspvIOKHh0E3Sm7OjWQGU6S7HWnv6bYmc9xWnsEfs2gzmCLd7Uh766Rg3u9ZsKKbFOM5kshgitRnG3kEdZHSlRK+kwsSGCKDJdLdaySHukjiZf+f97eIxHEkVTkqwxr96YYjFik38oDhEIMlEseRJPFc0zX+081BJeWG/7y4t81giXS/I+2JZJMCUokBv7FEq7E2gyHSNzhSXaRQJo+MmZaTyZJMYxwQSfliu1+kEEW6w9LbLErnxZTEq/2h/jGG9QXctAEZbRvilh/F9cdUiSQ4kUVPkgyUT/h/igUOluA64+7feymU3/LsHca1GRv+AD7rRg8vV7WMAAAAAElFTkSuQmCC" class="display-math" style="margin:0; vertical-align:-0px;" /></p>
+<p>Flushed with success, we’ll also implement it in Haskell:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Type</span> <span class="fu">=</span>
+  <span class="dt">TyBool</span></code></pre></div>
+<p>Hopefully it’s clear that we’re starting with a fairly simple language at this point.</p>
+<p>Next, we need to define the terms of our language.</p>
+<p>We’ll refer to the terms using variants on <img width="8" alt="t" height="11" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAAWCAQAAACMYb/JAAAAe0lEQVR4nGNgwAR9DI8ZFLGII4F/DP8ZYvApiAEq+IffjG1AJY/xK3kMVLINv5JfuFyiyFAGhn1ABf+hbDSF9gxvwRBkxi8o+zjZLhk8YTIgLsGqGDl2yrCHLSh2YOAt9nT3Fa7kGjA6sYIYoH+OA13zFpcCEIAkCTQAAAQmQ7ILgCmvAAAAAElFTkSuQmCC" class="inline-math" style="margin:0; vertical-align:-1px;" />, like <img width="13" alt="t_1" height="13" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAaCAQAAADsge97AAAAuUlEQVR4nM2TsRXDIAxEbxVP4kU8B2N4iezACmzgBahd0rgwEcTJMwQuVoq8HA0P+EgHEvCuGR5DY/2DdkRMWmgSaNfHsoJ5PeYFs3ps0zgbYPKYBYrH/AI8Ys0jxdqOubue4pfO/uPPRix9rOXM4CZISr6rljMnWHrnLsacEYxVI8FKZ+UFBDtXo6lqhGDxtLVW/U2w8NpapKRL0ZfcJTUrR2qIYs/2aYliff0WC1rMSaSQP+fR9Vl3AAFo77l1neoAAAAASUVORK5CYII=" class="inline-math" style="margin:0; vertical-align:-3px;" />, <img width="14" alt="t_2" height="13" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAaCAQAAAAOXfQCAAAA60lEQVR4nM1TuxXDIAzUKkzCIp7DY7BEdmAFNvAC1C7duMA+EV6sBOEPVU4NxpykOwRRDUeRjLJ/iUQbDc9pA2ipp54HMfYQI4i+h7g+U2hozOFA28r6Ft3SnIPrrWUdnjTarfA/7nCEWlb8ahM1hQHBzTuYtrZk1Aqd8NZmx5Xx1xRGWkSqGSeUhjWFfPSoGb6+RHapMJYugmiucctySkcls8ke2JrIU3q0WJsQWlO1fIgT3PwFWzdpNP6VkNWjmkZLZwPwflw1LPRr+xcw6OHMtCZtEiPg71Y2sGwpD3vO46Bch4aYL0lGwQ4s/348o+iz0wAAAABJRU5ErkJggg==" class="inline-math" style="margin:0; vertical-align:-3px;" />, etc…, and for this language they are recursively defined as:</p>
+<p><img width="145" alt=" \begin{aligned} t =&amp; \ \text{false} \\   |&amp; \ \text{true}  \\   |&amp; \ \text{if $t$ then $t$ else $t$} \end{aligned} " height="64" src="data:image/png;base64,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" class="display-math" style="margin:0; vertical-align:-29px;" /></p>
+<p>This already gets a bit more interesting, since we have choices when it comes to the implementation of the Abstract Syntax Tree (AST) in Haskell.</p>
+<p>We can define the AST as this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Term</span> <span class="fu">=</span>
+    <span class="dt">TmBool</span> <span class="dt">Bool</span> 
+  <span class="fu">|</span> <span class="dt">TmIf</span> <span class="dt">Term</span> <span class="dt">Term</span> <span class="dt">Term</span></code></pre></div>
+<p>or as this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Term</span> <span class="fu">=</span>
+    <span class="dt">TmFalse</span> 
+  <span class="fu">|</span> <span class="dt">TmTrue</span>
+  <span class="fu">|</span> <span class="dt">TmIf</span> <span class="dt">Term</span> <span class="dt">Term</span> <span class="dt">Term</span></code></pre></div>
+<p>For the time being, we’re going to go with the second definition. I only bring it up now because it demonstrates one of the tradeoffs involved with DSL design.</p>
+<h1 id="dsl-terminology">DSL terminology</h1>
+<p>DSLs can have either a shallow embedding or a deep embedding. Beyond that, there is a vague notion that one embedding might be a deeper embedding than another.</p>
+<p>With a shallow embedding we don’t have an AST at all, and the language is defined by a set of functions. The parsing library Parsec is a great example of this.</p>
+<p>With a deep embedding we have an AST, so we can manipulate the terms of our language directly. Our <code>Term</code> type is an example of a deeply embedded DSL.</p>
+<p>The less we have to borrow from the host language, the deeper our embedding is. The first version of <code>Term</code> above borrows Haskell’s <code>Bool</code> as a primitve, whereas the second version defines it’s own.</p>
+<p>That’s a choice that will keep coming up for us, in a number of different areas.</p>
+<p>The benefit of sticking to the shallow end of the pool is that we can reuse a lot of things from the host language. This includes things from inside the language - like variable substitution, typeclasses and parametric polymorphism - which can make the DSL fast and extensible. This also includes things from around the language - like debuggers, profilers, and REPLs - which can make the DSL convenient to use.</p>
+<p>At the deeper end of things we explicitly model more of the DSL, and so borrow less from the host language. We lose some of the benefits of a more shallow embedding, but we get an increase in the ability to manipulate and reason about programs and program fragments in the DSL.</p>
+<p>We’re going to go deeper (heh) into those tradeoffs later in this series. We’ll also play with some shallowly embedded DSLs to help us out.</p>
+<h1 id="abstraction-and-reuse">Abstraction and reuse</h1>
+<p>Suppose we want to perform some logical operations with our Boolean values.</p>
+<p>We could do so directly in Haskell:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">tmNot ::</span> <span class="dt">Term</span> 
+      <span class="ot">-&gt;</span> <span class="dt">Term</span>
+tmNot x <span class="fu">=</span> <span class="dt">TmIf</span> x <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>
+
+<span class="ot">tmAnd ::</span> <span class="dt">Term</span> 
+      <span class="ot">-&gt;</span> <span class="dt">Term</span> 
+      <span class="ot">-&gt;</span> <span class="dt">Term</span>
+tmAnd x y <span class="fu">=</span> <span class="dt">TmIf</span> x y <span class="dt">TmFalse</span>
+
+<span class="ot">tmOr ::</span> <span class="dt">Term</span> 
+     <span class="ot">-&gt;</span> <span class="dt">Term</span> 
+     <span class="ot">-&gt;</span> <span class="dt">Term</span>
+tmOr x y <span class="fu">=</span> <span class="dt">TmIf</span> x <span class="dt">TmTrue</span> y</code></pre></div>
+<p>Here we’ve called out to the host language in order to build these pieces, so we’re going to have to assemble them using the host language as well.</p>
+<p>An alternative would be to extend the terms of our language:</p>
+<p><img width="64" alt=" \begin{aligned} t =&amp; \ \ldots \\   |&amp; \ \neg t  \\   |&amp; \ t \wedge t \\   |&amp; \ t \vee t \end{aligned} " height="87" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACvCAQAAACfzR6jAAAEGklEQVR4nO2cwbWyMBCFaYVKbMQ6KMMm6MEW7IAGXLN8Gxf6AugvimTu4OSfF7gfG8+BQ5ILkwww16KIcSjORRk9YuVci1ux9+6EH/sw/Kt3Jzw5BgHO3p3w5BwEOHp3wpPLNmeAsqj67RCGf7v/3pQMu6Ltt+76X+6/T96d8mDzMwCSA+z7o7Dt8F96bQaaA1TwlllGyRyAM8Amc4AHfAoAZ4BHzoBsWa0CrzPAvBRlOOoEblmtAuOngMolD6wW7pP2gnSJy4PW4dr9hPZ/FuyT9qo6MNA4xG55zx21+6S9CroU9xTi22vqasIg5gIvtk/aq2B4KCaEEEIIIYQQQgghhBBCiJK22Hl3wZfb1r8wUAAKkEaAbNwMqQTIpo4pjQAZ1TGlESCjSsY0AmRUyZhGgIzcDJYCZOlmsBQgSzdDihDIaAZABMAqTsePVNnkAB2yACVQaTo+S0Y5QIdNCIzPklEO0GEvQFYzQAoBspoB7AXIbAawFyCzGcBeANTN8GewEuAR9f5uBiXWmaC3m0GNtQC+boYFWAvg7WZQY/8wlJmbga/FKQAF8O6CLxSAAmxcgIye3AkhhBBCCCGEECvoF9j6CxEKQAFwAdJ7ABxcBhoBdNU/xwXVAQ71RbgAuuqfsh+M7mq61BfhAuiqf+owlKvyHnCpL8IF0NX/XYomDF93PV0qDHEBNB6ArmB+F7ZbuBNwXFwGkgDLPADt/VZuwqAknF0GkgBLPAD7f2fdA3eYs8sADQFNfDaj/47thoPhVGOMCoCv0K+RP8wGti2YggmgWaFPb3HfrQe2LZiCCYCv0OVk9a+hhMitxhgTAI/PYxDgdbhTSb5rwRhMADw+P93w70HxXQvGIALg8Vl/nPLkhMjRZYAIgMdnO3NcI/ypuqPLABEA9QBUs2eTEiJHlwEiAOoBiF3nuXtD10ICEAEwD0A80uMJkaPLABEA8wBIc30sIXJ0GWCrgOwBkFf7epIh6FpIBJYHyB6AMly7+K1bhllgPgjcXAZ8LU4BKIB3F3yhABRg4wLQL0AIIYQQQgghhGwPGia2/kaIAlAAGibgY2OFTDvxu37846jcQiLsDBPS5/FpAZ22hSTYGSZOwgAvYulL5oaJMloi87mATtdCEiwNEzF3QAtUDGdvmOjKpD6XuMwX0K3MMDHnDmgiroFVGSaqjzcx5h1aiWFiabH0agwTU3dAV0AnX9nVGCamCZGcAGlbMMXaMFFM7JJyAqRtwRRrw8R7QoQkQNoWTLE1TAyMEyIkAVqRYWLg6Q6IJUDftGCIpWHiySMhiiVA37VghqVh4onWPL0Kw8Qrg30eSYCWtmCEnWHilbqf1tCFbQWGiXfK/h8k0Gu5AsPElFqV2NAw4QUFoAAUwLsLvlCArQvwpw0Tv/0IPw81yg3oAAAAAElFTkSuQmCC" class="display-math" style="margin:0; vertical-align:-41px;" /></p>
+<p>With the corresponding change to the Haskell:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Term</span> <span class="fu">=</span>
+    <span class="fu">...</span> 
+  <span class="fu">|</span> <span class="dt">TmNot</span> <span class="dt">Term</span>
+  <span class="fu">|</span> <span class="dt">TmAnd</span> <span class="dt">Term</span> <span class="dt">Term</span>
+  <span class="fu">|</span> <span class="dt">TmOr</span> <span class="dt">Term</span> <span class="dt">Term</span></code></pre></div>
+<p>If those are pieces that we want to be able to manipulate and reason about, that is a good option. We could use all kinds of identities to optimise terms in the language, like <img width="93" alt="not \ldotp not = id" height="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALoAAAAYCAQAAADn0y+fAAAC+0lEQVR4nO1Zy3HEIAx1K1RCI9ThMtwEPbgFOnADPvvoiw+7EZ+1EQL8C2YnE3kyWbMKT0jiIZSm+ZfSwpqxmeB5w8+//JKwZmhU9vu26ZsXOD2n9SvSQXxZaZCvQFbgzveu1gI6bWlTdGRFaZCvQO7Aof2ODj8UmJsiAOJVGuTLkHMin2D0HkDG0iBfhpyT4QlGHwFkb8v9NeScPMLoSzVGr4ecliyj97AF5PrWwZuCMZ6cqjcacq0VdHGkn86A2M/HHFAP+Y5wY0Uqg7v12wyjD6DA4RDS3CNgm0p40zXoK2K+Hl+Mhgb+aHBzCZhMti3u8xEmq4d8RwRgcLD8De6l3y2wDrsKmWZ04YYnkymTl0M0SnrK2auFtXv8rDzHq/WQ7whzlsaslMjJY5rRlcsZmyv+5SLkIwELxRo62oP3fq5SfhpZGK1jD83hj/SODjvi9DYYkWlGt2rMceIm9BCYSdwYqo3PVsrPI7eHn/TNdna/h2BvMXKUZxjdbgcdtxmNh5FURMPGdnPP2Uq5HvIdsVbbVOFoPLQyDEtkqpDyw5FXZIoOLf0ar9ZDviOShJlauVvE0g2MDwG7yHAKhbb1td5HPeQ7oq2W3ju1ku9RHoscXfhPVHSK2Yv3td5HPeQ7Qh1KraR7IRB6EqugOhgihwJHR+A1Xn0S+VPTH3nS1UvMRktw2MoLjL7xUW8WRzXs2AaEefWo+59EZu4+e+TJ9+VDG60NqXUkLAp5VdcGi/tsrwI9mZTBdvJvjv6x0SLdXMOnLHIZ6YiNNDWER5tRp1te9WO7TcHdNuKkIBqDK4TPzZM32xwp+J5BLiWbjWIlmRY5nZlV273YxUmG8up2nd3+AdZ7OWn7IziD53Xpg+cS69ZUp60kcjn52MhQiKc1+/V4C1ZObjzavlMRyp9BWcLC8Q1rMd0zZX6HGSVM46onh1CujV8WuZxYGydko3b1aDqMo3GzNEXliApLpB5j3fhl2F6S0/Oca9jXQ74rcRsFaixz00P15AebZsTdI6P8YAAAAABJRU5ErkJggg==" class="inline-math" style="margin:0; vertical-align:-1px;" />. If we do decide to change the terms of our language, we really want to minimize how invasive that change is to the rest of our DSL.</p>
+<p>If those kinds of terms don’t interest us, then we’d really like something in-between. We’d like the ability to create and use these new concepts from within the DSL, without having to modify the terms of our language. That means we should be able to create and use functions inside our DSL.</p>
+<p>We’ll be returning to both of these points soon, but they’re going to be very important in this series.</p>
+<h1 id="semantics">Semantics</h1>
+<p>Let’s build an evaluator for our language. Evaluating a term in <em>B</em> should reduce to <code>TmFalse</code> or <code>TmTrue</code>.</p>
+<p>Wait, should it?</p>
+<p>Meh, let’s just dive in:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">eval ::</span> <span class="dt">Term</span> 
+     <span class="ot">-&gt;</span> <span class="dt">Term</span>
+eval <span class="dt">TmFalse</span> <span class="fu">=</span> 
+  <span class="dt">TmFalse</span>
+eval <span class="dt">TmTrue</span> <span class="fu">=</span> 
+  <span class="dt">TmTrue</span>
+eval (<span class="dt">TmIf</span> t1 t2 t3) <span class="fu">=</span>
+  <span class="kw">case</span> eval t1 <span class="kw">of</span>
+    <span class="dt">TmTrue</span>  <span class="ot">-&gt;</span> t2
+    <span class="dt">TmFalse</span> <span class="ot">-&gt;</span> t3</code></pre></div>
+<p>That looks right, doesn’t it? (Hint: it’s not)</p>
+<p>Anyhow, this is clearly bonkers. We need a way to talk about what it means for our evaluator to be correct. At this point, we’re even a bit unclear about what the output of our evaluation function should be.</p>
+<p>This is where semantics comes in. There are a few different flavours of semantics, but we’ll be focusing on operational semantics, and they’re the topic of the next post. <a href="b/semantics.html">Read on!</a></p>
+    </div>
+    
+    <div class="panel-footer">
+        <h5>Posted on April  8, 2016 </h5>
+    </div>
+    
+</div>
+
+            <div class="row">
+                <div class="col-md-5"> Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a> </div>
+                <div class="col-md-7">
+                    This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>
+                    <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-59162164-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+    </body>
+</html>
