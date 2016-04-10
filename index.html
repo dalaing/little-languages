@@ -40,7 +40,42 @@
 - [The B language](./posts/b.html)
     - [The semantics of B](./posts/b/semantics.html)
     - [Testing B](./posts/b/testing.html)
+    - [Printing and Parsing B](./posts/b/text.html)
+      - include round trip tests
+      - include a source code formatter
     - [A REPL for B](./posts/b/repl.html)
+      - basic haskeline
+      - add the ability to step through evaluation?
+      - would be nice to be able to print rule names as we go...
+- [Improving the modularity of B](./posts/modularity.html)
+- [The N language](./posts/n.html)
+  - first post introduces the formalism, leaves implementation as an exercise
+  - [The implementation of n](./posts/n/implementation.html)
+  - goes through the exercise
+    - covers lazy versus strict
+- [The I language](./posts/i.html)
+  - first post introduces the formalism, leaves implementation as an exercise
+    - discussion of controlling evaluation order through semantics rules
+  - [The implementation of I](./posts/i/implementation.html)
+    - goes through the exercise
+      - discussion of expression parser and expression printer
+- [The NB language](./posts/nb.html)
+    - first post introduces the formalism
+      - natEq semantics as an exercise
+      - implementation as an exercise
+      - thinking about how things can go wrong as an exercise
+    - [A type system for NB](./posts/nb/type.html)
+    - [Testing the type system](./posts/nb/testing.html)
+      - includes the new generators
+    - post on syntax helpers / GADTs ?
+    - [Better type errors for NB](./posts/nb/errors.html)
+      - includes adding annotations to the term and the type
+      - includes parsing with source locations
+      - include test for that with subTerms?
+    - a REPL post
+- LC and STLC
+  - brings bound into play
+  - brings contexts into the type system
 --></p>
 <h1 id="for-those-of-you-playing-along-at-home">For those of you playing along at home</h1>
 <p>These posts should all be self-contained, so you probably don’t <em>need</em> the following books. I had them in my books-that-I-want queue for a long time but wasn’t sure I eas ready for them, and now I kind of wish that I dived in earlier.</p>

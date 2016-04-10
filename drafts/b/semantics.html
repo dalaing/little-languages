@@ -92,13 +92,14 @@ valueTmFalse <span class="dt">TmFalse</span> <span class="fu">=</span>
   <span class="dt">Just</span> <span class="dt">TmFalse</span>
 valueTmFalse _ <span class="fu">=</span>
   <span class="dt">Nothing</span></code></pre></div>
-<p>Now we need to combine them back together, which we can do with the <code>Alternative</code> instance for <code>Maybe</code>:</p>
+<p>Now we need to combine them back together, which we can do with the <code>Alternative</code> instance for <code>Maybe</code>, which chooses the first of these that return something other than <code>Nothing</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">value ::</span> <span class="dt">Term</span> 
       <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Term</span>
 value tm <span class="fu">=</span>
   valueTmTrue tm <span class="fu">&lt;|&gt;</span>
   valueTmFalse tm </code></pre></div>
-<p>This can be generalized to a list of rules, by using <code>asum</code> from <code>Data.Foldable</code>:</p>
+<p>This will mean that the order will matter if there is overlap between the rules. That’s a concern we don’t really want to have, but we can take care of that elsewhere.</p>
+<p>The use of the <code>Alternative</code> instance can be generalized to a list of rules, by using <code>asum</code> from <code>Data.Foldable</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">asum ::</span> (<span class="dt">Foldable</span> t, <span class="dt">Alternative</span> f) 
      <span class="ot">=&gt;</span> t (f a) 
      <span class="ot">-&gt;</span> f a</code></pre></div>
@@ -202,6 +203,13 @@ smallStep tm <span class="fu">=</span>
   smallStepRules</code></pre></div>
 <p>The <code>smallStepRules</code> and <code>smallStep</code> function are mutually recursive. The extra level of indirection allows us to define rules that use recursion in a different module to <code>smallStep</code>.</p>
 <p>This means we can define more rules elsewhere, and add them to <code>smallStepRules</code> when we think they’re ready for use.</p>
+<p>Now that we have <code>smallStep</code>, we can define in the same way that we can define</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">isNormalForm ::</span> <span class="dt">Term</span> 
+             <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+isNormalForm <span class="fu">=</span>
+  isNothing <span class="fu">.</span>
+  smallStep</code></pre></div>
+<p>in a similar manner to how we defined <code>isValue</code> earlier on.</p>
 <h2 id="evaluation">Evaluation</h2>
 <p>We can build an evaluator from the small step function. As we’re using the small-step semantics to define the meaning of evaluation, if we implement the evaluation rules correctly we can be pretty confident in this evaluator. It may not be all that fast, but we can deal with that later on.</p>
 <p>Technically, our evaluation function is the reflexive transitive closure of <code>smallStep</code>.</p>
@@ -227,28 +235,19 @@ eval tm <span class="fu">=</span>
 <p>We do this by coming up with behaviours and properties that we think should be reasonably, and then demonstrating that they are true. For instance, it’d be nice to know that our <code>eval</code> function always terminates. Failing that, it would be nice to understand the circumstances under which it fails to terminate.</p>
 <p>In the PLT space, the work of proposing and checking properties is done by coming up with theorems and proving them. Many of these theorems are phrased in such a way that they will hold across a useful subset of languages. We can then prove those theorems hold in our language of interest, often using proof techniques that are made familiar to us when we learn and start using those theorems.</p>
 <p>For now we have a few properties of interest.</p>
-<p>TODO go through the properties <!--
-- every value is a normal form
-  - if one value rules applies, no step rules apply
-
-- stuckness = normal form but not a value
-  - *B* has no stuck terms
-
-- determinacy
-  t -> t' and t -> t'' means t' == t''
-- we most get this for free from the fact that small-step is a pure function
-- partly a quirk of how we are combining the rules
-  - only one rule applies for each t
-    - later, if we need to, we can expand on this (every rule that applies results in the same output)
-
-- termination
-As a bonus, all of these rules reduce the size of terms they act on.
-Since we have covered all of the cases, and you can only reduce the size of a finite term so far, we know that all finite terms will eventually evaluate to a value.
-- step reduces size
-
-Corollary of the above:
-- small step evaluate should return a value
---></p>
+<ul>
+<li><p>Every value is a normal form</p>
+<p>This means that if a term is a value, then it won’t take a step.</p></li>
+<li><p><em>B</em> has no stuck terms</p>
+<p>There is a double negative to unpack here (take that, constructivists). After that, this is claiming that if a term is not a value, it will take a step.</p></li>
+<li><p><em>B</em> is determinate</p>
+<p>This means that for a given term that can take a step, we will always get the same result from the step function.</p>
+<p>We most get this for free from the fact that <code>smallStep</code> is a pure function. This is partly because we are combining the rules in a fixed order, which could be masking issues here.</p>
+<p>We can get around it for now by testing that exactly one small-step rules applies for each non-value term. Later, if we need to handle the case where multiple rules apply for certain terms, we can check that the result of applying any of those rules to the term will result in the same output.</p></li>
+<li><p><em>B</em> is normalizing</p>
+<p>This means that for any term we care to feed to the evaluator, it will always terminate.</p>
+<p>We can demonstrate this by showing that when the <code>smallStep</code> function returns a non-<code>Nothing</code> value, the output term is smaller than the input term. If our terms have finite size then a finite number of calls to <code>smallStep</code> will reduce them to a size of zero or a normal form, and that’s when our evaluator returns.</p></li>
+</ul>
 <h2 id="aside-big-step-semantics">Aside: Big-step semantics</h2>
 <p>There’s an alternative way of specifying the operational semantics of a language, called big-step semantics.</p>
 <p>Big-step semantics is defined in terms of the evaluation function, which takes terms the whole way to values immediately, rather than in a series of steps.</p>
@@ -274,7 +273,10 @@ Corollary of the above:
 <p>If you’ve read HTPI and TAPL then you might have your pen and paper out already and be scribbling away. If you’ve been through Software Foundations, you might be typing away in Proof General.</p>
 <p>Otherwise you might be scratching your head a little. Here’s the thing - we’re not going to actually prove these theorems. Instead, we’re going to go for the easiest path we can find to high confidence that these theorems hold.</p>
 <p>To begin with, that will involve using QuickCheck, which is the topic of the next post. <a href="testing.html">Read on!</a></p>
-<p>Or - if you’re feeling adventurous - you could stop here and write the QuickCheck code for the properties that have been mentioned so far.</p>
+<h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
+<ul>
+<li>write the QuickCheck code for the properties that have been mentioned so far.</li>
+</ul>
     </div>
     
     <div class="panel-footer">
