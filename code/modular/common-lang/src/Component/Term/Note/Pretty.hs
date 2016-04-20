@@ -18,15 +18,15 @@ import           Component.Term.Pretty        (PrettyTermInput (..),
                                                PrettyTermRule (..))
 
 prettyTmNote :: WithNoteTerm tm n a
-             => (tm a -> Doc)
-             -> tm a
+             => (tm n a -> Doc)
+             -> tm n a
              -> Maybe Doc
 prettyTmNote prettyTerm =
   fmap (prettyTerm . snd) .
   preview _TmNote
 
 prettyTermInput :: WithNoteTerm tm n a
-                => PrettyTermInput (tm a)
+                => PrettyTermInput tm n a
 prettyTermInput =
   PrettyTermInput
     [PrettyTermRecurse prettyTmNote]

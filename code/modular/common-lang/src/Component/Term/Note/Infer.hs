@@ -12,29 +12,33 @@ module Component.Term.Note.Infer (
 
 import           Control.Lens         (preview, review)
 
+import           Common.Note          (TranslateNote (..))
 import           Component.Term.Infer (InferInput (..), InferRule (..))
 import           Component.Term.Note  (AsNoteTerm (..), WithNoteTerm)
 import           Component.Type.Note  (AsNoteType (..), WithNoteType)
 
-inferTmNote :: ( WithNoteType n ty
-               , WithNoteTerm tm n a
+inferTmNote :: ( WithNoteType ty nTy
+               , WithNoteTerm tm nTm a
+               , TranslateNote nTm nTy
                , Monad m
                )
-             => (tm a -> m ty)
-             -> tm a
-             -> Maybe (m ty)
-inferTmNote infer =
+             => (ty nTy -> ty nTy)
+             -> (tm nTm a -> m (ty nTy))
+             -> tm nTm a
+             -> Maybe (m (ty nTy))
+inferTmNote _ infer =
     fmap inferTmNote' .
     preview _TmNote
   where
     inferTmNote' (n, tm) = do
       ty <- infer tm
-      return $ review _TyNote (n, ty)
+      return $ review _TyNote (translateNote n, ty)
 
-inferInput :: ( WithNoteType n ty
-              , WithNoteTerm tm n a
+inferInput :: ( WithNoteType ty nTy
+              , WithNoteTerm tm nTm a
+              , TranslateNote nTm nTy
               )
-            => InferInput e ty (tm a)
+            => InferInput r e ty nTy tm nTm a
 inferInput =
   InferInput
     [InferRecurse inferTmNote]

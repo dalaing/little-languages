@@ -23,10 +23,10 @@ import           Component.Term.Gen    (HasGenTermOutput (..))
 import           Component.Term.Parse  (HasParseTermOutput (..))
 import           Component.Term.Pretty (HasPrettyTermOutput (..))
 
-mkTextTests :: ( Eq (tm a)
-               , Show (tm a)
+mkTextTests :: ( Eq (tm nTm a)
+               , Show (tm nTm a)
                )
-            => ComponentOutput e ty tm a
+            => ComponentOutput r e ty nTy tm nTm a
             -> TestTree
 mkTextTests c =
   testGroup "text"
@@ -42,7 +42,7 @@ isRight (Right _) =
 isRight _ =
   False
 
-assertUniqueReserved :: ComponentOutput e ty tm a
+assertUniqueReserved :: ComponentOutput r e ty nTy tm nTm a
                      -> Assertion
 assertUniqueReserved c =
   let
@@ -60,8 +60,8 @@ assertUniqueReserved c =
   in
     assertBool msg unique
 
-propUniqueParse :: Show (tm a)
-                => ComponentOutput e ty tm a
+propUniqueParse :: Show (tm nTm a)
+                => ComponentOutput r e ty nty tm nTm a
                 -> Property
 propUniqueParse c =
   let
@@ -84,10 +84,10 @@ propUniqueParse c =
     in
       matches === 1
 
-propPrettyParse :: ( Eq (tm a)
-                   , Show (tm a)
+propPrettyParse :: ( Eq (tm nTm a)
+                   , Show (tm nTm a)
                    )
-                => ComponentOutput e ty tm a
+                => ComponentOutput r e ty nTy tm nTm a
                 -> Property
 propPrettyParse c =
   let

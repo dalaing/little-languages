@@ -9,11 +9,13 @@ Portability : non-portable
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving        #-}
 module Component.Term.Infer (
     InferRule(..)
   , InferInput(..)
   , InferOutput
   , HasInferOutput(..)
+  , InferStack 
   , runInfer
   , mkInfer
   ) where
@@ -23,59 +25,69 @@ import           Data.Maybe                          (fromMaybe)
 
 import           Control.Lens.TH                     (makeClassy)
 import           Control.Monad.Error.Lens            (throwing)
-import           Control.Monad.Except                (Except, runExcept)
+import           Control.Monad.Except                (MonadError, Except, runExcept)
+import           Control.Monad.Reader                (MonadReader, ReaderT(..))
 
-import           Common.Type.Error.UnknownType.Class (AsUnknownType (..))
+import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
+import Component.Type.Note.Strip (StripNoteTypeOutput(..))
+
+newtype InferStack r e a =
+    InferStack { getInfer :: ReaderT r (Except e) a}
+  deriving (Functor, Applicative, Monad, MonadReader r, MonadError e)
+
+runInfer :: r
+         -> InferStack r e a
+         -> Either e a
+runInfer r =
+  runExcept .
+  flip runReaderT r .
+  getInfer
 
 -- |
-data InferRule e ty tm =
-    InferBase (tm -> Maybe (Except e ty))                           -- ^
-  | InferRecurse ((tm -> Except e ty) -> tm -> Maybe (Except e ty)) -- ^
+data InferRule r e ty nTy tm nTm a =
+    InferBase (tm nTm a -> Maybe (InferStack r e (ty nTy)))                           -- ^
+  | InferRecurse ((ty nTy -> ty nTy) -> (tm nTm a -> InferStack r e (ty nTy)) -> tm nTm a -> Maybe (InferStack r e (ty nTy))) -- ^
 
 -- |
-fixInferRule :: (tm -> Except e ty)
-             -> InferRule e ty tm
-             -> tm
-             -> Maybe (Except e ty)
-fixInferRule _ (InferBase f) x =
+fixInferRule :: (ty nTy -> ty nTy)
+             -> (tm nTm a -> InferStack r e (ty nTy))
+             -> InferRule r e ty nTy tm nTm a
+             -> tm nTm a
+             -> Maybe (InferStack r e (ty nTy))
+fixInferRule _ _ (InferBase f) x =
   f x
-fixInferRule step (InferRecurse f) x =
-  f step x
+fixInferRule strip step (InferRecurse f) x =
+  f strip step x
 
 -- |
-data InferInput e ty tm =
-  InferInput [InferRule e ty tm] -- ^
+data InferInput r e ty nTy tm nTm a =
+  InferInput [InferRule r e ty nTy tm nTm a] -- ^
 
-instance Monoid (InferInput e ty tm) where
+instance Monoid (InferInput r e ty nTy tm nTm a) where
   mempty =
     InferInput mempty
   mappend (InferInput v1) (InferInput v2) =
     InferInput (mappend v1 v2)
 
 -- |
-data InferOutput e ty tm =
+data InferOutput r e ty nTy tm nTm a =
   InferOutput {
-    _infer      :: tm -> Except e ty           -- ^
-  , _inferRules :: [tm -> Maybe (Except e ty)] -- ^
+    _infer      :: tm nTm a -> InferStack r e (ty nTy)           -- ^
+  , _inferRules :: [tm nTm a -> Maybe (InferStack r e (ty nTy))] -- ^
   }
 
 makeClassy ''InferOutput
 
 -- |
-runInfer :: Except e ty -- ^
-         -> Either e ty -- ^
-runInfer =
-  runExcept
-
--- |
 mkInfer :: ( AsUnknownType e
            )
-        => InferInput e ty tm  -- ^
-        -> InferOutput e ty tm -- ^
-mkInfer (InferInput i) =
+        => StripNoteTypeOutput ty
+        -> InferInput r e ty nTy tm nTm a  -- ^
+        -> InferOutput r e ty nTy tm nTm a -- ^
+mkInfer (StripNoteTypeOutput _ stripNote) (InferInput i) =
   let
     inferRules' =
-      fmap (fixInferRule infer') i
+      fmap (fixInferRule stripNote infer') i
     infer' tm =
       fromMaybe (throwing _UnknownType ()) .
       asum .

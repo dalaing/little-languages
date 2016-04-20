@@ -23,5 +23,5 @@ main =
   defaultMain .
   mkTests .
   mkLanguageDefaultParser $
-  ((languageRules <> errorRules) :: ComponentInput (TypeError ()) (Type ()) (Term ()) ())
+  ((languageRules <> errorRules) :: ComponentInput () (TypeError ()) Type () Term () ())
 

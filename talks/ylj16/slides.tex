@@ -1,0 +1,1758 @@
+\documentclass{beamer}
+
+\title{Little Lanugages}
+\author{Dave Laing}
+\date{YOW! Lambda Jam 2016}
+
+\usepackage[normalem]{ulem}
+\usepackage{color}
+\usepackage{minted}
+\usepackage{prftree}
+
+\setbeamertemplate{navigation symbols}{}
+
+\AtBeginSection[]%
+{%
+\begin{frame}[plain]%
+  \begin{center}%
+    \usebeamerfont{section title}\usebeamercolor[fg]{section title}\insertsection%
+  \end{center}%
+\end{frame}%
+}
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}[c]
+  \begin{center}
+    Haskell is great for writing DSLs.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+    There are some techniques and libraries out there that can really help.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+    Theory helps more.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+    Get comfortable with the theory and reap the awesome.
+  \end{center}
+\end{frame}
+
+TODO images from TAPL?
+
+\begin{frame}[c]
+  \begin{center}
+   Bonus points: Approach the modularity of the theory. 
+  \end{center}
+\end{frame}
+
+\section{B}
+
+\begin{frame}[c]
+  \begin{center}
+Terms (maths)
+  \end{center}
+  \begin{displaymath}
+    \begin{aligned}
+t =& \ \text{true} \\
+  |& \ \text{false}  \\
+  |& \ \text{if $t$ then $t$ else $t$}
+    \end{aligned}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{center}
+Terms (Haskell)
+  \end{center}
+  \begin{minted}{haskell}
+data Term =
+    TmTrue
+  | TmFalse
+  | TmIf Term Term Term
+  \end{minted}
+\end{frame} 
+
+\section{Extending B (part 1)}
+
+\begin{frame}[fragile]
+  \begin{center}
+    An extension
+  \end{center}
+  \begin{minted}{haskell}
+tmNot :: Term -> Term
+tmNot x = TmIf x TmFalse TmTrue
+
+tmAnd x y :: Term -> Term -> Term
+tmAnd x y = TmIf x y False
+
+tmOr x y :: Term -> Term -> Term
+tmOr x y = TmIf x True y
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{center}
+    An extension
+  \end{center}
+  \begin{minted}{haskell}
+data Term =
+    ...
+  | TmNot Term
+  | TmAnd Term Term
+  | TmOr Term Term
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{center}
+An evaluator (?)
+  \end{center}
+  \begin{minted}{haskell}
+eval :: Term 
+     -> Term
+eval TmTrue = TmTrue
+eval TmFalse = TmFalse
+eval (TmIf t1 t2 t3) =
+  case eval t1 of
+    TmTrue -> t2
+    TmFalse -> t3
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[c]
+  \begin{center}
+Is this correct?
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+What does correctness mean here?
+  \end{center}
+\end{frame}
+
+\section{Values}
+
+\begin{frame}[c]
+  \begin{center}
+   Values are the terms that don't need evaluation. 
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+Values (maths)
+  \end{center}
+  \begin{displaymath}
+    \begin{aligned}
+v =& \ \text{true} \\
+  |& \ \text{false}  \\
+    \end{aligned}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+Values (maths)
+  \end{center}
+  \begin{displaymath}
+    \prftree[r]{V-True}{\text{true val}}
+  \end{displaymath}
+  \begin{displaymath}
+    \prftree[r]{V-False}{\text{false val}}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{center}
+Values (Haskell)
+  \end{center}
+ \begin{minted}{haskell}
+isValue :: Term 
+        -> Bool
+isValue TmTrue = 
+  True
+isValue TmFalse = 
+  True
+isValue _ = 
+  False
+ \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{center}
+Values (Haskell)
+  \end{center}
+ \begin{minted}{haskell}
+value :: Term 
+        -> Maybe Term
+value TmTrue = 
+  Just TmTrue
+value TmFalse = 
+  Just TmFalse
+value _ = 
+  Nothing
+ \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{V-True}{\text{true val}}
+  \end{displaymath}
+ \begin{minted}{haskell}
+valueTmTrue :: Term 
+            -> Maybe Term
+valueTmTrue TmTrue = 
+  Just TmTrue
+valueTmTrue _ = 
+  Nothing
+ \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{V-False}{\text{false val}}
+  \end{displaymath}
+ \begin{minted}{haskell}
+valueTmFalse :: Term 
+             -> Maybe Term
+valueTmFalse TmFalse = 
+  Just TmFalse
+valueTmFalse _ = 
+  Nothing
+ \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{minted}{haskell}
+value :: Term 
+      -> Maybe Term
+value tm =
+  valueTmTrue tm <|>
+  valueTmFalse tm
+ \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{minted}{haskell}
+import Data.Foldable (asum)
+
+asum :: (Foldable t, Alternative f) 
+     => t f a -> f a
+ \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{minted}{haskell}
+valueRules :: [Term -> Maybe Term]
+valueRules =
+  [ valueTmTrue
+  , valueTmFalse
+  ]
+
+value :: Term 
+      -> Maybe Term
+value tm =
+  asum .
+  fmap ($ tm) $
+  valueRules
+ \end{minted}
+\end{frame}
+
+\section{Small-step semantics of B}
+
+\begin{frame}[c]
+  \begin{center}
+Small-step semantics (maths)
+  \end{center}
+  \begin{displaymath}
+    \prftree[r]{E-IfTrue}
+    {\text{if true then $t_2$ else $t_3$} \longrightarrow t_2}
+  \end{displaymath}
+  \begin{displaymath}
+    \prftree[r]{E-IfFalse}
+    {\text{if false then $t_2$ else $t_3$} \longrightarrow t_3}
+  \end{displaymath}
+  \begin{displaymath}
+    \prftree[r]{E-If}
+    {t_1 \longrightarrow t_1^{\prime}}
+    {\text{if $t_1$ then $t_2$ else $t_3$} \longrightarrow \text{if $t_1^{\prime}$ then $t_2$ else $t_3$}}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+Let's evaluate a term.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+Original
+  \begin{displaymath}
+    \text{if (if f then f else t) then f else t}
+  \end{displaymath}
+Step 1
+  \begin{displaymath}
+    \prftree[r]{E-If}
+    {\prftree[r]{E-IfFalse}{\text{if f then f else t} \longrightarrow \text{t}}}
+    {\text{if (if f then f else t) then f else t} \longrightarrow \text{if t then f else
+      t}}
+  \end{displaymath}
+Step 2
+  \begin{displaymath}
+    \prftree[r]{E-IfTrue}
+    {\text{if t then f else t} \longrightarrow f}
+  \end{displaymath}
+Final
+  \begin{displaymath}
+    \text{f}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+If no step is defined for a term, it is a \em{normal form}.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+All values are normal forms.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+A normal form that is not a value is \em{stuck}.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+We use $\tt{Maybe}$ to handle pattern match failures in the rules.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+We use $\tt{Maybe}$ to handle the partiality of the combined step function.
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{E-IfTrue}
+    {\text{if true then $t_2$ else $t_3$} \longrightarrow t_2}
+  \end{displaymath}
+  \begin{minted}{haskell}
+eIfTrue :: Term 
+        -> Maybe Term
+eIfTrue (TmIf TmTrue tm2 _) =
+  Just tm2
+eIfTrue _ =
+  Nothing
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{E-IfFalse}
+    {\text{if false then $t_2$ else $t_3$} \longrightarrow t_3}
+  \end{displaymath}
+  \begin{minted}{haskell}
+eIfFalse :: Term 
+         -> Maybe Term
+eIfFalse (TmIf TmFalse _ tm3) =
+  Just tm3
+eIfFalse _ =
+  Nothing
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{E-If}
+    {t_1 \longrightarrow t_1^{\prime}}
+    {\text{if $t_1$ then $t_2$ else $t_3$} \longrightarrow \text{if $t_1^{\prime}$ then $t_2$ else $t_3$}}
+  \end{displaymath}
+  \begin{minted}{haskell}
+eIf :: (Term -> Maybe Term) 
+    -> Term 
+    -> Maybe Term
+eIf step (TmIf tm1 tm2 tm3) = do
+  tm1' <- step tm1
+  return $ TmIf tm1' tm2 tm3
+eIf =
+  Nothing
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+ \begin{minted}{haskell}
+smallStepRules :: [Term -> Maybe Term]
+smallStepRules =
+  [ eIfTrue
+  , eIfFalse
+  , eIf smallStep
+  ]
+
+smallStep :: Term 
+          -> Maybe Term
+smallStep tm =
+  asum .
+  fmap ($ tm) $
+  smallStepRules
+ \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{center}
+An evaluator (!)
+  \end{center}
+ \begin{minted}{haskell}
+smallStepEval :: Term 
+              -> Term
+smallStepEval tm =
+  case smallStep tm of
+    Nothing -> tm
+    Just tm' -> eval tm'
+ \end{minted}
+\end{frame}
+
+\section{Properties of the small-step semantics}
+
+\begin{frame}[c]
+  \begin{center}
+There are some properties that we want to hold for our small-step function.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+We want to phrase them so we can use the properties and the methods of gaining
+confidence that the properties hold.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  Property 1
+  \begin{center}
+All values are normal forms.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  Property 2
+  \begin{center}
+No terms are stuck.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  Property 3
+  \begin{center}
+Small-step is determinate.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  Property 4
+  \begin{center}
+Small-step is normalizing.
+  \end{center}
+\end{frame}
+
+\section{Testing the small-step semantics}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% gen shrink
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% shrink true
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% gen false
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% shrink false
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% gen if
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% shrink if
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% gather gen
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% gather shrink
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% newtype
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% forAllShrink
+  \end{minted}
+\end{frame}
+
+% properties
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% prop 1
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% prop 2
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% prop 3
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% prop 1-3
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+% prop 4
+  \end{minted}
+\end{frame}
+
+\section{A type system for B}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+data Type =
+  TyBool
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+inferTerm :: Term 
+          -> Type
+inferTerm _ =
+  TyBool
+  \end{minted}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+Type system (maths)
+  \end{center}
+  \begin{displaymath}
+    \prftree[r]{T-True}
+    {\text{true} \colon \text{Bool}}
+  \end{displaymath}
+  \begin{displaymath}
+    \prftree[r]{T-False}
+    {\text{false} \colon \text{Bool}}
+  \end{displaymath}
+  \begin{displaymath}
+    \prftree[r]{T-If}
+    {t_1 \colon \text{Bool}}
+    {t_2 \colon \text{T}}
+    {t_3 \colon \text{T}}
+    {\text{if $t_1$ then $t_2$ else $t_3$} \colon \text{T}}
+  \end{displaymath}
+\end{frame}
+
+% error handling
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+data TypeError =
+    UnknownType
+  | Unexpected { actual :: Type, expected :: Type }
+  | ExpectedEq { type1 :: Type, type2 :: Type }
+  deriving (Eq, Ord,Show)
+
+expect :: MonadError TypeError m 
+       => Type 
+       -> Type 
+       -> m ()
+
+expectEq :: MonadError TypeError m 
+       => Type 
+       -> Type 
+       -> m ()
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{T-True}
+    {\text{true} \colon \text{Bool}}
+  \end{displaymath}
+  \begin{minted}{haskell}
+inferTmTrue :: Monad m 
+            => Term 
+            -> Maybe (m Type)
+inferTmTrue TmTrue =
+  Just $ return TyBool
+inferTmTrue _ =
+  Nothing
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{T-False}
+    {\text{false} \colon \text{Bool}}
+  \end{displaymath}
+  \begin{minted}{haskell}
+inferTmFalse :: Monad m 
+             => Term 
+             -> Maybe (m Type)
+inferTmFalse TmFalse =
+  Just $ return TyBool
+inferTmFalse _ =
+  Nothing
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}
+    \prftree[r]{T-If}
+    {t_1 \colon \text{Bool}}
+    {t_2 \colon \text{T}}
+    {t_3 \colon \text{T}}
+    {\text{if $t_1$ then $t_2$ else $t_3$} \colon \text{T}}
+  \end{displaymath}
+  \begin{minted}{haskell}
+inferTmIf :: MonadError TypeError m 
+          => (Term -> m Type)
+          -> Term 
+          -> Maybe (m Type)
+inferTmFalse infer (TmIf tm1 tm2 tm3) = Just $ do
+  ty1 <- infer tm1
+  expect ty1 TyBool
+  ty2 <- infer tm2
+  ty3 <- infer tm3
+  expectEq ty2 ty3
+  return ty2
+inferTmIf _ _ =
+  Nothing
+  \end{minted}
+\end{frame}
+
+% gathering the rules
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+inferRules :: MonadError TypeError m 
+           => [Term -> Maybe (m Type)]
+inferRules =
+  [ inferTmTrue
+  , inferTmFalse
+  , inferTmIf infer
+  ]
+
+infer :: MonadError TypeError m 
+      => Term 
+      -> m Term
+infer tm =
+  fromMaybe (throwError UnknownType) .
+  asum .
+  fmap ($ tm) $
+  inferRules
+  \end{minted}
+\end{frame}
+
+\section{Properties of the type system}
+
+\begin{frame}[c]
+  \begin{center}
+    Progress: Well-typed terms are either values or can take a step.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+    Preservation: Well-typed terms do not change type when they take a step.
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile,c]
+  \begin{center}
+    Aside: Not all ill-typed terms are stuck
+  \end{center}
+  \begin{minted}{haskell}
+> smallStep $ TmIf TmTrue TmFalse (TmInt 12)
+TmFalse
+  \end{minted}
+\end{frame}
+
+\section{Testing the type system}
+
+\begin{frame}[fragile]
+  \begin{center}
+    In general: Need some new generators and friends
+  \end{center}
+  \begin{minted}{haskell}
+genAnyType       :: Gen Type
+genNotType       :: Type -> Gen Type
+genWellTypedTerm :: Type -> Gen Term
+genIllTypedTerm  :: Type -> Gen Term
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+newtype WellTypedTerm = WellTypedTerm Term
+
+instance Arbitrary WellTypedTerm where
+  arbitrary = genType >>= genWellTypedTerm
+  shrink = shrinkWellTypedTerm
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prop_progress :: WellTypedTerm -> Property
+prop_progress (WellTypedTerm tm) =
+  case infer tm of
+    Left _ -> property True
+    Right _ -> isValue tm .||. canStep tm
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prop_preservation :: WellTypedTerm -> Property
+prop_preservation (WellTypedTerm tm) =
+  case smallStep tm of
+    Nothing -> property True
+    Just tm' -> infer tm === infer tm'
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{center}
+   Check that only one inference pattern applies per term.
+  \end{center}
+  \begin{minted}{haskell}
+prop_patternUnique :: WellTypedTerm -> Property
+prop_patternUnique (WellTypedTerm tm) =
+  let
+    matches =
+      length .
+      mapMaybe (\i -> fmap runInfer . i $ tm) $
+      inferTermRules
+  in
+    matches === 1
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{center}
+   Check that ill-typed terms result in type errors and that well-typed terms
+   result in types.
+  \end{center}
+  \begin{minted}{haskell}
+prop_illTypedInfer :: IllTypedTerm -> Property
+prop_illTypedInfer (IllTypedTerm tm ) =
+  isLeft . runInfer . inferTerm $ tm
+
+prop_wellTypedInfer :: WellTypedTerm -> Property
+prop_wellTypedInfer (WellTypedTerm tm ) =
+  isRight . runInfer . inferTerm $ tm
+  \end{minted}
+\end{frame} 
+
+\section{Parsing B}
+
+\begin{frame}[c]
+  \begin{center}
+Parse with $\tt{parsers}$ and $\tt{trifecta}$, print with $\tt{ansi-wl-pprint}$.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+Tip: Use token parsers if you can.
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+identifierStyle :: TokenParsing m
+                => IdentifierStyle m
+identifierStyle =
+  IdentifierStyle {
+    _styleName      = "identitfier"
+  , _styleStart     = lower <|> char '_'
+  , _styleLetter    = alphaNum <|> char '_'
+  , _styleReserved  = HS.fromList 
+      ["if" , "then" , "else"]
+  , _styleHighlight = Identifier
+  , _styleReservedHighlight = ReservedIdentifier
+  }
+
+reservedIdentifier :: (Monad m , TokenParsing m)
+                   => String -> m ()
+reservedIdentifier =
+  reserve identifierStyle
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[c]
+  \begin{center}
+Tip: name your parsers.
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+parseTmFalse :: (Monad m , TokenParsing m)
+             => m Term           
+parseTmFalse =
+  TmFalse <$ reservedConstructor "False"
+  <?> "False"
+
+parseTmTrue :: (Monad m , TokenParsing m)
+            => m Term
+parseTmTrue =
+  TmTrue <$ reservedConstructor "True"
+  <?> "True"
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+parseTmIf :: (Monad m , TokenParsing m)
+          => m Term -> m Term
+parseTmIf parseTerm =
+  TmIf <$>
+    reservedIdentifier "if" <*> parseTerm <*
+    reservedIdentifier "then" <*> parseTerm <*
+    reservedIdentifier "else" <*> parseTerm
+  <?> "if-then-else"
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+withParens :: TokenParsing m 
+           => m Term -> m Term
+withParens p = parens p <|> p
+
+parseTermRules :: (Monad m , TokenParsing m)
+               => [m Term]
+parseTermRules =
+  [ parseTmFalse
+  , parseTmTrue
+  , parseTmIf parseTerm
+  ]
+
+parseTerm :: (Monad m , TokenParsing m)
+          => m Term
+parseTerm =
+  ( withParens .
+    asum $
+    parseTermRules
+  ) <?> "term"
+  \end{minted}
+\end{frame} 
+
+\section{Printing B}
+
+\begin{frame}[c]
+  \begin{center}
+Tip: Steal the highlighting from $\tt{trifecta}$ for your printing.
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+import Text.Parser.Token.Highlight  (Highlight (..))
+import Text.Trifecta.Highlight      (withHighlight)
+
+reservedIdentifier :: String -> Doc
+reservedIdentifier =
+  withHighlight ReservedIdentifier .
+  text
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prettyTmFalse :: Term -> Maybe Doc
+prettyTmFalse TmFalse =
+  Just $ reservedConstructor "False"
+prettyTmFalse _ =
+  Nothing
+
+prettyTmTrue :: Term -> Maybe Doc
+prettyTmTrue TmTrue =
+  Just $ reservedConstructor "True"
+prettyTmTrue _ =
+  Nothing
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prettyTmIf :: (Term -> Doc) -> Term -> Maybe Doc
+prettyTmIf prettyTerm (TmIf tm1 tm2 tm3) =
+  Just $
+    reservedIdentifier "if" <+> prettyTerm tm1 </>
+    reservedIdentifier "then" <+> prettyTerm tm2 </>
+    reservedIdentifier "else" <+> prettyTerm tm3
+prettyTmIf _ _ =
+  Nothing
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prettyTermRules :: [Term -> Maybe Doc]
+prettyTermRules =
+  [ prettyTmFalse
+  , prettyTmTrue
+  , prettyTmIf prettyTerm
+  ]
+
+prettyTerm :: Term -> Doc
+prettyTerm tm =
+  fromMaybe (text "???") .
+  asum .
+  fmap ($ tm) $
+  prettyTermRules
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prop_uniqueParse :: AnyTerm -> Property
+prop_uniqueParse (AnyTerm tm) =
+  let
+    parseRule p = 
+      parseFromString (withParens p) .
+      prettyTermString $
+      tm
+    matches =
+      length .
+      filter isRight .
+      fmap parseRule .
+      parseTermRules
+  in
+    matches === 1
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prop_prettyParse :: AnyTerm -> Property
+prop_prettyParse (AnyTerm tm) =
+  case (parseTermString . prettyTermString) tm of
+    Left _ -> property False
+    Right tm' -> tm === tm'
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{center}
+   The core of a REPL 
+  \end{center}
+  \begin{minted}{haskell}
+parseAndEval :: String
+             -> Doc
+parseAndEval s =
+  case parseFromString parseTerm s of
+    Left d -> d
+    Right tm -> case runInfer . inferTerm $ tm of
+      Left e -> 
+        prettyTypeError e
+      Right ty ->
+        prettyTerm (eval tm) <+> 
+        text ":" <+> 
+        prettyType ty
+  \end{minted}
+\end{frame} 
+
+\section{B with class}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+data BoolTerm tm =
+    TmFalse
+  | TmTrue
+  | TmIf tm tm tm
+
+makeClassy ''BoolTerm
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+class AsBoolTerm s tm | s -> tm where
+  _BoolTerm :: Prism' s (BoolTerm tm)
+  _TmFalse  :: Prism' s ()
+  _TmTrue   :: Prism' s ()
+  _TmIf     :: Prism' s (tm, tm, tm)
+
+  _TmFalse = _BoolTerm . _TmFalse
+  _TmTrue  = _BoolTerm . _TmTrue
+  _TmIf    = _BoolTerm . _TmIf
+
+instance AsBoolTerm (BoolTerm tm) tm
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+data MyTerm =
+    MyBoolTerm (BoolTerm MyTerm)
+  | MyNatTerm  (NatTerm MyTerm)
+
+makeClassyPrisms ''MyTerm
+
+instance AsBoolTerm MyTerm MyTerm where
+  _BoolTerm = _MyBoolTerm
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+> :t preview _TmFalse
+AsBoolTerm tm => tm -> Maybe ()
+
+> preview _TmFalse TmFalse
+Just ()
+
+> preview _TmFalse (MyBoolTerm TmFalse)
+Just ()
+
+> preview _TmFalse (TmIf TmTrue TmFalse TmTrue)
+Nothing
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+> :t review _TmFalse
+AsBoolTerm tm => () -> tm
+
+> (review _TmFalse ()) :: BoolTerm
+TmFalse
+
+> (review _TmFalse ()) :: MyTerm
+MyBoolTerm TmFalse
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+> :t preview _TmIf
+AsBoolTerm tm => tm -> Maybe (tm, tm, tm)
+
+> preview _TmIf TmFalse
+Nothing
+
+> preview _TmIf (TmIf TmTrue TmFalse TmTrue)
+Just (TmTrue, TmFalse, TmTrue)
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+> :t review _TmIf
+AsBoolTerm tm => (tm, tm, tm) -> tm
+
+> (review _TmFalse (TmTrue, TmFalse, TmTrue)) :: BoolTerm
+TmIf TmTrue TmFalse TmTrue
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+data BoolType =
+  TyBool
+  deriving (Eq, Ord, Show)
+
+class AsBoolType ty where
+  _BoolType :: Prism' ty BoolType
+
+  _TyBool :: Prism' ty ()
+  _TyBool = _BoolType . tyBoolPrism
+    where
+      tyBoolPrism =
+        prism (const TyBool) (const . Right $ ())
+
+instance AsBoolType BoolType where
+  _BoolType = id
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+eIfTrue :: AsBoolTerm tm tm
+        => tm
+        -> Maybe tm
+eIfTrue tm = do
+  (tm1, tm2, _) <- preview _TmIf tm
+  _ <- preview _TmTrue tm1
+  return tm2
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+eIf :: AsBoolTerm tm tm
+    => (tm -> Maybe tm)
+    -> tm
+    -> Maybe tm
+eIf step tm = do
+  (tm1, tm2, tm3) <- preview _TmIf tm
+  tm1' <- step tm1
+  return $ review _TmIf (tm1', tm2, tm3)
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+inferTmIf :: ( Eq ty
+             , AsUnexpected e ty , AsExpectedEq e ty
+             , MonadError e m
+             , AsBoolTerm tm tm , AsBoolType ty
+             )
+          => (tm -> m ty)
+          -> tm
+          -> Maybe (m ty)
+inferTmIf infer =
+    fmap inferTmIf' . preview _TmIf
+  where
+    inferTmIf' (tm1, tm2, tm3) = do
+      ty1 <- infer tm1
+      expect ty1 (review _TyBool ())
+      ty2 <- infer tm2
+      ty3 <- infer tm3
+      expectEq ty2 ty3
+      return ty3
+  \end{minted}
+\end{frame} 
+
+% rules / monoid for infer / mkInfer sig
+% term monoid / mkTerm highlighting use of mkInfer
+% component monoid
+% mention that tests and repl can be built from this
+
+\begin{frame}[c]
+TODO structure for the rules
+TODO gathering of rules in a big monoid
+\end{frame} 
+
+\begin{frame}[c]
+  \begin{center}
+   Modularity is great for a reference implementation.
+  \end{center}
+\end{frame} 
+
+% even if you combine your type checker and evaluator, you can still 
+% - check progress and preservation
+% - check against fmap eval . infer
+\begin{frame}[c]
+  \begin{center}
+    Very handy for verification of a faster implementation.
+  \end{center}
+\end{frame} 
+
+\section{Annotating the AST}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+data NoteTerm n tm =
+  TmNote n tm
+
+makeClassyPrisms ''NoteTerm
+
+data NoteType n ty =
+  TyNote n ty
+
+makeClassyPrisms ''NoteType
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+withSpan :: ( Monad m
+            , DeltaParsing m
+            , AsNoteTerm tm Span tm
+            )
+         => m (tm a)
+         -> m (tm a)
+withSpan p = do
+  (tm :~ s) <- spanned p
+  return $ review _TmNote (s, tm)
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+inferTmNote :: ( AsNoteType ty n
+               , WithNoteTerm tm n tm
+               , Monad m
+               )
+             => (tm -> m ty)
+             -> tm
+             -> Maybe (m ty)
+inferTmNote infer =
+    fmap inferTmNote' .
+    preview _TmNote
+  where
+    inferTmNote' (n, tm) = do
+      ty <- infer tm
+      return $ review _TyNote (n, ty)
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prettyUnexpecte :: (ty -> Doc)
+                -> (ty, ty)
+                -> Doc
+prettyUnexpected prettyType (ty1, ty2) =
+  hang 2 (text "Unexpected type:" PP.<$>
+          text "actual:" <+> prettyType ty1 PP.<$>
+          text "expected:" <+> prettyType ty2)
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prettyUnexpectedSrcLoc :: ( Show ty
+                          , Renderable n
+                          )
+                       => (ty -> Doc)
+                       -> (n, ty)
+                       -> ty
+                       -> Doc
+prettyUnexpectedSrcLoc prettyType (n, ac) ex =
+  explain
+    (render n)
+      (Err 
+        (Just (text "Unexpected type:" <+> prettyType ac)) 
+        [] 
+        (S.singleton (prettyToString . prettyType $ ex)))
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+TODO screenshot of errors
+\end{frame} 
+
+\section{N}
+
+\begin{frame}[c]
+  \begin{center}
+Terms (maths) 
+  \end{center}
+  \begin{displaymath}
+    \begin{aligned}
+t =& \ \text{O} \\
+  |& \ \text{S t} \\
+  |& \ \text{pred t}
+    \end{aligned}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{center}
+Terms (Haskell) 
+  \end{center}
+  \begin{minted}{haskell}
+data NatTerm tm =
+    TmZero
+  | TmSucc tm
+  | TmPred tm
+
+makeClassyPrisms ''NatTerm
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+\begin{minted}{haskell}
+data NatType =
+  TyNat
+
+class AsNatType ty where
+  _NatType = Prism' ty NatType
+
+instance AsNatType NatType where
+  _NatType = id
+\end{minted}
+\end{frame}
+
+% note strict versus lazy here
+
+\begin{frame}[c]
+  Values
+  \begin{displaymath}  
+    \prftree[r]{V-Zero}
+    {\text{O val}}
+  \end{displaymath} 
+  \begin{displaymath}  
+    \prftree[r]{V-Succ}
+    {\text{x val}}
+    {\text{(S x) val}}
+  \end{displaymath} 
+\end{frame}
+
+% note the use of v_1 here
+
+\begin{frame}[c]
+  Small-step semantics
+  \begin{displaymath}  
+    \prftree[r]{E-PredZero}
+    {\text{pred O} \longrightarrow \text{O}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-PredSucc}
+    {\text{pred (S $v_1$)} \longrightarrow \text{$v_1$}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-Succ}
+    {t_1 \longrightarrow t_2}
+    {\text{S $t_1$} \longrightarrow \text{S $t_2$}}
+  \end{displaymath}  
+\end{frame}
+
+\begin{frame}
+  Typing rules
+  \begin{displaymath}  
+    \prftree[r]{T-Zero}
+    {\text{O} \colon \text{Nat}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{T-Succ}
+    {\text{t} \colon \text{Nat}}
+    {\text{S t} \colon \text{Nat}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{T-Pred}
+    {\text{t} \colon \text{Nat}}
+    {\text{pred t} \colon \text{Nat}}
+  \end{displaymath}  
+\end{frame}
+
+\section{I}
+
+\begin{frame}[c]
+  \begin{center}
+Terms (maths) 
+  \end{center}
+  \begin{displaymath}
+    \begin{aligned}
+t =& \ \text{I int} \\
+  |& \ \text{t + t} \\
+  |& \ \text{t * t}
+    \end{aligned}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{center}
+Terms (Haskell) 
+  \end{center}
+  \begin{minted}{haskell}
+data IntTerm tm =
+    TmInt Int
+  | TmAdd tm tm
+  | TmMult tm tm
+
+makeClassyPrisms ''IntTerm
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+\begin{minted}{haskell}
+data IntType =
+  TyInt
+
+class AsIntType ty where
+  _IntType = Prism' ty IntType
+
+instance AsIntType IntType where
+  _IntType = id
+\end{minted}
+\end{frame}
+
+\begin{frame}[c]
+  Values
+  \begin{displaymath}  
+    \prftree[r]{V-Int}
+    {\text{(I i) val}}
+  \end{displaymath} 
+\end{frame}
+
+\begin{frame}[c]
+  Small-step semantics
+  \begin{displaymath}  
+    \prftree[r]{E-AddIntInt}
+    {I (i_1) + I (i_2) \longrightarrow I (i_1 + i_2)}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-Add1}
+    {t_1 \longrightarrow t_1^{\prime}}
+    {t_1 + t_2 \longrightarrow t_1^{\prime} + t_2}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-Add2}
+    {t_2 \longrightarrow t_2^{\prime}}
+    {v_1 + t_2 \longrightarrow v_1 + t_2^{\prime}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-MulIntInt}
+    {I (i_1) * I (i_2) \longrightarrow I (i_1 * i_2)}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-Mul1}
+    {t_1 \longrightarrow t_1^{\prime}}
+    {t_1 * t_2 \longrightarrow t_1^{\prime} * t_2}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-Mul2}
+    {t_2 \longrightarrow t_2^{\prime}}
+    {v_1 * t_2 \longrightarrow v_1 * t_2^{\prime}}
+  \end{displaymath}  
+\end{frame}
+
+\begin{frame}
+  Typing rules
+  \begin{displaymath}  
+    \prftree[r]{T-Int}
+    {\text{I i} \colon \text{Int}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{T-Add}
+    {t_1 \colon \text{Int}}
+    {t_2 \colon \text{Int}}
+    {t_1 + t_2 \colon \text{Int}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{T-Mul}
+    {t_1 \colon \text{Int}}
+    {t_2 \colon \text{Int}}
+    {t_1 * t_2 \colon \text{Int}}
+  \end{displaymath}  
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+Tip: use an expression parser if you can.
+  \end{center}
+\end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+Improvement: write and use an expression printer that shares fixity and
+precedence information with your expression parser.
+  \end{center}
+\end{frame}
+
+\section{NB}
+
+\begin{frame}[c]
+  \begin{displaymath}
+    \begin{aligned}
+t =& \ \text{isZero t}
+    \end{aligned}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+data NatBoolTerm tm =
+  TmIsZero Term
+
+makeClassyPrisms ''NatBoolTerm
+
+data TermF tm =
+    TmNat (NatTerm tm)
+  | TmBool (BoolTerm tm)
+  | TmNatBool (NatBoolTerm tm)
+
+makeClassyPrisms ''Term
+
+data Term = Term { getTerm :: TermF Term }
+
+makeWrapped ''Term
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+instance AsNatTerm Term where
+  _NatTerm = _Wrapped . _TmNat
+
+instance AsBoolTerm Term where
+  _BoolTerm = _Wrapped . _TmBool
+
+instance AsNatBoolTerm Term where
+  _NatBoolTerm = _Wrapped . _TmNatBool
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+\begin{minted}{haskell}
+data Type =
+    TyNat
+  | TyBool
+
+makeClassyPrisms ''Type
+
+instance AsNatType Type where
+  _NatType = TyNat
+
+instance AsBoolType Type where
+  _BoolType = TyBool
+\end{minted}
+\end{frame}
+
+\begin{frame}[c]
+  Small-step semantics
+  \begin{displaymath}  
+    \prftree[r]{E-IsZeroZero}
+    {\text{isZero O} \longrightarrow \text{true}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-IsZeroSucc}
+    {\text{isZero (S $t_1$)} \longrightarrow \text{false}}
+  \end{displaymath}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}  
+    \prftree[r]{E-IsZeroZero}
+    {\text{isZero O} \longrightarrow \text{true}}
+  \end{displaymath}  
+\begin{minted}{haskell}
+eIsZeroZero :: ( AsNatBoolTerm tm
+               , AsNatTerm tm
+               , AsBoolTerm tm
+               )
+            => tm 
+            -> Maybe tm
+eIsZeroZero tm = do
+  t1 <- preview _TmIsZero
+  _ <- preview _TmZero
+  return $ review _TmTrue ()
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{displaymath}  
+    \prftree[r]{E-IsZeroSucc}
+    {\text{isZero (S $t_1$)} \longrightarrow \text{false}}
+  \end{displaymath}  
+\begin{minted}{haskell}
+eIsZeroSucc :: ( AsNatBoolTerm tm
+               , AsNatTerm tm
+               , AsBoolTerm tm
+               )
+            => tm 
+            -> Maybe tm
+eIsZeroSucc tm = do
+  t1 <- preview _TmIsZero
+  _ <- preview _TmSucc
+  -- do we need to check if this is a value
+  return $ review _TmFalse ()
+\end{minted}
+\end{frame}
+
+\begin{frame}
+  Typing rules
+  \begin{displaymath}  
+    \prftree[r]{T-IsZero}
+    {t \colon \text{Nat}}
+    {\text{isZero t} \colon \text{Bool}}
+  \end{displaymath}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+inferTmIsZero :: ( MonadError TypeError m
+                 , AsNatType ty
+                 , AsBoolType ty
+                 , AsNatBoolTerm tm
+                 )
+              => (tm -> m ty)
+              -> tm
+              -> Maybe (m ty)
+inferTmIsZero infer =
+    fmap inferTmIsZero' . 
+    preview _TmIsZero
+  where
+    inferTmIsZero' t1 = do
+      ty <- infer t1
+      expect ty (review _TyNat ())
+      return (review _TyBool ())
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+genTmIsZero :: AsNatBoolTerm tm 
+            => Gen tm 
+            -> Gen tm
+genTmIsZero g =
+  review _TmIsZero <$> g
+  \end{minted}
+\end{frame} 
+
+
+\section{STLC}
+
+\begin{frame}[c]
+  Terms
+  \begin{displaymath}
+    \begin{aligned}
+t =& \ \text{x} \\
+  |& \ \lambda x \colon T \ldotp t \\
+  |& \ \text{t t}
+    \end{aligned}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}[c]
+  TODO examples
+\end{frame}
+
+\begin{frame}[c]
+  Values
+  \begin{displaymath}
+    \begin{aligned}
+v =& \ \lambda x \colon T \ldotp t
+    \end{aligned}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  Small-step semantics
+  \begin{displaymath}  
+    \prftree[r]{E-App1}
+    {t_1 \longrightarrow {t_1}^{\prime} }
+    {t_1 t_2 \longrightarrow {t_1}^{\prime} t_2}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{E-App1}
+    {t_2 \longrightarrow {t_2}^{\prime} }
+    {v_1 t_2 \longrightarrow v_1 {t_2}^{\prime}}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{T-AppAbs}
+    {(\lambda x \colon T_{11} \ldotp t_{12})v_2 \longrightarrow [x \mapsto v_2]t_{12}}
+  \end{displaymath}  
+\end{frame}
+
+\begin{frame}
+  Typing rules
+  \begin{displaymath}  
+    \prftree[r]{T-Var}
+    {x \colon T \in \Gamma}
+    {\Gamma \vdash x \colon T}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{T-Abs}
+    {\Gamma, t_1 \colon T_1 \vdash t_2 \colon T_2}
+    {\Gamma \vdash \lambda t_1 \colon T_1 \ldotp t_2 \colon T_1 \rightarrow T_2}
+  \end{displaymath}  
+  \begin{displaymath}  
+    \prftree[r]{T-App}
+    {\Gamma \vdash t_1 \colon T_1 \rightarrow T_2}
+    {\Gamma \vdash t_2 \colon T_1}
+    {t_1 t_2 \colon T_2}
+  \end{displaymath}  
+\end{frame}
+
+% substitution is hard
+% free and bound variables
+% replace the free variables with the same name
+% de bruijn
+% haskell term for STLC
+% bound vars and scopes
+% the LcTerm data structure and various instances
+% vars and bound instance / functor / foldable / traversable for all of the other pieces
+% parsing rule that uses abstract
+% eval rules that uses instantiate
+% typing rules to demonstrate context manipulation
+% multilam for examples of regular abstract and instantiate
+
+\section{Extending B (part 2)}
+
+If we don't care about controlling evaluation order / analysing certain bits of
+the AST:
+\begin{itemize}
+\item we could capture add with a lambda so it can be reused in-language (can
+  still control eval order a little (and-in-term-of-if))
+\item we could also include add as a nullary term with type Int -> Int -> Int, and let LC drive the
+  evaluation to that point (requires some deeper pattern matching in the semantics)
+\item we could prepopulate the context, if we extend it so primitives won't get overridden
+\end{itemize}
+
+\section{Further avenues}
+\begin{itemize}
+\item other LC additions
+\item pattern matching
+\item HM inference and/or bidirectional typing
+\item bidirectional parsing and printing with QuickCheck support
+\item syntax wrappers / hbound
+\item smallcheck
+\item reusable tools 
+\item LLVM
+\end{itemize}
+
+\end{document}
+

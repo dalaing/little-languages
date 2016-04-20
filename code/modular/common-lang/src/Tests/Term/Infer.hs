@@ -17,7 +17,7 @@ import           Test.QuickCheck       (Property, forAllShrink, property,
 import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
-import Common.Type.Error.UnknownType.Class (AsUnknownType(..))
+import Component.Type.Error.UnknownType.Class (AsUnknownType(..))
 import           Component             (ComponentOutput)
 import           Component.Term.Gen    (HasGenTermOutput (..))
 import           Component.Term.Infer  (HasInferOutput (..), runInfer)
@@ -26,13 +26,14 @@ import           Component.Term.Eval.SmallStep (HasSmallStepOutput (..))
 
 mkInferTests :: ( Eq e
                 , Show e
-                , Eq (tm a)
-                , Show (tm a)
-                , Eq ty
-                , Show ty
+                , Eq (tm nTm a)
+                , Show (tm nTm a)
+                , Eq (ty nTy)
+                , Show (ty nTy)
                 , AsUnknownType e
+                , Monoid r
                 )
-             => ComponentOutput e ty tm a
+             => ComponentOutput r e ty nTy tm nTm a
              -> TestTree
 mkInferTests c =
   testGroup "infer"
@@ -60,13 +61,15 @@ isLeft _ =
 
 -- temporary hack until we revive the more interesting Gens
 -- remove Gen from imports when this goes
-genWellTypedTerm :: HasGenTermOutput c tm => Lens' c (Gen tm)
+genWellTypedTerm :: HasGenTermOutput c tm n a => Lens' c (Gen (tm n a))
 genWellTypedTerm = genAnyTerm
-shrWellTypedTerm :: HasGenTermOutput c tm => Lens' c (tm -> [tm])
+shrWellTypedTerm :: HasGenTermOutput c tm n a => Lens' c (tm n a -> [tm n a])
 shrWellTypedTerm = shrAnyTerm
 
-propPatternUnique :: Show (tm a)
-                  => ComponentOutput e ty tm a
+propPatternUnique :: ( Show (tm nTm a)
+                     , Monoid r
+                     )
+                  => ComponentOutput r e ty nTy tm nTm a
                   -> Property
 propPatternUnique c =
   let
@@ -78,62 +81,70 @@ propPatternUnique c =
     let
       matches =
         length .
-        mapMaybe (\i -> fmap runInfer . i $ tm) $
+        mapMaybe (\i -> fmap (runInfer mempty) . i $ tm) $
         inferRules'
     in
       matches === 1
 
-propUnknownNever :: ( Show (tm a)
+propUnknownNever :: ( Show (tm nTm a)
                     , AsUnknownType e
+                    , Monoid r
                     )
-                 => ComponentOutput e ty tm a
+                 => ComponentOutput r e ty nTy tm nTm a
                  -> Property
 propUnknownNever c =
   let
     genAnyTerm' = view genAnyTerm c
     shrAnyTerm' = view shrAnyTerm c
-    infer' = runInfer . view infer c
+    infer' = runInfer mempty . view infer c
   in
     forAllShrink genAnyTerm' shrAnyTerm' $ \tm -> property $
       case infer' tm of
         Left e -> isn't _UnknownType e
         Right _ -> True
 
-propWellTypedInfer :: Show (tm a)
-                   => ComponentOutput e ty tm a
+propWellTypedInfer :: ( Show (tm nTm a)
+                      , Monoid r
+                      )
+                   => ComponentOutput r e ty nTy tm nTm a
                    -> Property
 propWellTypedInfer c =
   let
     genWellTypedTerm' = view genWellTypedTerm c
     shrWellTypedTerm' = view shrWellTypedTerm c
-    infer' = runInfer . view infer c
+    infer' = runInfer mempty . view infer c
   in
     forAllShrink genWellTypedTerm' shrWellTypedTerm' $
       isRight .
       infer'
 
 {-
-propIllTypedInfer :: ComponentOutput e ty tm
+propIllTypedInfer :: ( Show (tm nTm a)
+                     , Monoid r
+                     )
+                  => ComponentOutput r e ty nTy tm nTm a
                   -> Property
 propIllTypedInfer c =
   let
     genIllTypedTerm' = view genIllTypedTerm c
     shrIllTypedTerm' = view shrIllTypedTerm c
-    infer' = runInfer . view infer c
+    infer' = runInfer mempty . view infer c
   in
     forAllShrink genIllTypedTerm' shrIllTypedTerm' $
       isLeft .
       infer'
 -}
 
-propProgress :: Show (tm a)
-             => ComponentOutput e ty tm a
+propProgress :: ( Show (tm nTm a)
+                , Monoid r
+                )
+             => ComponentOutput r e ty nTy tm nTm a
              -> Property
 propProgress c =
   let
     genWellTypedTerm' = view genWellTypedTerm c
     shrWellTypedTerm' = view shrWellTypedTerm c
-    infer' = runInfer . view infer c
+    infer' = runInfer mempty . view infer c
     isValue' = view isValue c
     canStep' = view canStep c
   in
@@ -144,19 +155,20 @@ propProgress c =
 
 propPreservation :: ( Eq e
                     , Show e
-                    , Eq (tm a)
-                    , Show (tm a)
-                    , Eq ty
-                    , Show ty
+                    , Eq (tm nTm a)
+                    , Show (tm nTm a)
+                    , Eq (ty nTy)
+                    , Show (ty nTy)
+                    , Monoid r
                     )
-                 => ComponentOutput e ty tm a
+                 => ComponentOutput r e ty nTy tm nTm a
                  -> Property
 propPreservation c =
   let
     genWellTypedTerm' = view genWellTypedTerm c
     shrWellTypedTerm' = view shrWellTypedTerm c
     smallStep' = view smallStep c
-    infer' = runInfer . view infer c
+    infer' = runInfer mempty . view infer c
   in
     forAllShrink genWellTypedTerm' shrWellTypedTerm' $ \tm ->
       case smallStep' tm of

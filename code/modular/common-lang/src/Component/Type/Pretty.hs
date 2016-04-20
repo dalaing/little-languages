@@ -24,14 +24,14 @@ import Control.Lens.TH (makeClassy)
 import Text.PrettyPrint.ANSI.Leijen (Doc, text)
 
 -- |
-data PrettyTypeRule ty =
-    PrettyTypeBase (ty -> Maybe Doc)                   -- ^
-  | PrettyTypeRecurse ((ty -> Doc) -> ty -> Maybe Doc) -- ^
+data PrettyTypeRule ty n =
+    PrettyTypeBase (ty n -> Maybe Doc)                   -- ^
+  | PrettyTypeRecurse ((ty n -> Doc) -> ty n -> Maybe Doc) -- ^
 
 -- |
-fixPrettyTypeRule :: (ty -> Doc)
-                  -> PrettyTypeRule ty
-                  -> ty
+fixPrettyTypeRule :: (ty n -> Doc)
+                  -> PrettyTypeRule ty n
+                  -> ty n
                   -> Maybe Doc
 fixPrettyTypeRule _ (PrettyTypeBase f) x =
   f x
@@ -39,27 +39,27 @@ fixPrettyTypeRule step (PrettyTypeRecurse f) x =
   f step x
 
 -- |
-data PrettyTypeInput ty =
-  PrettyTypeInput [PrettyTypeRule ty] -- ^
+data PrettyTypeInput ty n =
+  PrettyTypeInput [PrettyTypeRule ty n] -- ^
 
-instance Monoid (PrettyTypeInput ty) where
+instance Monoid (PrettyTypeInput ty n) where
   mempty =
     PrettyTypeInput mempty
   mappend (PrettyTypeInput v1) (PrettyTypeInput v2) =
     PrettyTypeInput (mappend v1 v2)
 
 -- |
-data PrettyTypeOutput ty =
+data PrettyTypeOutput ty n =
   PrettyTypeOutput {
-    _prettyType      :: ty -> Doc         -- ^
-  , _prettyTypeRules :: [ty -> Maybe Doc] -- ^
+    _prettyType      :: ty n -> Doc         -- ^
+  , _prettyTypeRules :: [ty n -> Maybe Doc] -- ^
   }
 
 makeClassy ''PrettyTypeOutput
 
 -- |
-mkPrettyType :: PrettyTypeInput ty  -- ^
-             -> PrettyTypeOutput ty -- ^
+mkPrettyType :: PrettyTypeInput ty n  -- ^
+             -> PrettyTypeOutput ty n -- ^
 mkPrettyType (PrettyTypeInput i) =
   let
     prettyTypeRules' =

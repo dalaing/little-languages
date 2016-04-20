@@ -16,17 +16,14 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Common.Type.Error.UnknownType
-                     , Common.Type.Error.UnknownType.Class
-                     , Common.Type.Error.Unexpected
-                     , Common.Type.Error.Unexpected.Class
-                     , Common.Type.Error.ExpectedEq
-                     , Common.Type.Error.ExpectedEq.Class
-                     , Common.Pretty
+  exposed-modules:     Common.Pretty
                      , Common.Parse
+                     , Common.Note
+                     , Bound2
                      , Language
                      , Component
                      , Component.Term
+                     , Component.Term.Parent
                      , Component.Term.Size
                      , Component.Term.Eval.Value
                      , Component.Term.Eval.SmallStep
@@ -36,6 +33,7 @@ library
                      , Component.Term.Parse
                      , Component.Term.Gen
                      , Component.Type
+                     , Component.Type.Parent
                      , Component.Type.Pretty
                      , Component.Type.Parse
                      , Component.Type.Gen
@@ -43,6 +41,7 @@ library
                      , Component.Type.Error.Pretty
                      , Component.Note
                      , Component.Term.Note
+                     , Component.Term.Note.Strip
                      , Component.Term.Note.Size
                      , Component.Term.Note.Eval.Value
                      , Component.Term.Note.Eval.SmallStep
@@ -52,9 +51,16 @@ library
                      , Component.Term.Note.Infer
                      , Component.Term.Note.Gen
                      , Component.Type.Note
+                     , Component.Type.Note.Strip
                      , Component.Type.Note.Pretty
                      , Component.Type.Note.Parse
                      , Component.Type.Note.Gen
+                     , Component.Type.Error.UnknownType
+                     , Component.Type.Error.UnknownType.Class
+                     , Component.Type.Error.Unexpected
+                     , Component.Type.Error.Unexpected.Class
+                     , Component.Type.Error.ExpectedEq
+                     , Component.Type.Error.ExpectedEq.Class
                      , Tests
                      , Tests.Term
                      , Tests.Term.Text

@@ -19,6 +19,7 @@ library
   build-depends:         base >=4.8 && <4.9
                        , lens >= 4.13 && < 4.14
                        , trifecta >=1.5 && <1.6
+                       , prelude-extras >= 0.4 && < 0.5
                        , common-lang
                        , b-lang
                        , n-lang

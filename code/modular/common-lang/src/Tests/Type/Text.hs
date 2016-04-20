@@ -23,10 +23,10 @@ import           Component.Type.Gen    (HasGenTypeOutput (..))
 import           Component.Type.Parse  (HasParseTypeOutput (..))
 import           Component.Type.Pretty (HasPrettyTypeOutput (..))
 
-mkTextTests :: ( Eq ty
-               , Show ty
+mkTextTests :: ( Eq (ty nTy)
+               , Show (ty nTy)
                )
-            => ComponentOutput e ty tm a
+            => ComponentOutput r e ty nTy tm nTm a
             -> TestTree
 mkTextTests c =
   testGroup "text"
@@ -42,7 +42,7 @@ isRight (Right _) =
 isRight _ =
   False
 
-assertUniqueReserved :: ComponentOutput e ty tm a
+assertUniqueReserved :: ComponentOutput r e ty nTy tm nTm a
                      -> Assertion
 assertUniqueReserved c =
   let
@@ -60,8 +60,8 @@ assertUniqueReserved c =
   in
     assertBool msg unique
 
-propUniqueParse :: Show ty
-                => ComponentOutput e ty tm a
+propUniqueParse :: Show (ty nTy)
+                => ComponentOutput r e ty nTy tm nTm a
                 -> Property
 propUniqueParse c =
   let
@@ -84,10 +84,10 @@ propUniqueParse c =
     in
       matches === 1
 
-propPrettyParse :: ( Eq ty
-                   , Show ty
+propPrettyParse :: ( Eq (ty nTy)
+                   , Show (ty nTy)
                    )
-                => ComponentOutput e ty tm a
+                => ComponentOutput r e ty nTy tm nTm a
                 -> Property
 propPrettyParse c =
   let

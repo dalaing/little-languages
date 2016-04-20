@@ -11,20 +11,21 @@ module Tests (
 
 import           Test.Tasty                          (TestTree, testGroup)
 
-import           Common.Type.Error.UnknownType.Class (AsUnknownType)
+import           Component.Type.Error.UnknownType.Class (AsUnknownType)
 import           Component                           (ComponentOutput)
 import           Tests.Term                          (mkTermTests)
 import           Tests.Type                          (mkTypeTests)
 
 mkTests :: ( Eq e
            , Show e
-           , Eq ty
-           , Show ty
-           , Eq (tm a)
-           , Show (tm a)
+           , Eq (ty nTy)
+           , Show (ty nTy)
+           , Eq (tm nTm a)
+           , Show (tm nTm a)
            , AsUnknownType e
+           , Monoid r
            )
-        => ComponentOutput e ty tm a
+        => ComponentOutput r e ty nTy tm nTm a
         -> TestTree
 mkTests c =
   testGroup "tests"

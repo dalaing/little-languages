@@ -13,20 +13,22 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Components.Nat
-                     , Components.Term.Nat
-                     , Components.Term.Nat.Size
-                     , Components.Term.Nat.Eval.Value
-                     , Components.Term.Nat.Eval.SmallStep
-                     , Components.Term.Nat.Eval.BigStep
-                     , Components.Term.Nat.Infer
-                     , Components.Term.Nat.Parse
-                     , Components.Term.Nat.Pretty
-                     , Components.Term.Nat.Gen
-                     , Components.Type.Nat
-                     , Components.Type.Nat.Parse
-                     , Components.Type.Nat.Pretty
-                     , Components.Type.Nat.Gen
+  exposed-modules:     Component.Nat
+                     , Component.Term.Nat
+                     , Component.Term.Nat.Size
+                     , Component.Term.Nat.Strip
+                     , Component.Term.Nat.Eval.Value
+                     , Component.Term.Nat.Eval.SmallStep
+                     , Component.Term.Nat.Eval.BigStep
+                     , Component.Term.Nat.Infer
+                     , Component.Term.Nat.Parse
+                     , Component.Term.Nat.Pretty
+                     , Component.Term.Nat.Gen
+                     , Component.Type.Nat
+                     , Component.Type.Nat.Strip
+                     , Component.Type.Nat.Parse
+                     , Component.Type.Nat.Pretty
+                     , Component.Type.Nat.Gen
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9
@@ -37,6 +39,7 @@ library
                      , ansi-wl-pprint >=0.6 && <0.7
                      , mtl >= 2.2 && < 2.3 
                      , lens >= 4.13 && < 4.14
+                     , bifunctors >= 5.2 && < 5.3
                      , bound >= 1.0 && < 1.1
                      , common-lang
   hs-source-dirs:      src

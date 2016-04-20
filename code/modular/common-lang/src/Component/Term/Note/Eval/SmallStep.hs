@@ -15,16 +15,15 @@ import Component.Term.Eval.SmallStep (SmallStepRule(..), SmallStepInput(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
 smallStepTmNote :: WithNoteTerm tm n a
-                => (tm a -> Maybe (tm a))
-                -> tm a
-                -> Maybe (tm a)
+                => (tm n a -> Maybe (tm n a))
+                -> tm n a
+                -> Maybe (tm n a)
 smallStepTmNote smallStep tm = do
-  (n, tm1) <- preview _TmNote tm
-  tm1' <- smallStep tm1
-  return $ review _TmNote (n, tm1')
+  (_, tm1) <- preview _TmNote tm
+  smallStep tm1
 
 smallStepInput :: WithNoteTerm tm n a
-           => SmallStepInput (tm a)
+           => SmallStepInput tm n a
 smallStepInput =
   SmallStepInput
     [SmallStepRecurse smallStepTmNote]

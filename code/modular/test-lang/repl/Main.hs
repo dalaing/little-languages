@@ -18,6 +18,6 @@ import TestLanguage (languageRules, errorRulesSrcLoc)
 
 main :: IO ()
 main =
-  mkRepl .
-  mkLanguageDefaultParser $
-  languageRules <> errorRulesSrcLoc
+    mkRepl .
+    mkLanguageDefaultParser $
+    languageRules <> errorRulesSrcLoc

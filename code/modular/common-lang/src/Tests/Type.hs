@@ -14,10 +14,10 @@ import           Test.Tasty       (TestTree, testGroup)
 import Component (ComponentOutput)
 import           Tests.Type.Text  (mkTextTests)
 
-mkTypeTests :: ( Eq ty
-               , Show ty
+mkTypeTests :: ( Eq (ty nTy)
+               , Show (ty nTy)
                )
-            => ComponentOutput e ty tm a
+            => ComponentOutput r e ty nTy tm nTm a
             -> TestTree
 mkTypeTests c =
   testGroup "type"

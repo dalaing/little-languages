@@ -16,28 +16,28 @@ import           Common.Parse                        (GetReservedWords (..),
                                                       defaultTermParserHelper,
                                                       defaultTypeParserHelper,
                                                       mkParserHelper)
-import           Common.Type.Error.UnknownType.Class (AsUnknownType)
+import           Component.Type.Error.UnknownType.Class (AsUnknownType)
 import           Component                           (ComponentInput (..),
                                                       ComponentOutput (..),
                                                       mkComponent)
 
-data LanguageInput e ty tm a =
+data LanguageInput r e ty nTy tm nTm a =
   LanguageInput {
     _typeParserHelper :: ParserHelperInput
   , _termParserHelper :: ParserHelperInput
-  , _componentInput   :: ComponentInput e ty tm a
+  , _componentInput   :: ComponentInput r e ty nTy tm nTm a
   }
 
 mkLanguage :: ( AsUnknownType e
               , Eq e
               , Show e
-              , Eq ty
-              , Show ty
-              , Eq (tm a)
-              , Show (tm a)
+              , Eq (ty nTy)
+              , Show (ty nTy)
+              , Eq (tm nTm a)
+              , Show (tm nTm a)
               )
-           => LanguageInput e ty tm a
-           -> ComponentOutput e ty tm a
+           => LanguageInput r e ty nTy tm nTm a
+           -> ComponentOutput r e ty nTy tm nTm a
 mkLanguage (LanguageInput pty ptm c@(ComponentInput ty _ tm)) =
   let
     pty' = mkParserHelper (reservedWords ty) pty
@@ -49,12 +49,12 @@ mkLanguage (LanguageInput pty ptm c@(ComponentInput ty _ tm)) =
 mkLanguageDefaultParser :: ( AsUnknownType e
                            , Eq e
                            , Show e
-                           , Eq ty
-                           , Show ty
-                           , Eq (tm a)
-                           , Show (tm a)
+                           , Eq (ty nTy)
+                           , Show (ty nTy)
+                           , Eq (tm nTm a)
+                           , Show (tm nTm a)
                            )
-                        => ComponentInput e ty tm a
-                        -> ComponentOutput e ty tm a
+                        => ComponentInput r e ty nTy tm nTm a
+                        -> ComponentOutput r e ty nTy tm nTm a
 mkLanguageDefaultParser c =
   mkLanguage (LanguageInput defaultTypeParserHelper defaultTermParserHelper c)

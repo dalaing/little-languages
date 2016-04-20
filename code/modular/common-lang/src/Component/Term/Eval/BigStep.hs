@@ -22,54 +22,57 @@ import Data.Foldable (asum)
 
 import Control.Lens.TH (makeClassy)
 
--- |
-data BigStepRule tm =
-    BigStepBase (tm -> Maybe tm)                        -- ^
-  | BigStepRecurse ((tm -> Maybe tm) -> tm -> Maybe tm) -- ^
+import Component.Term.Note.Strip (StripNoteTermOutput(..))
 
 -- |
-fixBigStepRule :: (tm -> Maybe tm)
-             -> BigStepRule tm
-             -> tm
-             -> Maybe tm
+data BigStepRule tm n a =
+    BigStepBase (tm n a -> Maybe (tm n a))                        -- ^
+  | BigStepRecurse ((tm n a -> Maybe (tm n a)) -> tm n a -> Maybe (tm n a)) -- ^
+
+-- |
+fixBigStepRule :: (tm n a -> Maybe (tm n a))
+             -> BigStepRule tm n a
+             -> tm n a
+             -> Maybe (tm n a)
 fixBigStepRule _ (BigStepBase f) x =
   f x
 fixBigStepRule step (BigStepRecurse f) x =
   f step x
 
 -- |
-data BigStepInput tm =
-  BigStepInput [BigStepRule tm] -- ^
+data BigStepInput tm n a =
+  BigStepInput [BigStepRule tm n a] -- ^
 
-instance Monoid (BigStepInput tm) where
+instance Monoid (BigStepInput tm n a) where
   mempty =
     BigStepInput mempty
   mappend (BigStepInput v1) (BigStepInput v2) =
     BigStepInput (mappend v1 v2)
 
 -- |
-data BigStepOutput tm =
+data BigStepOutput tm n a =
   BigStepOutput {
-    _bigStep      :: tm -> Maybe tm   -- ^
-  , _bigStepRules :: [tm -> Maybe tm] -- ^
-  , _bigStepEval  :: tm -> tm         -- ^
+    _bigStep      :: tm n a -> Maybe (tm n a)   -- ^
+  , _bigStepRules :: [tm n a -> Maybe (tm n a)] -- ^
+  , _bigStepEval  :: tm n a -> tm n a        -- ^
   }
 
 makeClassy ''BigStepOutput
 
 -- |
-mkBigStep :: BigStepInput tm  -- ^
-          -> BigStepOutput tm -- ^
-mkBigStep (BigStepInput i) =
+mkBigStep :: StripNoteTermOutput tm
+          -> BigStepInput tm n a -- ^
+          -> BigStepOutput tm n a-- ^
+mkBigStep (StripNoteTermOutput _ stripNote) (BigStepInput i) =
   let
     bigStepRules' =
       fmap (fixBigStepRule bigStep') i
     bigStep' tm =
       asum .
-      fmap ($ tm) $
+      fmap ($ stripNote tm) $
       bigStepRules'
     bigStepEval' tm =
-      fromMaybe tm .
+      fromMaybe (stripNote tm) .
       bigStep' $
       tm
   in

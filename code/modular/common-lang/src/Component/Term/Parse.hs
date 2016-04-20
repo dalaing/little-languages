@@ -35,46 +35,46 @@ import Common.Parse (ReservedWords, GetReservedWords(..), ParserHelperOutput)
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
 -- |
-data ParseTermRule tm a =
+data ParseTermRule tm n a =
     ParseTermBase
-      ReservedWords (ParserHelperOutput -> Parser (tm a))              -- ^
+      ReservedWords (ParserHelperOutput -> Parser (tm n a))              -- ^
   | ParseTermRecurse
       ReservedWords
-      (ParserHelperOutput -> Parser (tm a) -> Parser (tm a)) -- ^
+      (ParserHelperOutput -> Parser (tm n a) -> Parser (tm n a)) -- ^
 
-instance GetReservedWords (ParseTermRule tm a) where
+instance GetReservedWords (ParseTermRule tm n a) where
   reservedWords (ParseTermBase r _) = r
   reservedWords (ParseTermRecurse r _) = r
 
 -- |
 fixParseTermRule :: ParserHelperOutput
-                 -> Parser (tm a)
-                 -> ParseTermRule tm a
-                 -> Parser (tm a)
+                 -> Parser (tm n a)
+                 -> ParseTermRule tm n a
+                 -> Parser (tm n a)
 fixParseTermRule h _ (ParseTermBase _ x) =
   x h
 fixParseTermRule h step (ParseTermRecurse _ x) =
   x h step
 
 -- |
-data ParseTermInput tm a =
-  ParseTermInput [ParseTermRule tm a] -- ^
+data ParseTermInput tm n a =
+  ParseTermInput [ParseTermRule tm n a] -- ^
 
-instance GetReservedWords (ParseTermInput tm a) where
+instance GetReservedWords (ParseTermInput tm n a) where
   reservedWords (ParseTermInput i) =
     foldMap reservedWords i
 
-instance Monoid (ParseTermInput tm a) where
+instance Monoid (ParseTermInput tm n a) where
   mempty =
     ParseTermInput mempty
   mappend (ParseTermInput v1) (ParseTermInput v2) =
     ParseTermInput (mappend v1 v2)
 
 -- |
-data ParseTermOutput tm a =
+data ParseTermOutput tm n a =
   ParseTermOutput {
-    _parseTerm      :: (Parser (tm a) -> Parser (tm a)) -> Parser (tm a)        -- ^
-  , _parseTermRules :: (Parser (tm a) -> Parser (tm a)) -> [Parser (tm a)]      -- ^
+    _parseTerm      :: (Parser (tm n a) -> Parser (tm n a)) -> Parser (tm n a)        -- ^
+  , _parseTermRules :: (Parser (tm n a) -> Parser (tm n a)) -> [Parser (tm n a)]      -- ^
   , _termReservedWords :: ReservedWords -- ^
   }
 
@@ -84,8 +84,8 @@ makeClassy ''ParseTermOutput
 withParens :: ( MonadPlus m
               , TokenParsing m
               )
-           => m (tm a)         -- ^
-           -> m (tm a)         -- ^
+           => m (tm n a)         -- ^
+           -> m (tm n a)         -- ^
 withParens p =
   parens p <|>
   p
@@ -94,16 +94,16 @@ withSpan :: ( Monad m
             , DeltaParsing m
             , WithNoteTerm tm Span a
             )
-         => m (tm a)
-         -> m (tm a)
+         => m (tm Span a)
+         -> m (tm Span a)
 withSpan p = do
   (tm :~ s) <- spanned p
   return $ review _TmNote (s, tm)
 
 -- |
 mkParseTerm :: ParserHelperOutput -- ^
-            -> ParseTermInput tm a -- ^
-            -> ParseTermOutput tm a -- ^
+            -> ParseTermInput tm n a -- ^
+            -> ParseTermOutput tm n a -- ^
 mkParseTerm h p@(ParseTermInput i) =
   let
     parseTermRules' pt =

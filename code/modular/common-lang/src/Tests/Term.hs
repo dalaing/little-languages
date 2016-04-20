@@ -11,7 +11,7 @@ module Tests.Term (
 
 import           Test.Tasty                          (TestTree, testGroup)
 
-import           Common.Type.Error.UnknownType.Class (AsUnknownType (..))
+import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
 import           Component                           (ComponentOutput)
 import           Tests.Term.Eval                     (mkEvalTests)
 import           Tests.Term.Infer                    (mkInferTests)
@@ -19,13 +19,14 @@ import           Tests.Term.Text                     (mkTextTests)
 
 mkTermTests :: ( Eq e
                , Show e
-               , Eq (tm a)
-               , Show (tm a)
-               , Eq ty
-               , Show ty
+               , Eq (tm nTm a)
+               , Show (tm nTm a)
+               , Eq (ty nTy)
+               , Show (ty nTy)
                , AsUnknownType e
+               , Monoid r
                )
-            => ComponentOutput e ty tm a
+            => ComponentOutput r e ty nTy tm nTm a
             -> TestTree
 mkTermTests c =
   testGroup "term"

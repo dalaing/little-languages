@@ -22,51 +22,54 @@ import Data.Foldable (asum)
 
 import Control.Lens.TH (makeClassy)
 
--- |
-data ValueRule tm =
-    ValueBase (tm -> Maybe tm)                        -- ^
-  | ValueRecurse ((tm -> Maybe tm) -> tm -> Maybe tm) -- ^
+import Component.Term.Note.Strip (StripNoteTermOutput(..))
 
 -- |
-fixValueRule :: (tm -> Maybe tm)
-             -> ValueRule tm
-             -> tm
-             -> Maybe tm
+data ValueRule tm n a =
+    ValueBase (tm n a -> Maybe (tm n a))                        -- ^
+  | ValueRecurse ((tm n a -> Maybe (tm n a)) -> tm n a -> Maybe (tm n a)) -- ^
+
+-- |
+fixValueRule :: (tm n a -> Maybe (tm n a))
+             -> ValueRule tm n a
+             -> tm n a
+             -> Maybe (tm n a)
 fixValueRule _ (ValueBase f) x =
   f x
 fixValueRule step (ValueRecurse f) x =
   f step x
 
 -- |
-data ValueInput tm =
-  ValueInput [ValueRule tm] -- ^
+data ValueInput tm n a =
+  ValueInput [ValueRule tm n a] -- ^
 
-instance Monoid (ValueInput tm) where
+instance Monoid (ValueInput tm n a) where
   mempty =
     ValueInput mempty
   mappend (ValueInput v1) (ValueInput v2) =
     ValueInput (mappend v1 v2)
 
 -- |
-data ValueOutput tm =
+data ValueOutput tm n a =
   ValueOutput {
-    _value      :: tm -> Maybe tm   -- ^
-  , _valueRules :: [tm -> Maybe tm] -- ^
-  , _isValue    :: tm -> Bool -- ^
+    _value      :: tm n a -> Maybe (tm n a)   -- ^
+  , _valueRules :: [tm n a -> Maybe (tm n a)] -- ^
+  , _isValue    :: tm n a -> Bool -- ^
   }
 
 makeClassy ''ValueOutput
 
 -- |
-mkValue :: ValueInput tm  -- ^
-        -> ValueOutput tm -- ^
-mkValue (ValueInput i) =
+mkValue :: StripNoteTermOutput tm
+        -> ValueInput tm n a -- ^
+        -> ValueOutput tm n a -- ^
+mkValue (StripNoteTermOutput _ stripNote) (ValueInput i) =
   let
     valueRules' =
       fmap (fixValueRule value') i
     value' tm =
       asum .
-      fmap ($ tm) $
+      fmap ($ stripNote tm) $
       valueRules'
   in
     ValueOutput

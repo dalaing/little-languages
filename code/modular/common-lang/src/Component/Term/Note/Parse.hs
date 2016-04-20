@@ -11,5 +11,5 @@ module Component.Term.Note.Parse (
 
 import Component.Term.Parse (ParseTermInput(..))
 
-parseTermInput :: ParseTermInput tm a
+parseTermInput :: ParseTermInput tm n a
 parseTermInput = mempty

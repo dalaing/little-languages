@@ -28,8 +28,10 @@ import           Component.Type.Pretty        (HasPrettyTypeOutput (..))
 import           Component.Type.Error.Pretty  (HasPrettyTypeErrorOutput (..))
 import Component.Term.Note (WithNoteTerm)
 
-mkParseAndEval :: WithNoteTerm tm Span a
-               => ComponentOutput e ty tm a
+mkParseAndEval :: ( WithNoteTerm tm Span a
+                  , Monoid r
+                  )
+               => ComponentOutput r e ty Span tm Span a
                -> String
                -> Doc
 mkParseAndEval c s =
@@ -43,15 +45,18 @@ mkParseAndEval c s =
   in
     case parseFromString (parseTerm' withSpan) s of
       Left d -> d
-      Right tm -> case runInfer . infer' $ tm of
-        Left e -> prettyTypeError' e
+      Right tm -> case runInfer mempty . infer' $ tm of
+        Left e ->
+          prettyTypeError' e
         Right ty ->
           prettyTerm' (smallStepEval' tm) <+>
           text ":" <+>
           prettyType' ty
 
-mkRepl :: WithNoteTerm tm Span a
-       => ComponentOutput e ty tm a
+mkRepl :: ( WithNoteTerm tm Span String
+          , Monoid r
+          )
+       => ComponentOutput r e ty Span tm Span String
        -> IO ()
 mkRepl c =
   runInputT defaultSettings loop

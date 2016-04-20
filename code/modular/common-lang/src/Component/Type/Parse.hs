@@ -29,46 +29,46 @@ import Text.Trifecta.Parser (Parser)
 import Common.Parse (ReservedWords, GetReservedWords(..), ParserHelperOutput)
 
 -- |
-data ParseTypeRule ty =
+data ParseTypeRule ty n =
     ParseTypeBase
-      ReservedWords (ParserHelperOutput -> Parser ty)              -- ^
+      ReservedWords (ParserHelperOutput -> Parser (ty n))              -- ^
   | ParseTypeRecurse
       ReservedWords
-      (ParserHelperOutput -> Parser ty -> Parser ty) -- ^
+      (ParserHelperOutput -> Parser (ty n) -> Parser (ty n)) -- ^
 
-instance GetReservedWords (ParseTypeRule ty) where
+instance GetReservedWords (ParseTypeRule ty n) where
   reservedWords (ParseTypeBase r _) = r
   reservedWords (ParseTypeRecurse r _) = r
 
 -- |
 fixParseTypeRule :: ParserHelperOutput
-                 -> Parser ty
-                 -> ParseTypeRule ty
-                 -> Parser ty
+                 -> Parser (ty n)
+                 -> ParseTypeRule ty n
+                 -> Parser (ty n)
 fixParseTypeRule h _ (ParseTypeBase _ x) =
   x h
 fixParseTypeRule h step (ParseTypeRecurse _ x) =
   x h step
 
 -- |
-data ParseTypeInput ty =
-  ParseTypeInput [ParseTypeRule ty] -- ^
+data ParseTypeInput ty n =
+  ParseTypeInput [ParseTypeRule ty n] -- ^
 
-instance GetReservedWords (ParseTypeInput ty) where
+instance GetReservedWords (ParseTypeInput ty n) where
   reservedWords (ParseTypeInput i) =
     foldMap reservedWords i
 
-instance Monoid (ParseTypeInput ty) where
+instance Monoid (ParseTypeInput ty n) where
   mempty =
     ParseTypeInput mempty
   mappend (ParseTypeInput v1) (ParseTypeInput v2) =
     ParseTypeInput (mappend v1 v2)
 
 -- |
-data ParseTypeOutput ty =
+data ParseTypeOutput ty n =
   ParseTypeOutput {
-    _parseType      :: Parser ty        -- ^
-  , _parseTypeRules :: [Parser ty]      -- ^
+    _parseType      :: Parser (ty n)        -- ^
+  , _parseTypeRules :: [Parser (ty n)]      -- ^
   , _typeReservedWords :: ReservedWords -- ^
   }
 
@@ -78,16 +78,16 @@ makeClassy ''ParseTypeOutput
 withParens :: ( MonadPlus m
               , TokenParsing m
               )
-           => m ty         -- ^
-           -> m ty         -- ^
+           => m (ty n)         -- ^
+           -> m (ty n)         -- ^
 withParens p =
   parens p <|>
   p
 
 -- |
 mkParseType :: ParserHelperOutput -- ^
-            -> ParseTypeInput ty  -- ^
-            -> ParseTypeOutput ty -- ^
+            -> ParseTypeInput ty n -- ^
+            -> ParseTypeOutput ty n -- ^
 mkParseType h p@(ParseTypeInput i) =
   let
     parseTypeRules' =

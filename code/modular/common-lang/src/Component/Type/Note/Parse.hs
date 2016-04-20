@@ -11,5 +11,5 @@ module Component.Type.Note.Parse (
 
 import Component.Type.Parse (ParseTypeInput(..))
 
-parseTypeInput :: ParseTypeInput tm
+parseTypeInput :: ParseTypeInput ty nTy
 parseTypeInput = mempty

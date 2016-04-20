@@ -11,5 +11,5 @@ module Component.Term.Note.Gen (
 
 import Component.Term.Gen (GenTermInput(..))
 
-genTermInput :: GenTermInput tm
+genTermInput :: GenTermInput tm n a
 genTermInput = mempty

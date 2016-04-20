@@ -23,63 +23,68 @@ import Data.Foldable (asum)
 import Control.Lens.TH (makeClassy)
 
 import Component.Term.Eval.Value (ValueOutput(..))
+import Component.Term.Note.Strip (StripNoteTermOutput(..))
 
 -- |
-data SmallStepRule tm =
-    SmallStepBase (tm -> Maybe tm)                        -- ^
-  | SmallStepValue ((tm -> Maybe tm) -> tm -> Maybe tm) -- ^
-  | SmallStepRecurse ((tm -> Maybe tm) -> tm -> Maybe tm) -- ^
+data SmallStepRule tm n a =
+    SmallStepBase (tm n a -> Maybe (tm n a))                        -- ^
+  | SmallStepValue ((tm n a -> Maybe (tm n a)) -> tm n a -> Maybe (tm n a)) -- ^
+  | SmallStepRecurse ((tm n a -> Maybe (tm n a)) -> tm n a -> Maybe (tm n a)) -- ^
+  | SmallStepValueRecurse ((tm n a -> Maybe (tm n a)) -> (tm n a -> Maybe (tm n a)) -> tm n a -> Maybe (tm n a)) -- ^
 
 -- |
-fixSmallStepRule :: (tm -> Maybe tm)
-                 -> (tm -> Maybe tm)
-                 -> SmallStepRule tm
-                 -> tm
-                 -> Maybe tm
+fixSmallStepRule :: (tm n a -> Maybe (tm n a))
+                 -> (tm n a -> Maybe (tm n a))
+                 -> SmallStepRule tm n a
+                 -> tm n a
+                 -> Maybe (tm n a)
 fixSmallStepRule _ _ (SmallStepBase f) x =
   f x
 fixSmallStepRule value _ (SmallStepValue f) x =
   f value x
 fixSmallStepRule _ step (SmallStepRecurse f) x =
   f step x
+fixSmallStepRule value step (SmallStepValueRecurse f) x =
+  f value step x
 
 -- |
-data SmallStepInput tm =
-  SmallStepInput [SmallStepRule tm] -- ^
+data SmallStepInput tm n a =
+  SmallStepInput [SmallStepRule tm n a] -- ^
 
-instance Monoid (SmallStepInput tm) where
+instance Monoid (SmallStepInput tm n a) where
   mempty =
     SmallStepInput mempty
   mappend (SmallStepInput v1) (SmallStepInput v2) =
     SmallStepInput (mappend v1 v2)
 
 -- |
-data SmallStepOutput tm =
+data SmallStepOutput tm n a =
   SmallStepOutput {
-    _smallStep      :: tm -> Maybe tm   -- ^
-  , _smallStepRules :: [tm -> Maybe tm] -- ^
-  , _smallStepEval  :: tm -> tm   -- ^
-  , _canStep        :: tm -> Bool -- ^
-  , _isNormalForm   :: tm -> Bool -- ^
+    _smallStep      :: tm n a -> Maybe (tm n a)   -- ^
+  , _smallStepRules :: [tm n a -> Maybe (tm n a)] -- ^
+  , _smallStepEval  :: tm n a -> tm n a  -- ^
+  , _canStep        :: tm n a -> Bool -- ^
+  , _isNormalForm   :: tm n a -> Bool -- ^
   }
 
 makeClassy ''SmallStepOutput
 
 -- |
-mkSmallStep :: ValueOutput tm
-            -> SmallStepInput tm  -- ^
-            -> SmallStepOutput tm -- ^
-mkSmallStep v (SmallStepInput i) =
+mkSmallStep :: StripNoteTermOutput tm
+            -> ValueOutput tm n a
+            -> SmallStepInput tm n a  -- ^
+            -> SmallStepOutput tm n a -- ^
+mkSmallStep (StripNoteTermOutput _ stripNote) v (SmallStepInput i) =
   let
     smallStepRules' =
       fmap (fixSmallStepRule (_value v) smallStep') i
     smallStep' tm =
       asum .
-      fmap ($ tm) $
+      fmap ($ stripNote tm) $
       smallStepRules'
     smallStepEval' tm =
       case smallStep' tm of
-        Nothing -> tm
+        Nothing -> stripNote tm
         Just tm' -> smallStepEval' tm'
   in
     SmallStepOutput

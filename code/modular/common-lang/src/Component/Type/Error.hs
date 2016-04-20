@@ -22,12 +22,12 @@ import           Control.Lens.TH           (makeClassy)
 import           Component.Type (TypeOutput, HasTypeOutput(..))
 import           Component.Type.Error.Pretty (PrettyTypeErrorInput(..), PrettyTypeErrorOutput(..), mkPrettyTypeError)
 
-data TypeErrorInput e ty =
+data TypeErrorInput e ty n =
   TypeErrorInput {
-    _prettyTypeErrorInput :: PrettyTypeErrorInput e ty
+    _prettyTypeErrorInput :: PrettyTypeErrorInput e ty n
   }
 
-instance Monoid (TypeErrorInput e ty) where
+instance Monoid (TypeErrorInput e ty n) where
   mempty =
     TypeErrorInput
       mempty
@@ -35,16 +35,16 @@ instance Monoid (TypeErrorInput e ty) where
     TypeErrorInput
       (mappend pr1 pr2)
 
-data TypeErrorOutput e ty =
+data TypeErrorOutput e =
   TypeErrorOutput {
     _toePrettyTypeErrorOutput :: PrettyTypeErrorOutput e
   }
 
 makeClassy ''TypeErrorOutput
 
-mkTypeError :: TypeOutput ty
-            -> TypeErrorInput e ty
-            -> TypeErrorOutput e ty
+mkTypeError :: TypeOutput ty n
+            -> TypeErrorInput e ty n
+            -> TypeErrorOutput e 
 mkTypeError to (TypeErrorInput pr) =
   let
     pTy = view toPrettyTypeOutput to

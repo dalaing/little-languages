@@ -24,14 +24,14 @@ import Control.Lens.TH (makeClassy)
 import Text.PrettyPrint.ANSI.Leijen (Doc, text)
 
 -- |
-data PrettyTermRule tm =
-    PrettyTermBase (tm -> Maybe Doc)                   -- ^
-  | PrettyTermRecurse ((tm -> Doc) -> tm -> Maybe Doc) -- ^
+data PrettyTermRule tm n a =
+    PrettyTermBase (tm n a -> Maybe Doc)                   -- ^
+  | PrettyTermRecurse ((tm n a -> Doc) -> tm n a -> Maybe Doc) -- ^
 
 -- |
-fixPrettyTermRule :: (tm -> Doc)
-                  -> PrettyTermRule tm
-                  -> tm
+fixPrettyTermRule :: (tm n a -> Doc)
+                  -> PrettyTermRule tm n a
+                  -> tm n a
                   -> Maybe Doc
 fixPrettyTermRule _ (PrettyTermBase f) x =
   f x
@@ -39,27 +39,27 @@ fixPrettyTermRule step (PrettyTermRecurse f) x =
   f step x
 
 -- |
-data PrettyTermInput tm =
-  PrettyTermInput [PrettyTermRule tm] -- ^
+data PrettyTermInput tm n a =
+  PrettyTermInput [PrettyTermRule tm n a] -- ^
 
-instance Monoid (PrettyTermInput tm) where
+instance Monoid (PrettyTermInput tm n a) where
   mempty =
     PrettyTermInput mempty
   mappend (PrettyTermInput v1) (PrettyTermInput v2) =
     PrettyTermInput (mappend v1 v2)
 
 -- |
-data PrettyTermOutput tm =
+data PrettyTermOutput tm n a =
   PrettyTermOutput {
-    _prettyTerm      :: tm -> Doc         -- ^
-  , _prettyTermRules :: [tm -> Maybe Doc] -- ^
+    _prettyTerm      :: tm n a -> Doc         -- ^
+  , _prettyTermRules :: [tm n a -> Maybe Doc] -- ^
   }
 
 makeClassy ''PrettyTermOutput
 
 -- |
-mkPrettyTerm :: PrettyTermInput tm  -- ^
-             -> PrettyTermOutput tm -- ^
+mkPrettyTerm :: PrettyTermInput tm n a  -- ^
+             -> PrettyTermOutput tm n a -- ^
 mkPrettyTerm (PrettyTermInput i) =
   let
     prettyTermRules' =

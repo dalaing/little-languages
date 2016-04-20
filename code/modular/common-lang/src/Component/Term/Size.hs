@@ -22,14 +22,14 @@ import           Data.Foldable   (asum)
 import           Data.Maybe      (fromMaybe)
 
 -- |
-data TermSizeRule tm =
-    TermSizeBase (tm -> Maybe Int)                   -- ^
-  | TermSizeRecurse ((tm -> Int) -> tm -> Maybe Int) -- ^
+data TermSizeRule tm n a =
+    TermSizeBase (tm n a -> Maybe Int)                   -- ^
+  | TermSizeRecurse ((tm n a -> Int) -> tm n a -> Maybe Int) -- ^
 
 -- |
-fixTermSizeRule :: (tm -> Int)
-                  -> TermSizeRule tm
-                  -> tm
+fixTermSizeRule :: (tm n a -> Int)
+                  -> TermSizeRule tm n a
+                  -> tm n a
                   -> Maybe Int
 fixTermSizeRule _ (TermSizeBase f) x =
   f x
@@ -37,26 +37,26 @@ fixTermSizeRule step (TermSizeRecurse f) x =
   f step x
 
 -- |
-data TermSizeInput tm =
-  TermSizeInput [TermSizeRule tm] -- ^
+data TermSizeInput tm n a =
+  TermSizeInput [TermSizeRule tm n a] -- ^
 
-instance Monoid (TermSizeInput tm) where
+instance Monoid (TermSizeInput tm n a) where
   mempty =
     TermSizeInput mempty
   mappend (TermSizeInput v1) (TermSizeInput v2) =
     TermSizeInput (mappend v1 v2)
 
 -- |
-data TermSizeOutput tm =
+data TermSizeOutput tm n a =
   TermSizeOutput {
-    _termSize :: tm -> Int -- ^
+    _termSize :: tm n a -> Int -- ^
   }
 
 makeClassy ''TermSizeOutput
 
 -- |
-mkTermSize :: TermSizeInput tm  -- ^
-            -> TermSizeOutput tm -- ^
+mkTermSize :: TermSizeInput tm n a  -- ^
+            -> TermSizeOutput tm n a -- ^
 mkTermSize (TermSizeInput i) =
   let
     termSizeRules' =
