@@ -882,9 +882,7 @@ instance Arbitrary WellTypedTerm where
   \begin{minted}{haskell}
 prop_progress :: WellTypedTerm -> Property
 prop_progress (WellTypedTerm tm) =
-  case infer tm of
-    Left _ -> property True
-    Right _ -> isValue tm .||. canStep tm
+  isValue tm .||. canStep tm
   \end{minted}
 \end{frame} 
 
