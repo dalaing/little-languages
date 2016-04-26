@@ -1,0 +1,12 @@
+_minted-slides
+auto
+_region*
+*.log
+*.aux
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+
+
