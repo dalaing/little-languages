@@ -12,7 +12,7 @@ module Component.Term.Nat.Gen (
 import           Control.Lens         (preview, review)
 import           Test.QuickCheck      (Gen)
 
-import Component.Term.Gen (GenAnyTermRule(..), ShrAnyTermRule(..), GenTermInput(..), GenValueTermRule(..), ShrValueTermRule(..), GenNonValueTermRule(..), ShrNonValueTermRule(..))
+import Component.Term.Gen (GenAnyTermRule(..), ShrAnyTermRule(..), GenTermInput(..))
 
 import           Component.Term.Nat (AsNatTerm (..), WithNatTerm)
 
@@ -70,61 +70,8 @@ shrinkTmPred s =
       s tm ++ [tm] ++
       fmap (review _TmPred) (s tm)
 
--- |
-genValueTmZero :: WithNatTerm tm n a
-          => Gen (tm n a)
-genValueTmZero =
-  genTmZero
-
--- |
-shrValueTmZero :: WithNatTerm tm n a
-               => tm n a        -- ^
-               -> Maybe [tm n a] -- ^
-shrValueTmZero =
-  shrinkTmZero
-
--- |
-genValueTmSucc :: WithNatTerm tm n a
-               => (Int -> Gen (tm n a))
-               -> Int
-               -> Gen (tm n a)
-genValueTmSucc g s =
-  genTmSucc (g (s - 1))
-
--- |
-shrValueTmSucc :: WithNatTerm tm n a
-               => (tm n a -> [tm n a])
-               -> tm n a        -- ^
-               -> Maybe [tm n a] -- ^
-shrValueTmSucc s =
-    fmap shrinkValueTmSucc' .
-    preview _TmSucc
-  where
-    shrinkValueTmSucc' tm =
-      fmap (review _TmSucc) (s tm)
-
--- |
-genNonValueTmPred :: WithNatTerm tm n a
-                  => (Int -> Gen (tm n a))
-                  -> Int
-                  -> Gen (tm n a)
-genNonValueTmPred g s =
-  genTmPred (g (s - 1))
-
--- |
-shrNonValueTmPred :: WithNatTerm tm n a
-                  => (tm n a -> [tm n a])
-                  -> tm n a        -- ^
-                 -> Maybe [tm n a] -- ^
-shrNonValueTmPred s =
-    fmap shrinkNonValueTmPred' .
-    preview _TmPred
-  where
-    shrinkNonValueTmPred' tm =
-      fmap (review _TmPred) (s tm)
-
-genTermInput :: WithNatTerm tm n a
-             => GenTermInput tm n a
+genTermInput :: WithNatTerm tm nTm a
+             => GenTermInput ty nTy tm nTm a
 genTermInput =
   GenTermInput
     [ GenAnyTermBase genTmZero
@@ -135,13 +82,6 @@ genTermInput =
     , ShrAnyTermRecurse shrinkTmSucc
     , ShrAnyTermRecurse shrinkTmPred
     ]
-    [ GenValueTermBase genValueTmZero
-    , GenValueTermRecurse genValueTmSucc
-    ]
-    [ ShrValueTermBase shrValueTmZero
-    , ShrValueTermRecurse shrValueTmSucc
-    ]
-    [ GenNonValueTermRecurse genNonValueTmPred
-    ]
-    [ ShrNonValueTermRecurse shrNonValueTmPred
-    ]
+    mempty
+    mempty
+    mempty

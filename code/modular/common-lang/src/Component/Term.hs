@@ -52,10 +52,10 @@ import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
 data TermInput r e ty nTy tm nTm a =
   TermInput {
     _termSizeInput      :: TermSizeInput tm nTm a
-  , _stripNoteTermInput :: StripNoteTermInput tm
-  , _genTermInput       :: GenTermInput tm nTm a
-  , _parseTermInput     :: ParseTermInput tm nTm a
-  , _prettyTermInput    :: PrettyTermInput tm nTm a
+  , _stripNoteTermInput :: StripNoteTermInput ty nTy tm
+  , _genTermInput       :: GenTermInput ty nTy tm nTm a
+  , _parseTermInput     :: ParseTermInput ty nTy tm nTm a
+  , _prettyTermInput    :: PrettyTermInput ty nTy tm nTm a
   , _inferInput         :: InferInput r e ty nTy tm nTm a
   , _valueInput         :: ValueInput tm nTm a
   , _smallStepInput     :: SmallStepInput tm nTm a
@@ -93,7 +93,7 @@ data TermOutput r e ty nTy tm nTm a =
   TermOutput {
     _toTermSizeOutput      :: TermSizeOutput tm nTm a
   , _toStripNoteTermOutput :: StripNoteTermOutput tm
-  , _toGenTermOutput       :: GenTermOutput tm nTm a
+  , _toGenTermOutput       :: GenTermOutput ty nTy tm nTm a
   , _toParseTermOutput     :: ParseTermOutput tm nTm a
   , _toPrettyTermOutput    :: PrettyTermOutput tm nTm a
   , _toInferOutput         :: InferOutput r e ty nTy tm nTm a
@@ -109,7 +109,7 @@ mkTerm :: AsUnknownType e
        -> TypeOutput ty nTy
        -> TermInput r e ty nTy tm nTm a
        -> TermOutput r e ty nTy tm nTm a
-mkTerm h (TypeOutput snty _ _ _) (TermInput t st g pa pr i v s b) =
+mkTerm h (TypeOutput snty gty paty prty) (TermInput t st g pa pr i v s b) =
   let
     sntm = mkStripNoteTerm st
     vo = mkValue sntm v
@@ -117,9 +117,9 @@ mkTerm h (TypeOutput snty _ _ _) (TermInput t st g pa pr i v s b) =
     TermOutput
       (mkTermSize t)
       sntm
-      (mkGenTerm g)
-      (mkParseTerm h pa)
-      (mkPrettyTerm pr)
+      (mkGenTerm gty g)
+      (mkParseTerm h paty pa)
+      (mkPrettyTerm prty pr)
       (mkInfer snty i)
       vo
       (mkSmallStep sntm vo s)

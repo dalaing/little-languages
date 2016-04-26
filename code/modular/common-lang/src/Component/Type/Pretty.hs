@@ -21,11 +21,14 @@ import Data.Foldable (asum)
 import Data.Maybe (fromMaybe)
 
 import Control.Lens.TH (makeClassy)
-import Text.PrettyPrint.ANSI.Leijen (Doc, text)
+import Text.PrettyPrint.ANSI.Leijen (Doc, text, parens)
+
+import Common.Text (ExpressionInfo(..))
 
 -- |
 data PrettyTypeRule ty n =
     PrettyTypeBase (ty n -> Maybe Doc)                   -- ^
+  | PrettyTypeExpression ExpressionInfo (ty n -> Maybe (ty n, ty n)) (Doc -> Doc -> Doc)
   | PrettyTypeRecurse ((ty n -> Doc) -> ty n -> Maybe Doc) -- ^
 
 -- |
@@ -35,6 +38,9 @@ fixPrettyTypeRule :: (ty n -> Doc)
                   -> Maybe Doc
 fixPrettyTypeRule _ (PrettyTypeBase f) x =
   f x
+fixPrettyTypeRule prettyType (PrettyTypeExpression _ split pretty) x = do
+  (ty1, ty2) <- split x
+  return $ parens (pretty (prettyType ty1) (prettyType ty2))
 fixPrettyTypeRule step (PrettyTypeRecurse f) x =
   f step x
 

@@ -54,8 +54,8 @@ parseTmIf h parseTerm =
         ri "else" <*> parseTerm)
       <?> "if-then-else"
 
-parseTermInput :: WithBoolTerm tm n a
-               => ParseTermInput tm n a
+parseTermInput :: WithBoolTerm tm nTm a
+               => ParseTermInput ty nTy tm nTm a
 parseTermInput =
   ParseTermInput
     [ ParseTermBase (reserveConstructors ["False"]) parseTmFalse

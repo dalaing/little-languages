@@ -54,8 +54,8 @@ parseTmPred h parseTerm =
       ri "pred" <*> parseTerm
       <?> "Pred"
 
-parseTermInput :: WithNatTerm tm n a
-               => ParseTermInput tm n a
+parseTermInput :: WithNatTerm tm nTm a
+               => ParseTermInput ty nTy tm nTm a
 parseTermInput =
   ParseTermInput
     [ ParseTermBase (reserveConstructors ["O"]) parseTmZero

@@ -12,7 +12,7 @@ module Component.Term.Bool.Gen (
 import           Control.Lens         (preview, review)
 import           Test.QuickCheck      (Gen)
 
-import Component.Term.Gen (GenAnyTermRule(..), ShrAnyTermRule(..), GenTermInput(..), GenValueTermRule(..), ShrValueTermRule(..), GenNonValueTermRule(..), ShrNonValueTermRule(..))
+import Component.Term.Gen (GenAnyTermRule(..), ShrAnyTermRule(..), GenTermInput(..))
 
 import           Component.Term.Bool (AsBoolTerm (..), WithBoolTerm)
 
@@ -73,53 +73,8 @@ shrinkTmIf s1 s2 s3 =
       fmap (\tm2' -> review _TmIf (tm1, tm2', tm3)) (s2 tm2) ++
       fmap (\tm3' -> review _TmIf (tm1, tm2, tm3')) (s3 tm3)
 
-genValueTmFalse :: WithBoolTerm tm n a
-                => Gen (tm n a)
-genValueTmFalse =
-  genTmFalse
-
-shrValueTmFalse :: WithBoolTerm tm n a
-                => tm n a
-                -> Maybe [tm n a]
-shrValueTmFalse =
-  shrinkTmFalse
-
-genValueTmTrue :: WithBoolTerm tm n a
-               => Gen (tm n a)
-genValueTmTrue =
-  genTmTrue
-
-shrValueTmTrue :: WithBoolTerm tm n a
-               => tm n a
-               -> Maybe [tm n a]
-shrValueTmTrue =
-  shrinkTmTrue
-
-genNonValueTmIf :: WithBoolTerm tm n a
-                  => (Int -> Gen (tm n a))
-                  -> Int
-                  -> Gen (tm n a)
-genNonValueTmIf g s =
-  let
-    g' = g (s `div` 3)
-  in
-    genTmIf g' g' g'
-
-shrNonValueTmIf :: WithBoolTerm tm n a
-                => (tm n a -> [tm n a])
-                -> tm n a
-                -> Maybe [tm n a]
-shrNonValueTmIf s =
-    fmap shrNonValueTmIf' .
-    preview _TmIf
-  where
-    shrNonValueTmIf' (tm1, tm2, tm3) =
-      fmap (\tm1' -> review _TmIf (tm1', tm2, tm3)) (s tm1) ++
-      fmap (\tm2' -> review _TmIf (tm1, tm2', tm3)) (s tm2) ++
-      fmap (\tm3' -> review _TmIf (tm1, tm2, tm3')) (s tm3)
-
-genTermInput :: WithBoolTerm tm n a
-             => GenTermInput tm n a
+genTermInput :: WithBoolTerm tm nTm a
+             => GenTermInput ty nTy tm nTm a
 genTermInput =
   GenTermInput
     [ GenAnyTermBase genTmFalse
@@ -134,13 +89,6 @@ genTermInput =
     , ShrAnyTermBase shrinkTmTrue
     , ShrAnyTermRecurse $ \s -> shrinkTmIf s s s
     ]
-    [ GenValueTermBase genValueTmFalse
-    , GenValueTermBase genValueTmTrue
-    ]
-    [ ShrValueTermBase shrValueTmFalse
-    , ShrValueTermBase shrValueTmTrue
-    ]
-    [ GenNonValueTermRecurse genNonValueTmIf
-    ]
-    [ ShrNonValueTermRecurse shrNonValueTmIf
-    ]
+    mempty
+    mempty
+    mempty

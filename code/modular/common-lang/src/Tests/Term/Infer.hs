@@ -13,12 +13,13 @@ import           Control.Lens          (view, Lens')
 import           Control.Lens.Prism    (isn't)
 import           Data.Maybe            (mapMaybe)
 import           Test.QuickCheck       (Property, forAllShrink, property,
-                                        (.||.), (===), Gen)
+                                        (.||.), (===))
 import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
 import Component.Type.Error.UnknownType.Class (AsUnknownType(..))
 import           Component             (ComponentOutput)
+import           Component.Type.Gen    (HasGenTypeOutput (..))
 import           Component.Term.Gen    (HasGenTermOutput (..))
 import           Component.Term.Infer  (HasInferOutput (..), runInfer)
 import           Component.Term.Eval.Value (HasValueOutput (..))
@@ -58,13 +59,6 @@ isLeft (Left _) =
   True
 isLeft _ =
   False
-
--- temporary hack until we revive the more interesting Gens
--- remove Gen from imports when this goes
-genWellTypedTerm :: HasGenTermOutput c tm n a => Lens' c (Gen (tm n a))
-genWellTypedTerm = genAnyTerm
-shrWellTypedTerm :: HasGenTermOutput c tm n a => Lens' c (tm n a -> [tm n a])
-shrWellTypedTerm = shrAnyTerm
 
 propPatternUnique :: ( Show (tm nTm a)
                      , Monoid r
@@ -112,9 +106,11 @@ propWellTypedInfer c =
   let
     genWellTypedTerm' = view genWellTypedTerm c
     shrWellTypedTerm' = view shrWellTypedTerm c
+    genAnyType' = view genAnyType c
+    gen = genAnyType' >>= genWellTypedTerm'
     infer' = runInfer mempty . view infer c
   in
-    forAllShrink genWellTypedTerm' shrWellTypedTerm' $
+    forAllShrink gen shrWellTypedTerm' $
       isRight .
       infer'
 
@@ -144,11 +140,13 @@ propProgress c =
   let
     genWellTypedTerm' = view genWellTypedTerm c
     shrWellTypedTerm' = view shrWellTypedTerm c
+    genAnyType' = view genAnyType c
+    gen = genAnyType' >>= genWellTypedTerm'
     infer' = runInfer mempty . view infer c
     isValue' = view isValue c
     canStep' = view canStep c
   in
-    forAllShrink genWellTypedTerm' shrWellTypedTerm' $ \tm ->
+    forAllShrink gen shrWellTypedTerm' $ \tm ->
       case infer' tm of
         Left _ -> property True
         Right _ -> isValue' tm .||. canStep' tm
@@ -167,10 +165,12 @@ propPreservation c =
   let
     genWellTypedTerm' = view genWellTypedTerm c
     shrWellTypedTerm' = view shrWellTypedTerm c
+    genAnyType' = view genAnyType c
+    gen = genAnyType' >>= genWellTypedTerm'
     smallStep' = view smallStep c
     infer' = runInfer mempty . view infer c
   in
-    forAllShrink genWellTypedTerm' shrWellTypedTerm' $ \tm ->
+    forAllShrink gen shrWellTypedTerm' $ \tm ->
       case smallStep' tm of
         Nothing -> property True
         Just tm' -> infer' tm === infer' tm'

@@ -35,7 +35,7 @@ stripNoteTmNat r =
       review _ParentTerm (TmPred (r tm))
 
 stripNoteTermInput :: AsParentTerm (NatTerm tm) tm
-                   => StripNoteTermInput tm
+                   => StripNoteTermInput ty nTy tm
 stripNoteTermInput =
   StripNoteTermInput
     [StripNoteTermRecurse stripNoteTmNat]

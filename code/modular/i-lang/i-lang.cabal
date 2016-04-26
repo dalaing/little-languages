@@ -1,0 +1,48 @@
+name:                i-lang
+version:             0.1.0.0
+-- synopsis:            
+-- description:         
+license:             BSD3
+license-file:        LICENSE
+author:              Dave Laing
+maintainer:          dave.laing.80@gmail.com
+-- copyright:           
+category:            Language
+build-type:          Simple
+-- extra-source-files:  
+cabal-version:       >=1.10
+
+library
+  exposed-modules:     Component.Int
+                     , Component.Term.Int
+                     , Component.Term.Int.Size
+                     , Component.Term.Int.Strip
+                     , Component.Term.Int.Eval.Value
+                     , Component.Term.Int.Eval.SmallStep
+                     , Component.Term.Int.Eval.BigStep
+                     , Component.Term.Int.Infer
+                     , Component.Term.Int.Parse
+                     , Component.Term.Int.Pretty
+                     , Component.Term.Int.Gen
+                     , Component.Type.Int
+                     , Component.Type.Int.Strip
+                     , Component.Type.Int.Parse
+                     , Component.Type.Int.Pretty
+                     , Component.Type.Int.Gen
+  -- other-modules:       
+  -- other-extensions:    
+  build-depends:       base >=4.8 && <4.9
+                     , QuickCheck >=2.8 && <2.9
+                     , unordered-containers >=0.2 && <0.3
+                     , parsers >=0.12 && <0.13
+                     , trifecta >=1.5 && <1.6
+                     , ansi-wl-pprint >=0.6 && <0.7
+                     , mtl >= 2.2 && < 2.3 
+                     , lens >= 4.13 && < 4.14
+                     , bifunctors >= 5.2 && < 5.3
+                     , bound >= 1.0 && < 1.1
+                     , common-lang
+  hs-source-dirs:      src
+  ghc-options:         -Wall -O2
+  default-language:    Haskell2010
+

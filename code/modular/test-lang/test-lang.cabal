@@ -23,6 +23,8 @@ library
                        , common-lang
                        , b-lang
                        , n-lang
+                       , nb-lang
+                       , stlc-lang
   hs-source-dirs:      src
   ghc-options:         -Wall -O2
   default-language:    Haskell2010

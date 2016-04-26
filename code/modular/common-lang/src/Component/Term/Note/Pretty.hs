@@ -25,8 +25,8 @@ prettyTmNote prettyTerm =
   fmap (prettyTerm . snd) .
   preview _TmNote
 
-prettyTermInput :: WithNoteTerm tm n a
-                => PrettyTermInput tm n a
+prettyTermInput :: WithNoteTerm tm nTm a
+                => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput
     [PrettyTermRecurse prettyTmNote]

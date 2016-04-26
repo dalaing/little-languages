@@ -12,6 +12,7 @@ Portability : non-portable
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE KindSignatures        #-}
 module Component.Term.Note.Strip (
     StripNoteTermRule(..)
   , StripNoteTermInput(..)
@@ -30,49 +31,49 @@ import Control.Lens.TH (makeClassy)
 import Component.Term.Parent (AsParentTerm(..))
 import Component.Term.Note (NoteTerm(..))
 
-data StripNoteTermRule p =
-    StripNoteTermBase (forall n m a. (n -> Maybe m) -> (p n a -> p m a) -> p n a -> Maybe (p m a))
-  | StripNoteTermRecurse (forall n m a. (p n a -> p m a) -> p n a -> Maybe (p m a))
+data StripNoteTermRule (ty :: * -> *) nTy tm =
+    StripNoteTermBase (forall nTm mTm a. (nTm -> Maybe mTm) -> (tm nTm a -> tm mTm a) -> tm nTm a -> Maybe (tm mTm a))
+  | StripNoteTermRecurse (forall nTm mTm a. (tm nTm a -> tm mTm a) -> tm nTm a -> Maybe (tm mTm a))
 
-fixStripNoteTerm :: (n -> Maybe m)
-                 -> (p n a -> p m a)
-                 -> p n a
-                 -> StripNoteTermRule p
-                 -> Maybe (p m a)
+fixStripNoteTerm :: (nTm -> Maybe mTm)
+                 -> (tm nTm a -> tm mTm a)
+                 -> tm nTm a
+                 -> StripNoteTermRule ty nTy tm
+                 -> Maybe (tm mTm a)
 fixStripNoteTerm base recurse tm (StripNoteTermBase f) =
   f base recurse tm
 fixStripNoteTerm _ recurse tm (StripNoteTermRecurse f) =
   f recurse tm
 
-data StripNoteTermInput p =
+data StripNoteTermInput (ty :: * -> *) nTy tm =
   StripNoteTermInput
-    [StripNoteTermRule p]
+    [StripNoteTermRule ty nTy tm]
 
-instance Monoid (StripNoteTermInput p) where
+instance Monoid (StripNoteTermInput ty nTy tm) where
   mempty =
     StripNoteTermInput mempty
   mappend (StripNoteTermInput i1) (StripNoteTermInput i2) =
     StripNoteTermInput (mappend i1 i2)
 
-data StripNoteTermOutput p =
+data StripNoteTermOutput tm =
   StripNoteTermOutput {
-    _mapMaybeNoteTerm :: forall n m a. (n -> Maybe m) -> p n a -> p m a
-  , _stripNoteTerm :: forall n m a. p n a -> p m a
+    _mapMaybeNoteTerm :: forall n m a. (n -> Maybe m) -> tm n a -> tm m a
+  , _stripNoteTerm :: forall n m a. tm n a -> tm m a
   }
 
 makeClassy ''StripNoteTermOutput
 
-mkStripNoteTerm :: forall p. StripNoteTermInput p
-                -> StripNoteTermOutput p
+mkStripNoteTerm :: forall ty nTy tm. StripNoteTermInput ty nTy tm
+                -> StripNoteTermOutput tm
 mkStripNoteTerm (StripNoteTermInput i) =
   let
-    mapMaybeNoteTerm' :: (n -> Maybe m) -> p n b -> p m b
+    mapMaybeNoteTerm' :: (nTm -> Maybe mTm) -> tm nTm a -> tm mTm a
     mapMaybeNoteTerm' f t =
       fromJust .
       asum .
       fmap (fixStripNoteTerm f (mapMaybeNoteTerm' f) t) $
       i
-    stripNoteTerm' :: p n a -> p m a
+    stripNoteTerm' :: tm nTm a -> tm mTm a
     stripNoteTerm' = mapMaybeNoteTerm' (const Nothing)
   in
     StripNoteTermOutput
@@ -93,7 +94,7 @@ stripNoteTmNote f r =
         Nothing -> r tm
         Just m -> review _ParentTerm (TmNote m (r tm))
 
-stripNoteTermInput :: AsParentTerm (NoteTerm tm) tm => StripNoteTermInput tm
+stripNoteTermInput :: AsParentTerm (NoteTerm tm) tm => StripNoteTermInput ty nTy tm
 stripNoteTermInput =
   StripNoteTermInput
     [StripNoteTermBase stripNoteTmNote]

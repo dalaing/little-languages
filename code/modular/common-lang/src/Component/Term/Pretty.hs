@@ -21,49 +21,61 @@ import Data.Foldable (asum)
 import Data.Maybe (fromMaybe)
 
 import Control.Lens.TH (makeClassy)
-import Text.PrettyPrint.ANSI.Leijen (Doc, text)
+import Text.PrettyPrint.ANSI.Leijen (Doc, text, parens)
+
+import Common.Text (ExpressionInfo(..))
+import Component.Type.Pretty (PrettyTypeOutput(..))
 
 -- |
-data PrettyTermRule tm n a =
-    PrettyTermBase (tm n a -> Maybe Doc)                   -- ^
-  | PrettyTermRecurse ((tm n a -> Doc) -> tm n a -> Maybe Doc) -- ^
+data PrettyTermRule ty nTy tm nTm a =
+    PrettyTermBase (tm nTm a -> Maybe Doc)                        -- ^
+  | PrettyTermRecurse ((tm nTm a -> Doc) -> tm nTm a -> Maybe Doc) -- ^
+  | PrettyTermExpression ExpressionInfo (tm nTm a -> Maybe (tm nTm a, tm nTm a)) (Doc -> Doc -> Doc)
+  | PrettyTermWithType ((ty nTy -> Doc) -> (tm nTm a -> Doc) -> tm nTm a -> Maybe Doc) -- ^
 
 -- |
-fixPrettyTermRule :: (tm n a -> Doc)
-                  -> PrettyTermRule tm n a
-                  -> tm n a
+fixPrettyTermRule :: (ty nTy -> Doc)
+                  -> (tm nTm a -> Doc)
+                  -> PrettyTermRule ty nTy tm nTm a
+                  -> tm nTm a
                   -> Maybe Doc
-fixPrettyTermRule _ (PrettyTermBase f) x =
+fixPrettyTermRule _ _ (PrettyTermBase f) x =
   f x
-fixPrettyTermRule step (PrettyTermRecurse f) x =
-  f step x
+fixPrettyTermRule _ prettyTerm (PrettyTermRecurse f) x =
+  f prettyTerm x
+fixPrettyTermRule _ prettyTerm (PrettyTermExpression _ split pretty) x = do
+  (tm1, tm2) <- split x
+  return $ parens (pretty (prettyTerm tm1) (prettyTerm tm2))
+fixPrettyTermRule prettyType prettyTerm (PrettyTermWithType f) x =
+  f prettyType prettyTerm x
 
 -- |
-data PrettyTermInput tm n a =
-  PrettyTermInput [PrettyTermRule tm n a] -- ^
+data PrettyTermInput ty nTy tm nTm a =
+  PrettyTermInput [PrettyTermRule ty nTy tm nTm a] -- ^
 
-instance Monoid (PrettyTermInput tm n a) where
+instance Monoid (PrettyTermInput ty nTy tm nTm a) where
   mempty =
     PrettyTermInput mempty
   mappend (PrettyTermInput v1) (PrettyTermInput v2) =
     PrettyTermInput (mappend v1 v2)
 
 -- |
-data PrettyTermOutput tm n a =
+data PrettyTermOutput tm nTm a =
   PrettyTermOutput {
-    _prettyTerm      :: tm n a -> Doc         -- ^
-  , _prettyTermRules :: [tm n a -> Maybe Doc] -- ^
+    _prettyTerm      :: tm nTm a -> Doc         -- ^
+  , _prettyTermRules :: [tm nTm a -> Maybe Doc] -- ^
   }
 
 makeClassy ''PrettyTermOutput
 
 -- |
-mkPrettyTerm :: PrettyTermInput tm n a  -- ^
-             -> PrettyTermOutput tm n a -- ^
-mkPrettyTerm (PrettyTermInput i) =
+mkPrettyTerm :: PrettyTypeOutput ty nTy
+             -> PrettyTermInput ty nTy tm nTm a  -- ^
+             -> PrettyTermOutput tm nTm a -- ^
+mkPrettyTerm (PrettyTypeOutput prettyType _) (PrettyTermInput i) =
   let
     prettyTermRules' =
-      fmap (fixPrettyTermRule prettyTerm') i
+      fmap (fixPrettyTermRule prettyType prettyTerm') i
     prettyTerm' tm =
       fromMaybe (text "???") .
       asum .

@@ -31,7 +31,6 @@ mkTextTests :: ( Eq (tm nTm a)
 mkTextTests c =
   testGroup "text"
     [ testCase "unique reserved words" $ assertUniqueReserved c
-    , testProperty "unique parsing rule" $ propUniqueParse c
     , testProperty "pretty-parse round trip" $ propPrettyParse c
     ]
 
@@ -59,30 +58,6 @@ assertUniqueReserved c =
       null duplicates
   in
     assertBool msg unique
-
-propUniqueParse :: Show (tm nTm a)
-                => ComponentOutput r e ty nty tm nTm a
-                -> Property
-propUniqueParse c =
-  let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
-    prettyTerm' = view prettyTerm c
-    parseTermRules' = view parseTermRules c
-  in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
-    let
-      text =
-        prettyToString .
-        prettyTerm' $
-        tm
-      matches =
-        length .
-        filter isRight .
-        fmap (\p -> parseFromString p text) $
-        parseTermRules' id
-    in
-      matches === 1
 
 propPrettyParse :: ( Eq (tm nTm a)
                    , Show (tm nTm a)

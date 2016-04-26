@@ -35,7 +35,7 @@ stripNoteTmBool r =
       review _ParentTerm (TmIf (r tm1) (r tm2) (r tm3))
 
 stripNoteTermInput :: AsParentTerm (BoolTerm tm) tm
-                   => StripNoteTermInput tm
+                   => StripNoteTermInput ty nTy tm
 stripNoteTermInput =
   StripNoteTermInput
     [StripNoteTermRecurse stripNoteTmBool]

@@ -19,6 +19,7 @@ library
   exposed-modules:     Common.Pretty
                      , Common.Parse
                      , Common.Note
+                     , Common.Text
                      , Bound2
                      , Language
                      , Component

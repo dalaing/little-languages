@@ -51,8 +51,8 @@ prettyTmPred prettyTerm =
       reservedIdentifier "pred" <+> prettyTerm tm
 
 -- |
-prettyTermInput :: WithNatTerm tm n a
-                => PrettyTermInput tm n a
+prettyTermInput :: WithNatTerm tm nTm a
+                => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput
     [ PrettyTermBase prettyTmZero

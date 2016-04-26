@@ -79,7 +79,7 @@ instance HasPrettyTypeErrorOutput (ComponentOutput r e ty nTy tm nTm a) e where
 instance HasTermSizeOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
   termSizeOutput = cTermOutput . toTermSizeOutput
 
-instance HasGenTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+instance HasGenTermOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy tm nTm a where
   genTermOutput = cTermOutput . toGenTermOutput
 
 instance HasParseTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where

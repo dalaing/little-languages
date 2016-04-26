@@ -47,10 +47,11 @@ import           Component.Type.Error.UnknownType (AsUnknownType (..),
 import           Component                     (ComponentInput, ComponentOutput)
 
 import           Component.Bool               (boolRules)
--- import           Component.STLC               (stlcRules)
+import           Component.STLC               (stlcRules)
 import           Component.Term.Bool          (AsBoolTerm (..), BoolTerm (..))
--- import           Component.Term.STLC          (AsSTLCTerm (..), AsSTLCVar (..),
---                                                STLCTerm (..), STLCVar (..))
+import           Component.Term.STLC          (AsSTLCTerm (..), AsSTLCVar (..),
+                                               STLCTerm (..), STLCVar (..))
+import           Component.Type.STLC          (AsSTLCType(..), STLCType(..), Context(..))
 import           Component.Type.Bool          (AsBoolType (..), BoolType (..))
 import           Component.Nat                (natRules)
 import           Component.Term.Nat           (AsNatTerm (..), NatTerm (..))
@@ -58,11 +59,14 @@ import           Component.Type.Nat           (AsNatType (..), NatType (..))
 import           Component.Note                (noteRules)
 import           Component.Term.Note           (AsNoteTerm (..), NoteTerm (..))
 import           Component.Type.Note           (AsNoteType (..), NoteType (..))
+import Component.Type.Error.FreeVar (FreeVar(..), AsFreeVar(..))
+import Component.Type.Error.NotArrow (NotArrow(..), AsNotArrow(..))
 import           Language                      (mkLanguageDefaultParser)
 
 data Type n =
     BoolTy (BoolType Type n)
   | NatTy (NatType Type n)
+  | StlcTy (STLCType Type n)
   | NoteTy (NoteType Type n)
   deriving (Eq, Ord, Show)
 
@@ -80,34 +84,48 @@ instance AsNatType (Type n) Type n where
 instance AsParentType (NatType Type) Type where
   _ParentType = _NatTy
 
+instance AsSTLCType (Type n) Type n where
+  _STLCType = _StlcTy
+
+instance AsParentType (STLCType Type) Type where
+  _ParentType = _StlcTy
+
 instance AsNoteType (Type n) Type n where
   _NoteType = _NoteTy
 
 instance AsParentType (NoteType Type) Type where
   _ParentType = _NoteTy
 
-data TypeError n =
+data TypeError n a =
     TeUnknownType -- (Maybe n)
   | TeUnexpected (Unexpected Type n)
   | TeExpectedEq (ExpectedEq Type n)
+  | TeFreeVar (FreeVar a)
+  | TeNotArrow (NotArrow Type n)
   deriving (Eq, Ord, Show)
 
 makeClassyPrisms ''TypeError
 
-instance AsUnknownType (TypeError n) where
+instance AsUnknownType (TypeError n a) where
   _UnknownType = _TeUnknownType
 
-instance AsUnexpected (TypeError n) Type n where
+instance AsUnexpected (TypeError n a) Type n where
   _Unexpected = _TeUnexpected . _Unexpected
 
-instance AsExpectedEq (TypeError n) Type n where
+instance AsExpectedEq (TypeError n a) Type n where
   _ExpectedEq = _TeExpectedEq . _ExpectedEq
+
+instance AsFreeVar (TypeError n a) a where
+  _FreeVar = _TeFreeVar . _FreeVar
+
+instance AsNotArrow (TypeError n a) Type n where
+  _NotArrow = _TeNotArrow . _NotArrow
 
 data Term n a =
     TmBool (BoolTerm Term n a)
   | TmNat (NatTerm Term n a)
---  | VarSTLC (STLCVar Term n a)
---  | TmSTLC (STLCTerm (Type n) Term n a)
+  | VarSTLC (STLCVar Term n a)
+  | TmSTLC (STLCTerm Type n Term n a)
   | TmNoted (NoteTerm Term n a)
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
@@ -120,7 +138,6 @@ instance Ord n => Ord1 (Term n) where
 instance Show n => Show1 (Term n) where
   showsPrec1 = showsPrec
 
-{-
 instance Applicative (Term n) where
   pure = return
   (<*>) = ap
@@ -133,7 +150,6 @@ instance Monad (Term n) where
   TmNat tm >>= f = TmNat (tm >>>>= f)
   TmSTLC tm >>= f = TmSTLC (tm >>>>= f)
   TmNoted tm >>= f = TmNoted (tm >>>>= f)
--}
 
 makeClassyPrisms ''Term
 
@@ -143,13 +159,11 @@ instance AsBoolTerm (Term n a) Term n a where
 instance AsParentTerm (BoolTerm Term) Term where
   _ParentTerm = _TmBool
 
-{-
 instance AsSTLCVar (Term n a) Term n a where
   _STLCVar = _VarSTLC
 
-instance AsSTLCTerm (Term n a) (Type n) Term n a where
+instance AsSTLCTerm (Term n a) Type n Term n a where
   _STLCTerm = _TmSTLC
--}
 
 instance AsNatTerm (Term n a) Term n a where
   _NatTerm = _TmNat
@@ -163,7 +177,7 @@ instance AsNoteTerm (Term n a) Term n a where
 instance AsParentTerm (NoteTerm Term) Term where
   _ParentTerm = _TmNoted
 
-errorRules :: ComponentInput () (TypeError n) Type n Term n a
+errorRules :: ComponentInput r (TypeError n a) Type n Term n a
 errorRules =
   unknownTypeInput <>
   unexpectedInput <>
@@ -172,7 +186,7 @@ errorRules =
 errorRulesSrcLoc :: ( Show n
                     , Renderable n
                     )
-                 => ComponentInput () (TypeError n) Type n Term n a
+                 => ComponentInput r (TypeError n a) Type n Term n a
 errorRulesSrcLoc =
   unknownTypeInput <>
   unexpectedSrcLocInput <>
@@ -182,9 +196,9 @@ languageRules :: ( Eq n
                  , Show n
                  , TranslateNote n n
                  )
-              => ComponentInput () (TypeError n) Type n Term n a
+              => ComponentInput (Context Type n String) (TypeError n String) Type n Term n String
 languageRules =
   boolRules <>
   natRules <>
---  stlcRules <>
+  stlcRules <>
   noteRules

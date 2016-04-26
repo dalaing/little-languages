@@ -49,8 +49,8 @@ prettyTmIf prettyTerm =
       reservedIdentifier "else" <+> prettyTerm tm3
 
 -- |
-prettyTermInput :: WithBoolTerm tm n a
-                => PrettyTermInput tm n a
+prettyTermInput :: WithBoolTerm tm nTm a
+                => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput
     [ PrettyTermBase prettyTmFalse
