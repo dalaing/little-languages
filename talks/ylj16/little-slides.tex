@@ -691,6 +691,7 @@ prop_normalizing (AnyTerm tm) =
     Just tm' -> termSize tm' < termSize tm
   \end{minted}
 \end{frame}
+
 \section{A type system for B}
 
 \begin{frame}[fragile]
@@ -1071,25 +1072,6 @@ prettyTerm tm =
   asum .
   fmap ($ tm) $
   prettyTermRules
-  \end{minted}
-\end{frame} 
-
-\begin{frame}[fragile]
-  \begin{minted}{haskell}
-prop_uniqueParse :: AnyTerm -> Property
-prop_uniqueParse (AnyTerm tm) =
-  let
-    parseRule p = 
-      parseFromString (withParens p) .
-      prettyTermString $
-      tm
-    matches =
-      length .
-      filter isRight .
-      fmap parseRule .
-      parseTermRules
-  in
-    matches === 1
   \end{minted}
 \end{frame} 
 
@@ -1550,13 +1532,6 @@ instance Ord1 (StlcTerm ty) where
 instance Show1 (StlcTerm ty) where
   showsPrec1 = showsPrec
   \end{minted}  
-\end{frame}
-
-\begin{frame}[c]
-  \begin{center}
-   The last type variable in $\tt{StlcTerm ty tm a}$ represents the free
-   variables in the term.
-  \end{center}
 \end{frame}
 
 \begin{frame}[c]
