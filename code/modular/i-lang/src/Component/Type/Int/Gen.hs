@@ -19,13 +19,13 @@ import           Component.Type.Gen   (GenAnyTypeRule (..), GenTypeInput (..),
 import           Component.Type.Int (AsIntType (..), WithIntType)
 
 -- |
-genAnyTyInt :: WithIntType ty n
+genAnyTyInt :: WithIntType ty
             => Gen (ty n)
 genAnyTyInt =
   pure $ review _TyInt ()
 
 -- |
-shrAnyTyInt :: WithIntType ty n
+shrAnyTyInt :: WithIntType ty
             => ty n        -- ^
             -> Maybe [ty n] -- ^
 shrAnyTyInt =
@@ -33,7 +33,7 @@ shrAnyTyInt =
   preview _TyInt
 
 -- |
-genNotTyInt :: WithIntType ty n
+genNotTyInt :: WithIntType ty
             => ty n
             -> Maybe (Gen (ty n))
 genNotTyInt ty
@@ -43,14 +43,14 @@ genNotTyInt ty
     Nothing
 
 -- |
-shrNotTyInt :: WithIntType ty n
+shrNotTyInt :: WithIntType ty
             => ty n        -- ^
             -> Maybe [ty n] -- ^
 shrNotTyInt =
   fmap (const []) .
   preview _TyInt
 
-genTypeInput :: WithIntType ty n
+genTypeInput :: WithIntType ty
              => GenTypeInput ty n
 genTypeInput =
   GenTypeInput

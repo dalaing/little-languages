@@ -19,7 +19,7 @@ import Component.Term.Parse (ParseTermInput(..), ParseTermRule(..))
 import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
 -- |
-parseTmZero :: WithNatTerm tm n a
+parseTmZero :: WithNatTerm tm
             => ParserHelperOutput
             -> Parser (tm n a)           -- ^
 parseTmZero h =
@@ -29,7 +29,7 @@ parseTmZero h =
     review _TmZero () <$ rc "O" <?> "Zero"
 
 -- |
-parseTmSucc :: WithNatTerm tm n a
+parseTmSucc :: WithNatTerm tm
             => ParserHelperOutput
             -> Parser (tm n a)           -- ^
             -> Parser (tm n a)           -- ^
@@ -42,7 +42,7 @@ parseTmSucc h parseTerm =
       <?> "Succ"
 
 -- |
-parseTmPred :: WithNatTerm tm n a
+parseTmPred :: WithNatTerm tm
             => ParserHelperOutput
             -> Parser (tm n a)           -- ^
             -> Parser (tm n a)           -- ^
@@ -54,7 +54,7 @@ parseTmPred h parseTerm =
       ri "pred" <*> parseTerm
       <?> "Pred"
 
-parseTermInput :: WithNatTerm tm nTm a
+parseTermInput :: WithNatTerm tm
                => ParseTermInput ty nTy tm nTm a
 parseTermInput =
   ParseTermInput

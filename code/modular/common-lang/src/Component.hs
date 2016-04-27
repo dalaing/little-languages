@@ -15,32 +15,36 @@ module Component (
   , mkComponent
   ) where
 
-import           Control.Lens.TH                     (makeClassy)
+import           Control.Lens.TH                        (makeClassy)
 
-import           Common.Parse                        (ParserHelperOutput)
+import           Common.Parse                           (ParserHelperOutput)
+import           Component.Term                         (HasTermOutput (..),
+                                                         TermInput (..),
+                                                         TermOutput (..),
+                                                         mkTerm)
+import           Component.Term.Eval.BigStep            (HasBigStepOutput (..))
+import           Component.Term.Eval.SmallStep          (HasSmallStepOutput (..))
+import           Component.Term.Eval.Value              (HasValueOutput (..))
+import           Component.Term.Gen                     (HasGenTermOutput (..))
+import           Component.Term.Infer                   (HasInferOutput (..))
+import           Component.Term.Note.Strip              (StripNoteTerm)
+import           Component.Term.Parse                   (HasParseTermOutput (..))
+import           Component.Term.Pretty                  (HasPrettyTermOutput (..))
+import           Component.Term.Size                    (HasTermSizeOutput (..))
+import           Component.Type                         (HasTypeOutput (..),
+                                                         TypeInput (..),
+                                                         TypeOutput (..),
+                                                         mkType)
+import           Component.Type.Error                   (HasTypeErrorOutput (..),
+                                                         TypeErrorInput,
+                                                         TypeErrorOutput,
+                                                         mkTypeError)
+import           Component.Type.Error.Pretty            (HasPrettyTypeErrorOutput (..))
 import           Component.Type.Error.UnknownType.Class (AsUnknownType)
-import           Component.Term                      (HasTermOutput (..),
-                                                      TermInput (..),
-                                                      TermOutput (..), mkTerm)
-import           Component.Term.Eval.BigStep         (HasBigStepOutput (..))
-import           Component.Term.Eval.SmallStep       (HasSmallStepOutput (..))
-import           Component.Term.Eval.Value           (HasValueOutput (..))
-import           Component.Term.Gen                  (HasGenTermOutput (..))
-import           Component.Term.Infer                (HasInferOutput (..))
-import           Component.Term.Parse                (HasParseTermOutput (..))
-import           Component.Term.Pretty               (HasPrettyTermOutput (..))
-import           Component.Term.Size                 (HasTermSizeOutput (..))
-import           Component.Type                      (HasTypeOutput (..),
-                                                      TypeInput (..),
-                                                      TypeOutput (..), mkType)
-import           Component.Type.Error                (HasTypeErrorOutput (..),
-                                                      TypeErrorInput,
-                                                      TypeErrorOutput,
-                                                      mkTypeError)
-import           Component.Type.Error.Pretty         (HasPrettyTypeErrorOutput (..))
-import           Component.Type.Gen                  (HasGenTypeOutput (..))
-import           Component.Type.Parse                (HasParseTypeOutput (..))
-import           Component.Type.Pretty               (HasPrettyTypeOutput (..))
+import           Component.Type.Gen                     (HasGenTypeOutput (..))
+import           Component.Type.Note.Strip              (StripNoteType)
+import           Component.Type.Parse                   (HasParseTypeOutput (..))
+import           Component.Type.Pretty                  (HasPrettyTypeOutput (..))
 
 data ComponentInput r e ty nTy tm nTm a =
   ComponentInput {
@@ -70,7 +74,7 @@ instance HasGenTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy where
 instance HasParseTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy where
   parseTypeOutput = cTypeOutput . toParseTypeOutput
 
-instance HasPrettyTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy where
+instance HasPrettyTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty where
   prettyTypeOutput = cTypeOutput . toPrettyTypeOutput
 
 instance HasPrettyTypeErrorOutput (ComponentOutput r e ty nTy tm nTm a) e where
@@ -100,7 +104,10 @@ instance HasSmallStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
 instance HasBigStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
   bigStepOutput = cTermOutput . toBigStepOutput
 
-mkComponent :: AsUnknownType e
+mkComponent :: ( AsUnknownType e
+               , StripNoteTerm tm tm
+               , StripNoteType ty ty
+               )
             => ParserHelperOutput
             -> ParserHelperOutput
             -> ComponentInput r e ty nTy tm nTm a

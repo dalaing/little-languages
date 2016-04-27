@@ -22,7 +22,7 @@ import Data.Foldable (asum)
 
 import Control.Lens.TH (makeClassy)
 
-import Component.Term.Note.Strip (StripNoteTermOutput(..))
+import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
 data ValueRule tm n a =
@@ -60,16 +60,16 @@ data ValueOutput tm n a =
 makeClassy ''ValueOutput
 
 -- |
-mkValue :: StripNoteTermOutput tm
-        -> ValueInput tm n a -- ^
+mkValue :: StripNoteTerm tm tm
+        => ValueInput tm n a -- ^
         -> ValueOutput tm n a -- ^
-mkValue (StripNoteTermOutput _ stripNote) (ValueInput i) =
+mkValue (ValueInput i) =
   let
     valueRules' =
       fmap (fixValueRule value') i
     value' tm =
       asum .
-      fmap ($ stripNote tm) $
+      fmap ($ stripNoteTerm tm) $
       valueRules'
   in
     ValueOutput

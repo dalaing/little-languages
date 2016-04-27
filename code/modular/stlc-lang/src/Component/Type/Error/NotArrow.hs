@@ -72,7 +72,7 @@ prettyNotArrow prettyType =
   preview _NotArrow
 
 prettyNotArrowSrcLoc :: ( AsNotArrow e ty n
-                        , WithNoteType ty n
+                        , WithNoteType ty
                         , Renderable n
                         )
                      => (ty n -> Doc)
@@ -94,7 +94,7 @@ notArrowInput =
     (PrettyTypeErrorInput [PrettyTypeErrorWithType prettyNotArrow])
 
 notArrowSrcLocInput :: ( AsNotArrow e ty n
-                       , WithNoteType ty n
+                       , WithNoteType ty
                        , Renderable n
                        )
                     => TypeErrorInput e ty n

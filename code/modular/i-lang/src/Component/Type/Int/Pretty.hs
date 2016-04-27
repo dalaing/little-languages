@@ -17,15 +17,15 @@ import Component.Type.Pretty (PrettyTypeInput(..), PrettyTypeRule(..))
 
 import Component.Type.Int (AsIntType(..), WithIntType)
 
-prettyTyInt :: WithIntType ty n
+prettyTyInt :: WithIntType ty
              => ty n
              -> Maybe Doc
 prettyTyInt =
   fmap (const . reservedConstructor $ "Int") .
   preview _TyInt
 
-prettyTypeInput :: WithIntType ty n
-                => PrettyTypeInput ty n
+prettyTypeInput :: WithIntType ty
+                => PrettyTypeInput ty
 prettyTypeInput =
   PrettyTypeInput
     [PrettyTypeBase prettyTyInt]

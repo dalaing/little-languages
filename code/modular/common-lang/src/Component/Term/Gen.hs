@@ -128,8 +128,8 @@ fixGenIllTypedTermRule :: (ty nTy -> Gen (ty nTy))
                        -> Int
                        -> GenIllTypedTermRule ty nTy tm nTm a
                        -> Maybe (Gen (tm nTm a))
-fixGenIllTypedTermRule _ wellTyped ty 0 _ =
-  Just $ wellTyped ty 0
+fixGenIllTypedTermRule _ _ _ 0 _ =
+  Nothing
 fixGenIllTypedTermRule notType wellTyped ty s (GenIllTypedTermRecurse f) =
   f notType wellTyped ty s
 

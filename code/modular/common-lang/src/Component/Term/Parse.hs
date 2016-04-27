@@ -117,7 +117,7 @@ withParens p =
 
 withSpan :: ( Monad m
             , DeltaParsing m
-            , WithNoteTerm tm Span a
+            , WithNoteTerm tm
             )
          => m (tm Span a)
          -> m (tm Span a)

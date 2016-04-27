@@ -19,7 +19,7 @@ import Component.Term.Parse (ParseTermInput(..), ParseTermRule(..))
 import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 
 -- |
-parseTmIsZero :: WithNatBoolTerm tm n a
+parseTmIsZero :: WithNatBoolTerm tm
               => ParserHelperOutput
               -> Parser (tm n a)           -- ^
               -> Parser (tm n a)           -- ^
@@ -31,7 +31,7 @@ parseTmIsZero h parseTerm =
       ri "isZero" <*> parseTerm
       <?> "isZero"
 
-parseTermInput :: WithNatBoolTerm tm nTm a
+parseTermInput :: WithNatBoolTerm tm
                => ParseTermInput ty nTy tm nTm a
 parseTermInput =
   ParseTermInput

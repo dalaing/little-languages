@@ -18,13 +18,13 @@ import           Component.Term.Int (AsIntTerm (..), WithIntTerm)
 import           Component.Type.Int (AsIntType (..), WithIntType)
 
 -- |
-genTmInt :: WithIntTerm tm n a
+genTmInt :: WithIntTerm tm
          => Gen (tm n a)
 genTmInt =
    review _TmIntLit <$> arbitrary
 
 -- |
-shrinkTmInt :: WithIntTerm tm n a
+shrinkTmInt :: WithIntTerm tm
             => tm n a        -- ^
             -> Maybe [tm n a] -- ^
 shrinkTmInt =
@@ -36,7 +36,7 @@ shrinkTmInt =
       shrink
 
 -- |
-genTmAdd :: WithIntTerm tm n a
+genTmAdd :: WithIntTerm tm
           => Gen (tm n a)
           -> Gen (tm n a)
           -> Gen (tm n a)
@@ -44,7 +44,7 @@ genTmAdd g1 g2 =
   curry (review _TmAdd) <$> g1 <*> g2
 
 -- |
-shrinkTmAdd :: WithIntTerm tm n a
+shrinkTmAdd :: WithIntTerm tm
              => (tm n a -> [tm n a])
              -> tm n a        -- ^
              -> Maybe [tm n a] -- ^
@@ -59,7 +59,7 @@ shrinkTmAdd s =
       fmap (\tm2' -> review _TmAdd (tm1, tm2')) (s tm2)
 
 -- |
-genTmSub :: WithIntTerm tm n a
+genTmSub :: WithIntTerm tm
           => Gen (tm n a)
           -> Gen (tm n a)
           -> Gen (tm n a)
@@ -67,7 +67,7 @@ genTmSub g1 g2 =
   curry (review _TmSub) <$> g1 <*> g2
 
 -- |
-shrinkTmSub :: WithIntTerm tm n a
+shrinkTmSub :: WithIntTerm tm
              => (tm n a -> [tm n a])
              -> tm n a        -- ^
              -> Maybe [tm n a] -- ^
@@ -82,7 +82,7 @@ shrinkTmSub s =
       fmap (\tm2' -> review _TmSub (tm1, tm2')) (s tm2)
 
 -- |
-genTmMul :: WithIntTerm tm n a
+genTmMul :: WithIntTerm tm
           => Gen (tm n a)
           -> Gen (tm n a)
           -> Gen (tm n a)
@@ -90,7 +90,7 @@ genTmMul g1 g2 =
   curry (review _TmMul) <$> g1 <*> g2
 
 -- |
-shrinkTmMul :: WithIntTerm tm n a
+shrinkTmMul :: WithIntTerm tm
              => (tm n a -> [tm n a])
              -> tm n a        -- ^
              -> Maybe [tm n a] -- ^
@@ -105,7 +105,7 @@ shrinkTmMul s =
       fmap (\tm2' -> review _TmMul (tm1, tm2')) (s tm2)
 
 -- |
-genTmExp :: WithIntTerm tm n a
+genTmExp :: WithIntTerm tm
           => Gen (tm n a)
           -> Gen (tm n a)
           -> Gen (tm n a)
@@ -113,7 +113,7 @@ genTmExp g1 g2 =
   curry (review _TmExp) <$> g1 <*> g2
 
 -- |
-shrinkTmExp :: WithIntTerm tm n a
+shrinkTmExp :: WithIntTerm tm
              => (tm n a -> [tm n a])
              -> tm n a        -- ^
              -> Maybe [tm n a] -- ^
@@ -127,8 +127,8 @@ shrinkTmExp s =
       fmap (\tm1' -> review _TmExp (tm1', tm2)) (s tm1) ++
       fmap (\tm2' -> review _TmExp (tm1, tm2')) (s tm2)
 
-genContainingTmInt :: ( WithIntType ty nTy
-                      , WithIntTerm tm nTm a
+genContainingTmInt :: ( WithIntType ty
+                      , WithIntTerm tm
                       )
                    => tm nTm a
                    -> ty nTy
@@ -138,8 +138,8 @@ genContainingTmInt tm ty = do
   _ <- preview _TyInt ty
   return . pure $ review _TmIntLit i
 
-genContainingTmAdd1 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmAdd1 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -158,8 +158,8 @@ genContainingTmAdd1 genWellTyped genContaining tm ty s =
       tm2 <- genWellTyped (review _TyInt ()) s'
       return $ review _TmAdd (tm1, tm2)
 
-genContainingTmAdd2 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmAdd2 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -178,8 +178,8 @@ genContainingTmAdd2 genWellTyped genContaining tm ty s =
       tm2 <- genContaining tm (review _TyInt ()) s'
       return $ review _TmAdd (tm1, tm2)
 
-genContainingTmSub1 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmSub1 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -198,8 +198,8 @@ genContainingTmSub1 genWellTyped genContaining tm ty s =
       tm2 <- genWellTyped (review _TyInt ()) s'
       return $ review _TmSub (tm1, tm2)
 
-genContainingTmSub2 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmSub2 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -218,8 +218,8 @@ genContainingTmSub2 genWellTyped genContaining tm ty s =
       tm2 <- genContaining tm (review _TyInt ()) s'
       return $ review _TmSub (tm1, tm2)
 
-genContainingTmMul1 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmMul1 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -238,8 +238,8 @@ genContainingTmMul1 genWellTyped genContaining tm ty s =
       tm2 <- genWellTyped (review _TyInt ()) s'
       return $ review _TmMul (tm1, tm2)
 
-genContainingTmMul2 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmMul2 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -258,8 +258,8 @@ genContainingTmMul2 genWellTyped genContaining tm ty s =
       tm2 <- genContaining tm (review _TyInt ()) s'
       return $ review _TmMul (tm1, tm2)
 
-genContainingTmExp1 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmExp1 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -278,8 +278,8 @@ genContainingTmExp1 genWellTyped genContaining tm ty s =
       tm2 <- genWellTyped (review _TyInt ()) s'
       return $ review _TmExp (tm1, tm2)
 
-genContainingTmExp2 :: ( WithIntType ty nTy
-                       , WithIntTerm tm nTm a
+genContainingTmExp2 :: ( WithIntType ty
+                       , WithIntTerm tm
                        )
                     => (ty nTy -> Int -> Gen (tm nTm a))
                     -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -298,8 +298,8 @@ genContainingTmExp2 genWellTyped genContaining tm ty s =
       tm2 <- genContaining tm (review _TyInt ()) s'
       return $ review _TmExp (tm1, tm2)
 
-genWellTypedTmInt :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genWellTypedTmInt :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => ty nTy
                   -> Maybe (Gen (tm nTm a))
@@ -307,8 +307,8 @@ genWellTypedTmInt ty = do
   _ <- preview _TyInt ty
   return (review _TmIntLit <$> arbitrary)
 
-genWellTypedTmAdd :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genWellTypedTmAdd :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Int -> Gen (tm nTm a))
                   -> ty nTy
@@ -322,8 +322,8 @@ genWellTypedTmAdd genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmAdd (tm1, tm2)
 
-genWellTypedTmSub :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genWellTypedTmSub :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Int -> Gen (tm nTm a))
                   -> ty nTy
@@ -337,8 +337,8 @@ genWellTypedTmSub genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmSub (tm1, tm2)
 
-genWellTypedTmMul :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genWellTypedTmMul :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Int -> Gen (tm nTm a))
                   -> ty nTy
@@ -352,8 +352,8 @@ genWellTypedTmMul genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmMul (tm1, tm2)
 
-genWellTypedTmExp :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genWellTypedTmExp :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Int -> Gen (tm nTm a))
                   -> ty nTy
@@ -367,8 +367,8 @@ genWellTypedTmExp genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmExp (tm1, tm2)
 
-genIllTypedTmAdd1 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmAdd1 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -384,8 +384,8 @@ genIllTypedTmAdd1 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmAdd (tm1, tm2)
 
-genIllTypedTmAdd2 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmAdd2 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -401,8 +401,8 @@ genIllTypedTmAdd2 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped nty s'
     return $ review _TmAdd (tm1, tm2)
 
-genIllTypedTmSub1 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmSub1 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -418,8 +418,8 @@ genIllTypedTmSub1 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmSub (tm1, tm2)
 
-genIllTypedTmSub2 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmSub2 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -435,8 +435,8 @@ genIllTypedTmSub2 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped nty s'
     return $ review _TmSub (tm1, tm2)
 
-genIllTypedTmMul1 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmMul1 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -452,8 +452,8 @@ genIllTypedTmMul1 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmMul (tm1, tm2)
 
-genIllTypedTmMul2 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmMul2 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -469,8 +469,8 @@ genIllTypedTmMul2 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped nty s'
     return $ review _TmMul (tm1, tm2)
 
-genIllTypedTmExp1 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmExp1 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -486,8 +486,8 @@ genIllTypedTmExp1 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped (review _TyInt ()) s'
     return $ review _TmExp (tm1, tm2)
 
-genIllTypedTmExp2 :: ( WithIntType ty nTy
-                     , WithIntTerm tm nTm a
+genIllTypedTmExp2 :: ( WithIntType ty
+                     , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -503,8 +503,8 @@ genIllTypedTmExp2 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped nty s'
     return $ review _TmExp (tm1, tm2)
 
-genTermInput :: ( WithIntType ty nTy
-                , WithIntTerm tm nTm a
+genTermInput :: ( WithIntType ty
+                , WithIntTerm tm
                 )
              => GenTermInput ty nTy tm nTm a
 genTermInput =

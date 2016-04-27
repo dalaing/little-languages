@@ -29,7 +29,7 @@ import           Control.Monad.Except                (MonadError, Except, runExc
 import           Control.Monad.Reader                (MonadReader, ReaderT(..))
 
 import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
-import Component.Type.Note.Strip (StripNoteTypeOutput(..))
+import Component.Type.Note.Strip (StripNoteType(..))
 
 newtype InferStack r e a =
     InferStack { getInfer :: ReaderT r (Except e) a}
@@ -80,14 +80,14 @@ makeClassy ''InferOutput
 
 -- |
 mkInfer :: ( AsUnknownType e
+           , StripNoteType ty ty
            )
-        => StripNoteTypeOutput ty
-        -> InferInput r e ty nTy tm nTm a  -- ^
+        => InferInput r e ty nTy tm nTm a  -- ^
         -> InferOutput r e ty nTy tm nTm a -- ^
-mkInfer (StripNoteTypeOutput _ stripNote) (InferInput i) =
+mkInfer (InferInput i) =
   let
     inferRules' =
-      fmap (fixInferRule stripNote infer') i
+      fmap (fixInferRule stripNoteType infer') i
     infer' tm =
       fromMaybe (throwing _UnknownType ()) .
       asum .

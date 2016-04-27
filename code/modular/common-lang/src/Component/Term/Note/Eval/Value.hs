@@ -14,7 +14,7 @@ import Control.Lens (preview, review)
 import Component.Term.Eval.Value (ValueRule(..), ValueInput(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
-valueTmNote :: WithNoteTerm tm n a
+valueTmNote :: WithNoteTerm tm
             => (tm n a -> Maybe (tm n a))
             -> tm n a
             -> Maybe (tm n a)
@@ -22,7 +22,7 @@ valueTmNote value tm = do
   (_, tm1) <- preview _TmNote tm
   value tm1
 
-valueInput :: WithNoteTerm tm n a
+valueInput :: WithNoteTerm tm
            => ValueInput tm n a
 valueInput =
   ValueInput

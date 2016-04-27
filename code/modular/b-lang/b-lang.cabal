@@ -16,7 +16,6 @@ library
   exposed-modules:     Component.Bool
                      , Component.Term.Bool
                      , Component.Term.Bool.Size
-                     , Component.Term.Bool.Strip
                      , Component.Term.Bool.Eval.Value
                      , Component.Term.Bool.Eval.SmallStep
                      , Component.Term.Bool.Eval.BigStep
@@ -25,7 +24,6 @@ library
                      , Component.Term.Bool.Pretty
                      , Component.Term.Bool.Gen
                      , Component.Type.Bool
-                     , Component.Type.Bool.Strip
                      , Component.Type.Bool.Parse
                      , Component.Type.Bool.Pretty
                      , Component.Type.Bool.Gen

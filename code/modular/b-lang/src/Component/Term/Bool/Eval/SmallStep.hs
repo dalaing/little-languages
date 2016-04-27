@@ -16,7 +16,7 @@ import Component.Term.Eval.SmallStep (SmallStepRule(..), SmallStepInput(..))
 import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 
 -- |
-eIfTrue :: WithBoolTerm tm n a
+eIfTrue :: WithBoolTerm tm
         => tm n a             -- ^
         -> Maybe (tm n a)        -- ^
 eIfTrue tm = do
@@ -25,7 +25,7 @@ eIfTrue tm = do
   return tm2
 
 -- |
-eIfFalse :: WithBoolTerm tm n a
+eIfFalse :: WithBoolTerm tm
          => tm n a             -- ^
          -> Maybe (tm n a)        -- ^
 eIfFalse tm = do
@@ -34,7 +34,7 @@ eIfFalse tm = do
   return tm3
 
 -- |
-eIf :: WithBoolTerm tm n a
+eIf :: WithBoolTerm tm
     => (tm n a -> Maybe (tm n a)) -- ^
     -> tm n a              -- ^
     -> Maybe (tm n a)         -- ^
@@ -44,7 +44,7 @@ eIf step tm = do
   return $ review _TmIf (tm1', tm2, tm3)
 
 -- |
-smallStepInput :: WithBoolTerm tm n a
+smallStepInput :: WithBoolTerm tm
                => SmallStepInput tm n a
 smallStepInput =
   SmallStepInput

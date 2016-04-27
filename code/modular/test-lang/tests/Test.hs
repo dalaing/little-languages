@@ -15,6 +15,7 @@ import Data.Monoid ((<>))
 import Tests (mkTests)
 import Component (ComponentInput)
 import Language (mkLanguageDefaultParser)
+import Component.Type.STLC (Context)
 
 import TestLanguage (languageRules, errorRules, TypeError, Type, Term)
 
@@ -23,5 +24,5 @@ main =
   defaultMain .
   mkTests .
   mkLanguageDefaultParser $
-  ((languageRules <> errorRules) :: ComponentInput () (TypeError ()) Type () Term () ())
+  ((languageRules <> errorRules) :: ComponentInput (Context Type () String) (TypeError () String) Type () Term () String)
 

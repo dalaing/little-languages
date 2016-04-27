@@ -20,7 +20,7 @@ import Component.Type.Parse (ParseTypeRule(..), ParseTypeInput(..))
 
 import Component.Type.STLC (AsSTLCType(..), WithSTLCType)
 
-parseTyArr :: WithSTLCType ty nTy
+parseTyArr :: WithSTLCType ty
            => ParserHelperOutput
            -> Parser (ty nTy -> ty nTy -> ty nTy) -- ^
 parseTyArr h =
@@ -31,7 +31,7 @@ parseTyArr h =
       ro "->"
       <?> "->"
 
-parseTypeInput :: WithSTLCType ty nTy
+parseTypeInput :: WithSTLCType ty
                => ParseTypeInput ty nTy
 parseTypeInput =
   ParseTypeInput

@@ -16,7 +16,7 @@ import Component.Term.Eval.SmallStep (SmallStepRule(..), SmallStepInput(..))
 
 import Component.Term.STLC (AsSTLCTerm(..), WithSTLCTerm)
 
-eApp1 :: WithSTLCTerm tm ty nTy nTm a
+eApp1 :: WithSTLCTerm tm ty nTy
       => (tm nTm a -> Maybe (tm nTm a))
       -> tm nTm a
       -> Maybe (tm nTm a)
@@ -25,7 +25,7 @@ eApp1 smallStep tm = do
   tm1' <- smallStep tm1
   return $ review _TmApp (tm1', tm2)
 
-eApp2 :: WithSTLCTerm tm ty nTy nTm a
+eApp2 :: WithSTLCTerm tm ty nTy
       => (tm nTm a -> Maybe (tm nTm a))
       -> (tm nTm a -> Maybe (tm nTm a))
       -> tm nTm a
@@ -36,7 +36,7 @@ eApp2 value smallStep tm = do
   tm2' <- smallStep tm2
   return $ review _TmApp (tm1, tm2')
 
-eAppLam :: ( WithSTLCTerm tm ty nTy nTm a
+eAppLam :: ( WithSTLCTerm tm ty nTy
            , Monad (tm nTm)
            )
         => tm nTm a
@@ -46,7 +46,7 @@ eAppLam tm = do
   (_, _, s) <- preview _TmLam tm1
   return $ instantiate1 tm2 s
 
-smallStepInput :: ( WithSTLCTerm tm ty nTy nTm a
+smallStepInput :: ( WithSTLCTerm tm ty nTy
                   , Monad (tm nTm)
                   )
                => SmallStepInput tm nTm a

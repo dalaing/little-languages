@@ -19,7 +19,7 @@ import           Component.Term.Pretty        (PrettyTermInput(..), PrettyTermRu
 import           Component.Term.Nat         (AsNatTerm (..), WithNatTerm)
 
 -- |
-prettyTmZero :: WithNatTerm tm n a
+prettyTmZero :: WithNatTerm tm
              => tm n a       -- ^
              -> Maybe Doc -- ^
 prettyTmZero =
@@ -27,7 +27,7 @@ prettyTmZero =
   preview _TmZero
 
 -- |
-prettyTmSucc :: WithNatTerm tm n a
+prettyTmSucc :: WithNatTerm tm
              => (tm n a -> Doc) -- ^
              -> tm n a         -- ^
              -> Maybe Doc   -- ^
@@ -39,7 +39,7 @@ prettyTmSucc prettyTerm =
       reservedIdentifier "S" <+> prettyTerm tm
 
 -- |
-prettyTmPred :: WithNatTerm tm n a
+prettyTmPred :: WithNatTerm tm
              => (tm n a -> Doc) -- ^
              -> tm n a         -- ^
              -> Maybe Doc   -- ^
@@ -51,7 +51,7 @@ prettyTmPred prettyTerm =
       reservedIdentifier "pred" <+> prettyTerm tm
 
 -- |
-prettyTermInput :: WithNatTerm tm nTm a
+prettyTermInput :: WithNatTerm tm
                 => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput

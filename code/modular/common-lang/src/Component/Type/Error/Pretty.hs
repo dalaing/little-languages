@@ -60,7 +60,7 @@ data PrettyTypeErrorOutput e =
 makeClassy ''PrettyTypeErrorOutput
 
 -- |
-mkPrettyTypeError :: PrettyTypeOutput ty nTy
+mkPrettyTypeError :: PrettyTypeOutput ty
                   -> PrettyTypeErrorInput e ty nTy -- ^
                   -> PrettyTypeErrorOutput e -- ^
 mkPrettyTypeError (PrettyTypeOutput prettyType _) (PrettyTypeErrorInput i) =

@@ -34,9 +34,8 @@ import           Component.Term.Gen                     (GenTermInput (..),
                                                          mkGenTerm)
 import           Component.Term.Infer                   (InferInput (..),
                                                          InferOutput, mkInfer)
-import           Component.Term.Note.Strip              (StripNoteTermInput (..),
-                                                         StripNoteTermOutput,
-                                                         mkStripNoteTerm)
+import           Component.Term.Note.Strip              (StripNoteTerm)
+import           Component.Type.Note.Strip              (StripNoteType)
 import           Component.Term.Parse                   (ParseTermInput (..),
                                                          ParseTermOutput,
                                                          mkParseTerm)
@@ -51,15 +50,14 @@ import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
 
 data TermInput r e ty nTy tm nTm a =
   TermInput {
-    _termSizeInput      :: TermSizeInput tm nTm a
-  , _stripNoteTermInput :: StripNoteTermInput ty nTy tm
-  , _genTermInput       :: GenTermInput ty nTy tm nTm a
-  , _parseTermInput     :: ParseTermInput ty nTy tm nTm a
-  , _prettyTermInput    :: PrettyTermInput ty nTy tm nTm a
-  , _inferInput         :: InferInput r e ty nTy tm nTm a
-  , _valueInput         :: ValueInput tm nTm a
-  , _smallStepInput     :: SmallStepInput tm nTm a
-  , _bigStepInput       :: BigStepInput tm nTm a
+    _termSizeInput   :: TermSizeInput tm nTm a
+  , _genTermInput    :: GenTermInput ty nTy tm nTm a
+  , _parseTermInput  :: ParseTermInput ty nTy tm nTm a
+  , _prettyTermInput :: PrettyTermInput ty nTy tm nTm a
+  , _inferInput      :: InferInput r e ty nTy tm nTm a
+  , _valueInput      :: ValueInput tm nTm a
+  , _smallStepInput  :: SmallStepInput tm nTm a
+  , _bigStepInput    :: BigStepInput tm nTm a
   }
 
 instance GetReservedWords (TermInput r e ty nTy tm nTm a) where
@@ -76,11 +74,9 @@ instance Monoid (TermInput r e ty nTy tm nTm a) where
       mempty
       mempty
       mempty
-      mempty
-  mappend (TermInput t1 st1 g1 pa1 pr1 i1 v1 s1 b1) (TermInput t2 st2 g2 pa2 pr2 i2 v2 s2 b2) =
+  mappend (TermInput t1 g1 pa1 pr1 i1 v1 s1 b1) (TermInput t2 g2 pa2 pr2 i2 v2 s2 b2) =
     TermInput
       (mappend t1 t2)
-      (mappend st1 st2)
       (mappend g1 g2)
       (mappend pa1 pa2)
       (mappend pr1 pr2)
@@ -91,36 +87,36 @@ instance Monoid (TermInput r e ty nTy tm nTm a) where
 
 data TermOutput r e ty nTy tm nTm a =
   TermOutput {
-    _toTermSizeOutput      :: TermSizeOutput tm nTm a
-  , _toStripNoteTermOutput :: StripNoteTermOutput tm
-  , _toGenTermOutput       :: GenTermOutput ty nTy tm nTm a
-  , _toParseTermOutput     :: ParseTermOutput tm nTm a
-  , _toPrettyTermOutput    :: PrettyTermOutput tm nTm a
-  , _toInferOutput         :: InferOutput r e ty nTy tm nTm a
-  , _toValueOutput         :: ValueOutput tm nTm a
-  , _toSmallStepOutput     :: SmallStepOutput tm nTm a
-  , _toBigStepOutput       :: BigStepOutput tm nTm a
+    _toTermSizeOutput   :: TermSizeOutput tm nTm a
+  , _toGenTermOutput    :: GenTermOutput ty nTy tm nTm a
+  , _toParseTermOutput  :: ParseTermOutput tm nTm a
+  , _toPrettyTermOutput :: PrettyTermOutput tm nTm a
+  , _toInferOutput      :: InferOutput r e ty nTy tm nTm a
+  , _toValueOutput      :: ValueOutput tm nTm a
+  , _toSmallStepOutput  :: SmallStepOutput tm nTm a
+  , _toBigStepOutput    :: BigStepOutput tm nTm a
   }
 
 makeClassy ''TermOutput
 
-mkTerm :: AsUnknownType e
+mkTerm :: ( AsUnknownType e
+          , StripNoteTerm tm tm
+          , StripNoteType ty ty
+          )
        => ParserHelperOutput
        -> TypeOutput ty nTy
        -> TermInput r e ty nTy tm nTm a
        -> TermOutput r e ty nTy tm nTm a
-mkTerm h (TypeOutput snty gty paty prty) (TermInput t st g pa pr i v s b) =
+mkTerm h (TypeOutput gty paty prty) (TermInput t g pa pr i v s b) =
   let
-    sntm = mkStripNoteTerm st
-    vo = mkValue sntm v
+    vo = mkValue v
   in
     TermOutput
       (mkTermSize t)
-      sntm
       (mkGenTerm gty g)
       (mkParseTerm h paty pa)
       (mkPrettyTerm prty pr)
-      (mkInfer snty i)
+      (mkInfer i)
       vo
-      (mkSmallStep sntm vo s)
-      (mkBigStep sntm b)
+      (mkSmallStep vo s)
+      (mkBigStep b)

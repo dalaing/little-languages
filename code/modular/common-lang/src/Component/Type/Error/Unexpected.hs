@@ -92,7 +92,7 @@ prettyUnexpected prettyType =
   preview _Unexpected
 
 prettyUnexpectedSrcLoc :: ( AsUnexpected e ty n
-                          , WithNoteType ty n
+                          , WithNoteType ty
                           , Renderable n
                           )
                        => (ty n -> Doc)
@@ -118,7 +118,7 @@ unexpectedInput =
     mempty
 
 unexpectedSrcLocInput :: ( AsUnexpected e ty nTy
-                         , WithNoteType ty nTy
+                         , WithNoteType ty
                          , Renderable nTy
                          )
                       => ComponentInput r e ty nTy tm nTm a

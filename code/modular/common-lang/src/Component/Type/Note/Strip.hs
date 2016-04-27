@@ -5,31 +5,28 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
-{-# LANGUAGE RankNTypes        #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE TemplateHaskell        #-}
 module Component.Type.Note.Strip (
+    StripNoteType(..)
+{-
     StripNoteTypeRule(..)
   , StripNoteTypeInput(..)
   , StripNoteTypeOutput(..)
   , HasStripNoteTypeOutput(..)
   , mkStripNoteType
   , stripNoteTypeInput
+-}
   ) where
 
-import Data.Maybe (fromJust)
-import Data.Foldable (asum)
+class StripNoteType x p | x -> p where
+  mapMaybeNoteType :: (n -> Maybe m) -> x n -> p m
 
-import Control.Lens (preview, review)
-import Control.Lens.TH (makeClassy)
+  stripNoteType :: x n -> p m
+  stripNoteType = mapMaybeNoteType (const Nothing)
 
-import Component.Type.Parent (AsParentType(..))
-import Component.Type.Note (NoteType(..))
-
+{-
 data StripNoteTypeRule p =
     StripNoteTypeBase (forall n m. (n -> Maybe m) -> (p n -> p m) -> p n -> Maybe (p m))
   | StripNoteTypeRecurse (forall n m. (p n -> p m) -> p n -> Maybe (p m))
@@ -97,3 +94,4 @@ stripNoteTypeInput :: AsParentType (NoteType ty) ty => StripNoteTypeInput ty
 stripNoteTypeInput =
   StripNoteTypeInput
     [StripNoteTypeBase stripNoteTyNote]
+-}

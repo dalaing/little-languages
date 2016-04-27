@@ -19,7 +19,7 @@ import           Component.Term.Pretty        (PrettyTermInput(..), PrettyTermRu
 import           Component.Term.Bool         (AsBoolTerm (..), WithBoolTerm)
 
 -- |
-prettyTmFalse :: WithBoolTerm tm n a
+prettyTmFalse :: WithBoolTerm tm
               => tm n a       -- ^
               -> Maybe Doc -- ^
 prettyTmFalse =
@@ -27,7 +27,7 @@ prettyTmFalse =
   preview _TmFalse
 
 -- |
-prettyTmTrue :: WithBoolTerm tm n a
+prettyTmTrue :: WithBoolTerm tm
              => tm n a       -- ^
              -> Maybe Doc -- ^
 prettyTmTrue =
@@ -35,7 +35,7 @@ prettyTmTrue =
   preview _TmTrue
 
 -- |
-prettyTmIf :: WithBoolTerm tm n a
+prettyTmIf :: WithBoolTerm tm
            => (tm n a -> Doc) -- ^
            -> tm n a         -- ^
            -> Maybe Doc   -- ^
@@ -49,7 +49,7 @@ prettyTmIf prettyTerm =
       reservedIdentifier "else" <+> prettyTerm tm3
 
 -- |
-prettyTermInput :: WithBoolTerm tm nTm a
+prettyTermInput :: WithBoolTerm tm
                 => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput

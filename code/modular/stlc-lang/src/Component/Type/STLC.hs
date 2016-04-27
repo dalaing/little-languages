@@ -25,14 +25,15 @@ module Component.Type.STLC (
   , withInContext
   ) where
 
-import Control.Lens.TH (makeClassyPrisms)
-import Control.Lens (Lens', over, view, preview)
+import Control.Lens (Lens', over, view, preview, review)
+import Control.Lens.Prism (Prism', prism)
 import Control.Monad.Error.Lens (throwing)
 import Control.Monad.Reader (MonadReader, local)
 import Control.Monad.Except (MonadError)
 import qualified Data.Map as M (Map, lookup, insert)
 
 import Component.Type.Error.Unexpected (AsUnexpected, mkExpect)
+import Component.Type.Note.Strip (StripNoteType(..))
 
 import Component.Type.Error.FreeVar (AsFreeVar(..))
 import Component.Type.Error.NotArrow (AsNotArrow(..))
@@ -42,9 +43,19 @@ data STLCType ty n =
   TyArr (ty n) (ty n)
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
-makeClassyPrisms ''STLCType
+class AsSTLCType s ty | s -> ty where
+  _STLCType :: Prism' (s n) (STLCType ty n)
+  _TyArr :: Prism' (s n) (ty n, ty n)
+  _TyArr =
+    _STLCType .
+    prism
+      (uncurry TyArr)
+      (\x -> case x of TyArr y z -> Right (y, z))
 
-type WithSTLCType ty n = AsSTLCType (ty n) ty n
+instance (AsSTLCType ty ty, StripNoteType ty ty) => StripNoteType (STLCType ty) ty where
+  mapMaybeNoteType f (TyArr x y) = review _TyArr (mapMaybeNoteType f x, mapMaybeNoteType f y)
+
+type WithSTLCType ty = AsSTLCType ty ty
 
 data Context ty n a =
   Context (M.Map a (ty n))
@@ -90,7 +101,7 @@ findInContext a = do
     Just ty -> return ty
 
 applyArrow :: ( Eq (ty n)
-              , WithSTLCType ty n
+              , WithSTLCType ty
               , AsUnexpected e ty n
               , AsNotArrow e ty n
               , MonadError e m
@@ -100,8 +111,10 @@ applyArrow :: ( Eq (ty n)
            -> ty n
            -> m (ty n)
 applyArrow stripNote ty1 ty2 =
-    maybe notArrow applyArrow' $
-    preview _TyArr ty1
+    maybe notArrow applyArrow' .
+    preview _TyArr .
+    stripNote $
+    ty1
   where
     expect = mkExpect stripNote
     notArrow = throwing _NotArrow (ty1, ty2)

@@ -22,13 +22,13 @@ import Component.Type.Parse (ParseTypeOutput(..))
 
 import Component.Term.STLC (AsSTLCTerm(..), AsSTLCVar(..), WithSTLCTerm)
 
-parseTmVar :: WithSTLCTerm tm ty nTy nTm String
+parseTmVar :: WithSTLCTerm tm ty nTy
            => ParserHelperOutput
            -> Parser (tm nTm String)
 parseTmVar h =
   fmap (review _TmVar) (view identifier h)
 
-parseTmLam :: ( WithSTLCTerm tm ty nTy nTm String
+parseTmLam :: ( WithSTLCTerm tm ty nTy
               , Monad (tm nTm)
               )
            => ParserHelperOutput
@@ -41,10 +41,10 @@ parseTmLam h parseType parseTerm = let
     (\v t s -> review _TmLam (v, t, abstract1 v s))
       <$ ri "\\" <*> view identifier h
       <* ri ":" <*> parseType
-      <* ri "->" <*> parseTerm
+      <* ri "." <*> parseTerm
 
 -- |
-parseTmApp :: WithSTLCTerm tm ty nTy nTm String
+parseTmApp :: WithSTLCTerm tm ty nTy
            => ParserHelperOutput
            -> Parser (tm nTm String -> tm nTm String -> tm nTm String) -- ^
 parseTmApp h =
@@ -55,7 +55,7 @@ parseTmApp h =
       ro "@"
       <?> "@"
 
-parseTermInput :: ( WithSTLCTerm tm ty nTy nTm String
+parseTermInput :: ( WithSTLCTerm tm ty nTy
                   , Monad (tm nTm)
                   )
                => ParseTermInput ty nTy tm nTm String
@@ -63,7 +63,7 @@ parseTermInput =
   ParseTermInput
     [ ParseTermBase mempty parseTmVar
     , ParseTermWithType
-        (reserveIdentifiers ["\\", ":", "->"])
+        (reserveIdentifiers ["\\", ":", "."])
         parseTmLam
     , ParseTermExpression
         (reserveOperators ["@"])

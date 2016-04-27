@@ -22,7 +22,7 @@ import Data.Foldable (asum)
 
 import Control.Lens.TH (makeClassy)
 
-import Component.Term.Note.Strip (StripNoteTermOutput(..))
+import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
 data BigStepRule tm n a =
@@ -60,19 +60,19 @@ data BigStepOutput tm n a =
 makeClassy ''BigStepOutput
 
 -- |
-mkBigStep :: StripNoteTermOutput tm
-          -> BigStepInput tm n a -- ^
+mkBigStep :: StripNoteTerm tm tm
+          => BigStepInput tm n a -- ^
           -> BigStepOutput tm n a-- ^
-mkBigStep (StripNoteTermOutput _ stripNote) (BigStepInput i) =
+mkBigStep (BigStepInput i) =
   let
     bigStepRules' =
       fmap (fixBigStepRule bigStep') i
     bigStep' tm =
       asum .
-      fmap ($ stripNote tm) $
+      fmap ($ stripNoteTerm tm) $
       bigStepRules'
     bigStepEval' tm =
-      fromMaybe (stripNote tm) .
+      fromMaybe (stripNoteTerm tm) .
       bigStep' $
       tm
   in

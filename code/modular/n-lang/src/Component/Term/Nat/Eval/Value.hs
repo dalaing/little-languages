@@ -15,14 +15,14 @@ import Component.Term.Eval.Value (ValueRule(..), ValueInput(..))
 
 import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
-valueTmZero :: WithNatTerm tm n a
+valueTmZero :: WithNatTerm tm
             => tm n a
             -> Maybe (tm n a)
 valueTmZero =
   fmap (review _TmZero) .
   preview _TmZero
 
-valueTmSucc :: WithNatTerm tm n a
+valueTmSucc :: WithNatTerm tm
             => (tm n a -> Maybe (tm n a))
             -> tm n a
             -> Maybe (tm n a)
@@ -31,7 +31,7 @@ valueTmSucc value tm = do
   tm1' <- value tm1
   return $ review _TmSucc tm1'
 
-valueInput :: WithNatTerm tm n a
+valueInput :: WithNatTerm tm
            => ValueInput tm n a
 valueInput =
   ValueInput

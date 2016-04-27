@@ -19,13 +19,13 @@ import           Component.Type.Gen   (GenAnyTypeRule (..), GenTypeInput (..),
 import           Component.Type.Nat (AsNatType (..), WithNatType)
 
 -- |
-genAnyTyNat :: WithNatType ty n
+genAnyTyNat :: WithNatType ty
             => Gen (ty n)
 genAnyTyNat =
   pure $ review _TyNat ()
 
 -- |
-shrAnyTyNat :: WithNatType ty n
+shrAnyTyNat :: WithNatType ty
             => ty n        -- ^
             -> Maybe [ty n] -- ^
 shrAnyTyNat =
@@ -33,7 +33,7 @@ shrAnyTyNat =
   preview _TyNat
 
 -- |
-genNotTyNat :: WithNatType ty n
+genNotTyNat :: WithNatType ty
             => ty n
             -> Maybe (Gen (ty n))
 genNotTyNat ty
@@ -43,14 +43,14 @@ genNotTyNat ty
     Nothing
 
 -- |
-shrNotTyNat :: WithNatType ty n
+shrNotTyNat :: WithNatType ty
             => ty n        -- ^
             -> Maybe [ty n] -- ^
 shrNotTyNat =
   fmap (const []) .
   preview _TyNat
 
-genTypeInput :: WithNatType ty n
+genTypeInput :: WithNatType ty
              => GenTypeInput ty n
 genTypeInput =
   GenTypeInput

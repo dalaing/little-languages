@@ -16,7 +16,6 @@ library
   exposed-modules:     Component.Int
                      , Component.Term.Int
                      , Component.Term.Int.Size
-                     , Component.Term.Int.Strip
                      , Component.Term.Int.Eval.Value
                      , Component.Term.Int.Eval.SmallStep
                      , Component.Term.Int.Eval.BigStep
@@ -25,7 +24,6 @@ library
                      , Component.Term.Int.Pretty
                      , Component.Term.Int.Gen
                      , Component.Type.Int
-                     , Component.Type.Int.Strip
                      , Component.Type.Int.Parse
                      , Component.Type.Int.Pretty
                      , Component.Type.Int.Gen

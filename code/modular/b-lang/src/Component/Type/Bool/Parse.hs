@@ -20,7 +20,7 @@ import Common.Parse (reserveConstructors, ParserHelperOutput, HasParserHelperOut
 import Component.Type.Parse (ParseTypeInput(..), ParseTypeRule(..))
 
 -- |
-parseTyBool :: WithBoolType ty n
+parseTyBool :: WithBoolType ty
             => ParserHelperOutput
             -> Parser (ty n)           -- ^
 parseTyBool h =
@@ -29,7 +29,7 @@ parseTyBool h =
   in
     review _TyBool () <$ rc "Bool" <?> "Bool"
 
-parseTypeInput :: WithBoolType ty n
+parseTypeInput :: WithBoolType ty
                => ParseTypeInput ty n
 parseTypeInput =
   ParseTypeInput

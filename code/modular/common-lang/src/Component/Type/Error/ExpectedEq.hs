@@ -103,7 +103,7 @@ expectedEqInput =
     mempty
 
 prettyExpectedEqSrcLoc :: ( AsExpectedEq e ty n
-                          , WithNoteType ty n
+                          , WithNoteType ty
                           , Renderable n
                           )
                        => (ty n -> Doc)
@@ -122,7 +122,7 @@ prettyExpectedEqSrcLoc prettyType =
       preview _ExpectedEq
 
 expectedEqSrcLocInput :: ( AsExpectedEq e ty nTy
-                         , WithNoteType ty nTy
+                         , WithNoteType ty
                          , Renderable nTy
                          )
                       => ComponentInput r e ty nTy tm nTm a

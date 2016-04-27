@@ -9,7 +9,6 @@ Portability : non-portable
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE KindSignatures #-}
 module Component.Type.Nat (
     NatType(..)
@@ -17,13 +16,26 @@ module Component.Type.Nat (
   , WithNatType
   ) where
 
-import           Control.Lens.TH (makeClassyPrisms)
+import Control.Lens (review)
+import Control.Lens.Prism (Prism', prism)
+
+import Component.Type.Note.Strip (StripNoteType(..))
 
 -- |
 data NatType (ty :: * -> *) n =
   TyNat -- ^
   deriving (Eq, Ord, Show)
 
-makeClassyPrisms ''NatType
+class AsNatType s ty | s -> ty where
+  _NatType :: Prism' (s n) (NatType ty n)
+  _TyNat :: Prism' (s n) ()
+  _TyNat =
+    _NatType .
+    prism
+      (const TyNat)
+      (\x -> case x of TyNat -> Right ())
 
-type WithNatType ty n = AsNatType (ty n) ty n
+instance (AsNatType ty ty, StripNoteType ty ty) => StripNoteType (NatType ty) ty where
+  mapMaybeNoteType _ TyNat = review _TyNat ()
+
+type WithNatType ty = AsNatType ty ty

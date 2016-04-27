@@ -15,21 +15,21 @@ import Component.Term.Size (TermSizeInput(..), TermSizeRule(..))
 
 import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 
-termSizeTmFalse :: WithBoolTerm tm n a
+termSizeTmFalse :: WithBoolTerm tm
                 => tm n a
                 -> Maybe Int
 termSizeTmFalse =
   fmap (const 1) .
   preview _TmFalse
 
-termSizeTmTrue :: WithBoolTerm tm n a
+termSizeTmTrue :: WithBoolTerm tm
                => tm n a
                -> Maybe Int
 termSizeTmTrue =
   fmap (const 1) .
   preview _TmTrue
 
-termSizeTmIf :: WithBoolTerm tm n a
+termSizeTmIf :: WithBoolTerm tm
               => (tm n a -> Int)
               -> tm n a
               -> Maybe Int
@@ -37,7 +37,7 @@ termSizeTmIf size =
   fmap (\(tm1, tm2, tm3) -> 1 + size tm1 + size tm2 + size tm3) .
   preview _TmIf
 
-termSizeInput :: WithBoolTerm tm n a
+termSizeInput :: WithBoolTerm tm
               => TermSizeInput tm n a
 termSizeInput =
   TermSizeInput

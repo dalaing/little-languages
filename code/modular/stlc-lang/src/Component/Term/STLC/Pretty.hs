@@ -21,14 +21,14 @@ import           Component.Type.Pretty        (PrettyTypeOutput(..))
 
 import           Component.Term.STLC         (AsSTLCTerm (..), AsSTLCVar(..), WithSTLCTerm)
 
-prettyTmVar :: WithSTLCTerm tm ty nTy nTm String
+prettyTmVar :: WithSTLCTerm tm ty nTy
             => tm nTm String
             -> Maybe Doc
 prettyTmVar tm = do
   v <- preview _TmVar tm
   return $ identifier v
 
-prettyTmLam :: ( WithSTLCTerm tm ty nTy nTm String
+prettyTmLam :: ( WithSTLCTerm tm ty nTy
                , Monad (tm nTm)
                )
             => (ty nTy -> Doc)
@@ -43,7 +43,7 @@ prettyTmLam prettyType prettyTerm tm = do
     identifier v <+>
     ri ":" <+>
     prettyType ty <+>
-    ri "->" <+>
+    ri "." <+>
     prettyTerm (instantiate1 (review _TmVar v) s)
 
 
@@ -55,7 +55,7 @@ prettyTmApp tm1 tm2 =
   reservedOperator "@" <+>
   tm2
 
-prettyTermInput :: ( WithSTLCTerm tm ty nTy nTm String
+prettyTermInput :: ( WithSTLCTerm tm ty nTy
                    , Monad (tm nTm)
                    )
                 => PrettyTermInput ty nTy tm nTm String

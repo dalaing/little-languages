@@ -12,18 +12,19 @@ module Component.Term.Bool.Gen (
 import           Control.Lens         (preview, review)
 import           Test.QuickCheck      (Gen)
 
-import Component.Term.Gen (GenAnyTermRule(..), ShrAnyTermRule(..), GenTermInput(..))
+import Component.Term.Gen (GenAnyTermRule(..), ShrAnyTermRule(..), GenContainingTermRule(..), GenWellTypedTermRule(..), GenIllTypedTermRule(..), GenTermInput(..))
 
+import           Component.Type.Bool (AsBoolType (..), WithBoolType)
 import           Component.Term.Bool (AsBoolTerm (..), WithBoolTerm)
 
 -- |
-genTmFalse :: WithBoolTerm tm n a
+genTmFalse :: WithBoolTerm tm
            => Gen (tm n a)
 genTmFalse =
   pure $ review _TmFalse ()
 
 -- |
-shrinkTmFalse :: WithBoolTerm tm n a
+shrinkTmFalse :: WithBoolTerm tm
               => tm n a        -- ^
               -> Maybe [tm n a] -- ^
 shrinkTmFalse =
@@ -31,13 +32,13 @@ shrinkTmFalse =
   preview _TmFalse
 
 -- |
-genTmTrue :: WithBoolTerm tm n a
+genTmTrue :: WithBoolTerm tm
           => Gen (tm n a)
 genTmTrue =
   pure $ review _TmTrue ()
 
 -- |
-shrinkTmTrue :: WithBoolTerm tm n a
+shrinkTmTrue :: WithBoolTerm tm
              => tm n a        -- ^
              -> Maybe [tm n a] -- ^
 shrinkTmTrue =
@@ -45,7 +46,7 @@ shrinkTmTrue =
   preview _TmTrue
 
 -- |
-genTmIf :: WithBoolTerm tm n a
+genTmIf :: WithBoolTerm tm
         => Gen (tm n a) -- ^
         -> Gen (tm n a) -- ^
         -> Gen (tm n a) -- ^
@@ -55,7 +56,7 @@ genTmIf g1 g2 g3 =
     ((,,) <$> g1 <*> g2 <*> g3)
 
 -- |
-shrinkTmIf :: WithBoolTerm tm n a
+shrinkTmIf :: WithBoolTerm tm
            => (tm n a -> [tm n a]) -- ^
            -> (tm n a -> [tm n a]) -- ^
            -> (tm n a -> [tm n a]) -- ^
@@ -73,7 +74,137 @@ shrinkTmIf s1 s2 s3 =
       fmap (\tm2' -> review _TmIf (tm1, tm2', tm3)) (s2 tm2) ++
       fmap (\tm3' -> review _TmIf (tm1, tm2, tm3')) (s3 tm3)
 
-genTermInput :: WithBoolTerm tm nTm a
+genContainingIf :: ( WithBoolType ty
+                   , WithBoolTerm tm
+                   )
+                => (ty nTy -> Int -> Gen (tm nTm a))
+                -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
+                -> tm nTm a
+                -> ty nTy
+                -> Int
+                -> Maybe (Gen (tm nTm a))
+genContainingIf genWellTyped genContaining tm ty s = Just $ do
+  let s' = s `div` 3
+  tm1 <- genContaining tm (review _TyBool ()) s'
+  tm2 <- genWellTyped ty s'
+  tm3 <- genWellTyped ty s'
+  return $ review _TmIf (tm1, tm2, tm3)
+
+genContainingThen :: ( WithBoolType ty
+                     , WithBoolTerm tm
+                     )
+                  => (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
+                  -> tm nTm a
+                  -> ty nTy
+                  -> Int
+                  -> Maybe (Gen (tm nTm a))
+genContainingThen genWellTyped genContaining tm ty s = Just $ do
+  let s' = s `div` 3
+  tm1 <- genWellTyped (review _TyBool ()) s'
+  tm2 <- genContaining tm ty s'
+  tm3 <- genWellTyped ty s'
+  return $ review _TmIf (tm1, tm2, tm3)
+
+genContainingElse :: ( WithBoolType ty
+                     , WithBoolTerm tm
+                     )
+                  => (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
+                  -> tm nTm a
+                  -> ty nTy
+                  -> Int
+                  -> Maybe (Gen (tm nTm a))
+genContainingElse genWellTyped genContaining tm ty s = Just $ do
+  let s' = s `div` 3
+  tm1 <- genWellTyped (review _TyBool ()) s'
+  tm2 <- genWellTyped ty s'
+  tm3 <- genContaining tm ty s'
+  return $ review _TmIf (tm1, tm2, tm3)
+
+genWellTypedTmFalse :: ( WithBoolType ty
+                       , WithBoolTerm tm
+                       )
+                    => ty nTy
+                    -> Maybe (Gen (tm nTm a))
+genWellTypedTmFalse ty = do
+  _ <- preview _TyBool ty
+  return . pure $ review _TmFalse ()
+
+genWellTypedTmTrue :: ( WithBoolType ty
+                      , WithBoolTerm tm
+                      )
+                   => ty nTy
+                   -> Maybe (Gen (tm nTm a))
+genWellTypedTmTrue ty = do
+  _ <- preview _TyBool ty
+  return . pure $ review _TmTrue ()
+
+genWellTypedTmIf :: ( WithBoolType ty
+                    , WithBoolTerm tm
+                    )
+                 => (ty nTy -> Int -> Gen (tm nTm a))
+                 -> ty nTy
+                 -> Int
+                 -> Maybe (Gen (tm nTm a))
+genWellTypedTmIf genWellTyped ty s = Just $ do
+  let s' = s `div` 2
+  tm1 <- genWellTyped (review _TyBool ()) s'
+  tm2 <- genWellTyped ty s'
+  tm3 <- genWellTyped ty s'
+  return $ review _TmIf (tm1, tm2, tm3)
+
+genIllTypedIf :: ( WithBoolType ty
+                 , WithBoolTerm tm
+                 )
+              => (ty nTy -> Gen (ty nTy))
+              -> (ty nTy -> Int -> Gen (tm nTm a))
+              -> ty nTy
+              -> Int
+              -> Maybe (Gen (tm nTm a))
+genIllTypedIf genNotType genWellTyped ty s = Just $ do
+  let s' = s `div` 2
+  nty <- genNotType (review _TyBool ())
+  tm1 <- genWellTyped nty s'
+  tm2 <- genWellTyped ty s'
+  tm3 <- genWellTyped ty s'
+  return $ review _TmIf (tm1, tm2, tm3)
+
+genIllTypedThen :: ( WithBoolType ty
+                   , WithBoolTerm tm
+                   )
+                => (ty nTy -> Gen (ty nTy))
+                -> (ty nTy -> Int -> Gen (tm nTm a))
+                -> ty nTy
+                -> Int
+                -> Maybe (Gen (tm nTm a))
+genIllTypedThen genNotType genWellTyped ty s = Just $ do
+  let s' = s `div` 2
+  tm1 <- genWellTyped (review _TyBool ()) s'
+  nty <- genNotType ty
+  tm2 <- genWellTyped nty s'
+  tm3 <- genWellTyped ty s'
+  return $ review _TmIf (tm1, tm2, tm3)
+
+genIllTypedElse :: ( WithBoolType ty
+                   , WithBoolTerm tm
+                   )
+                => (ty nTy -> Gen (ty nTy))
+                -> (ty nTy -> Int -> Gen (tm nTm a))
+                -> ty nTy
+                -> Int
+                -> Maybe (Gen (tm nTm a))
+genIllTypedElse genNotType genWellTyped ty s = Just $ do
+  let s' = s `div` 2
+  tm1 <- genWellTyped (review _TyBool ()) s'
+  tm2 <- genWellTyped ty s'
+  nty <- genNotType ty
+  tm3 <- genWellTyped nty s'
+  return $ review _TmIf (tm1, tm2, tm3)
+
+genTermInput :: ( WithBoolTerm tm 
+                , WithBoolType ty
+                )
              => GenTermInput ty nTy tm nTm a
 genTermInput =
   GenTermInput
@@ -89,6 +220,15 @@ genTermInput =
     , ShrAnyTermBase shrinkTmTrue
     , ShrAnyTermRecurse $ \s -> shrinkTmIf s s s
     ]
-    mempty
-    mempty
-    mempty
+    [ GenContainingTermRecurse genContainingIf
+    , GenContainingTermRecurse genContainingThen
+    , GenContainingTermRecurse genContainingElse
+    ]
+    [ GenWellTypedTermBase genWellTypedTmFalse
+    , GenWellTypedTermBase genWellTypedTmTrue
+    , GenWellTypedTermRecurse genWellTypedTmIf
+    ]
+    [ GenIllTypedTermRecurse genIllTypedIf
+    , GenIllTypedTermRecurse genIllTypedThen
+    , GenIllTypedTermRecurse genIllTypedElse
+    ]

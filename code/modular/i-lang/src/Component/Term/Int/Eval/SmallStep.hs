@@ -16,7 +16,7 @@ import Component.Term.Eval.SmallStep (SmallStepRule(..), SmallStepInput(..))
 import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 -- |
-eAddIntInt :: WithIntTerm tm n a
+eAddIntInt :: WithIntTerm tm
            => tm n a             -- ^
            -> Maybe (tm n a)     -- ^
 eAddIntInt tm = do
@@ -26,7 +26,7 @@ eAddIntInt tm = do
   return $ review _TmIntLit (i1 + i2)
 
 -- |
-eAdd1 :: WithIntTerm tm n a
+eAdd1 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a             -- ^
       -> Maybe (tm n a)     -- ^
@@ -36,7 +36,7 @@ eAdd1 step tm = do
   return $ review _TmAdd (tm1', tm2)
 
 -- |
-eAdd2 :: WithIntTerm tm n a
+eAdd2 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a)) -- ^
       -> (tm n a -> Maybe (tm n a)) -- ^
       -> tm n a                     -- ^
@@ -48,7 +48,7 @@ eAdd2 value step tm = do
   return $ review _TmAdd (tm1, tm2')
 
 -- |
-eSubIntInt :: WithIntTerm tm n a
+eSubIntInt :: WithIntTerm tm
            => tm n a             -- ^
            -> Maybe (tm n a)     -- ^
 eSubIntInt tm = do
@@ -58,7 +58,7 @@ eSubIntInt tm = do
   return $ review _TmIntLit (i1 - i2)
 
 -- |
-eSub1 :: WithIntTerm tm n a
+eSub1 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a             -- ^
       -> Maybe (tm n a)     -- ^
@@ -68,7 +68,7 @@ eSub1 step tm = do
   return $ review _TmSub (tm1', tm2)
 
 -- |
-eSub2 :: WithIntTerm tm n a
+eSub2 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a)) -- ^
       -> (tm n a -> Maybe (tm n a)) -- ^
       -> tm n a                     -- ^
@@ -80,7 +80,7 @@ eSub2 value step tm = do
   return $ review _TmSub (tm1, tm2')
 
 -- |
-eMulIntInt :: WithIntTerm tm n a
+eMulIntInt :: WithIntTerm tm
            => tm n a             -- ^
            -> Maybe (tm n a)     -- ^
 eMulIntInt tm = do
@@ -90,7 +90,7 @@ eMulIntInt tm = do
   return $ review _TmIntLit (i1 * i2)
 
 -- |
-eMul1 :: WithIntTerm tm n a
+eMul1 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a             -- ^
       -> Maybe (tm n a)     -- ^
@@ -100,7 +100,7 @@ eMul1 step tm = do
   return $ review _TmMul (tm1', tm2)
 
 -- |
-eMul2 :: WithIntTerm tm n a
+eMul2 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a)) -- ^
       -> (tm n a -> Maybe (tm n a)) -- ^
       -> tm n a                     -- ^
@@ -112,7 +112,7 @@ eMul2 value step tm = do
   return $ review _TmMul (tm1, tm2')
 
 -- |
-eExpIntInt :: WithIntTerm tm n a
+eExpIntInt :: WithIntTerm tm
            => tm n a             -- ^
            -> Maybe (tm n a)     -- ^
 eExpIntInt tm = do
@@ -125,7 +125,7 @@ eExpIntInt tm = do
     else i1 ^ i2
 
 -- |
-eExp1 :: WithIntTerm tm n a
+eExp1 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a             -- ^
       -> Maybe (tm n a)     -- ^
@@ -135,7 +135,7 @@ eExp1 step tm = do
   return $ review _TmExp (tm1', tm2)
 
 -- |
-eExp2 :: WithIntTerm tm n a
+eExp2 :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a)) -- ^
       -> (tm n a -> Maybe (tm n a)) -- ^
       -> tm n a                     -- ^
@@ -147,7 +147,7 @@ eExp2 value step tm = do
   return $ review _TmExp (tm1, tm2')
 
 -- |
-smallStepInput :: WithIntTerm tm n a
+smallStepInput :: WithIntTerm tm
                => SmallStepInput tm n a
 smallStepInput =
   SmallStepInput

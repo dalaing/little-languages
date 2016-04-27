@@ -19,7 +19,7 @@ import           Component.Term.Pretty        (PrettyTermInput(..), PrettyTermRu
 import           Component.Term.Int         (AsIntTerm (..), WithIntTerm)
 
 -- |
-prettyTmInt :: WithIntTerm tm n a
+prettyTmInt :: WithIntTerm tm
             => tm n a       -- ^
             -> Maybe Doc -- ^
 prettyTmInt =
@@ -63,7 +63,7 @@ prettyTmExp tm1 tm2 =
   tm2
 
 -- |
-prettyTermInput :: WithIntTerm tm nTm a
+prettyTermInput :: WithIntTerm tm
                 => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput

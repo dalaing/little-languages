@@ -16,7 +16,7 @@ import Component.Term.Eval.SmallStep (SmallStepRule(..), SmallStepInput(..))
 import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
 -- |
-ePredZero :: WithNatTerm tm n a
+ePredZero :: WithNatTerm tm
           => tm n a             -- ^
           -> Maybe (tm n a)        -- ^
 ePredZero tm = do
@@ -25,7 +25,7 @@ ePredZero tm = do
   return $ review _TmZero ()
 
 -- |
-ePredSucc :: WithNatTerm tm n a
+ePredSucc :: WithNatTerm tm
           => (tm n a -> Maybe (tm n a)) -- ^
           -> tm n a              -- ^
           -> Maybe (tm n a)         -- ^
@@ -35,7 +35,7 @@ ePredSucc nv tm = do
   nv tm1'
 
 -- |
-eSucc :: WithNatTerm tm n a
+eSucc :: WithNatTerm tm
       => (tm n a -> Maybe (tm n a)) -- ^
       -> tm n a              -- ^
       -> Maybe (tm n a)         -- ^
@@ -45,7 +45,7 @@ eSucc step tm = do
   return $ review _TmSucc tm1'
 
 -- |
-ePred :: WithNatTerm tm n a
+ePred :: WithNatTerm tm
       => (tm n a -> Maybe (tm n a)) -- ^
       -> tm n a              -- ^
       -> Maybe (tm n a)         -- ^
@@ -55,7 +55,7 @@ ePred step tm = do
   return $ review _TmPred tm1'
 
 -- |
-smallStepInput :: WithNatTerm tm n a
+smallStepInput :: WithNatTerm tm
                => SmallStepInput tm n a
 smallStepInput =
   SmallStepInput

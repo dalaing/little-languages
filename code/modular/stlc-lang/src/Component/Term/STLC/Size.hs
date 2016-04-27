@@ -20,14 +20,14 @@ import Component.Term.Size (TermSizeRule(..), TermSizeInput(..))
 
 import Component.Term.STLC (AsSTLCTerm(..), AsSTLCVar(..), WithSTLCTerm)
 
-termSizeTmVar :: WithSTLCTerm tm ty tyN tmN a
+termSizeTmVar :: WithSTLCTerm tm ty tyN
               => tm tmN a
               -> Maybe Int
 termSizeTmVar =
   fmap (const 1) .
   preview _TmVar
 
-termSizeTmApp :: ( WithSTLCTerm tm ty nTy nTm a
+termSizeTmApp :: ( WithSTLCTerm tm ty nTy
                  , Monad (tm nTm)
                  )
               => (tm nTm a -> Int)
@@ -42,7 +42,7 @@ termSizeTmApp size =
 
 -- the solution is to go back to the usual WithSTLCTerm form, and to use
 -- instantiate1 to get rid of the scope
-termSizeTmLam :: ( WithSTLCTerm tm ty nTy nTm String
+termSizeTmLam :: ( WithSTLCTerm tm ty nTy
                  , Monad (tm nTm)
                  )
               => (tm nTm String -> Int)
@@ -55,7 +55,7 @@ termSizeTmLam size =
     termSizeTmLam' (n, _, s) =
       1 + size (instantiate1 (review _TmVar n) s)
 
-termSizeInput :: ( WithSTLCTerm tm ty nty nTm String
+termSizeInput :: ( WithSTLCTerm tm ty nty
                  , Monad (tm nTm)
                  )
               => TermSizeInput tm nTm String

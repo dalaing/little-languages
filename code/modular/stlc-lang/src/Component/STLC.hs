@@ -22,7 +22,6 @@ import           Component.Type.Error.Unexpected        (AsUnexpected)
 
 import           Component.Term.STLC                (WithSTLCTerm)
 import           Component.Term.STLC.Size           (termSizeInput)
--- import           Component.Term.STLC.Strip           (stripNoteTermInput)
 import           Component.Term.STLC.Eval.Value     (valueInput)
 import           Component.Term.STLC.Eval.SmallStep (smallStepInput)
 import           Component.Term.STLC.Eval.BigStep   (bigStepInput)
@@ -31,7 +30,6 @@ import           Component.Term.STLC.Infer          (inferInput)
 import           Component.Term.STLC.Parse          (parseTermInput)
 import           Component.Term.STLC.Pretty         (prettyTermInput)
 import           Component.Type.STLC                (WithSTLCType, HasContext)
--- import           Component.Type.STLC.Strip           (stripNoteTypeInput)
 -- import           Component.Type.STLC.Gen            (genTypeInput)
 import           Component.Type.STLC.Parse          (parseTypeInput)
 import           Component.Type.STLC.Pretty         (prettyTypeInput)
@@ -50,7 +48,7 @@ stlcErrors =
 
 stlcSrcLocErrors :: ( AsFreeVar e String
                     , AsNotArrow e ty nTy
-                    , WithNoteType ty nTy
+                    , WithNoteType ty
                     , Renderable nTy
                     )
                  => ComponentInput r e ty nTy tm nTm String
@@ -65,8 +63,8 @@ stlcRules :: ( Eq (ty nTy)
              , AsNotArrow e ty nTy
              , AsFreeVar e String
              , HasContext r ty nTy String
-             , WithSTLCType ty nTy
-             , WithSTLCTerm tm ty nTy nTm String
+             , WithSTLCType ty
+             , WithSTLCTerm tm ty nTy
              , Monad (tm nTm)
              )
           => ComponentInput r e ty nTy tm nTm String
@@ -75,14 +73,12 @@ stlcRules =
   where
     tyI =
       TypeInput
-        mempty -- stripNoteTypeInput
         mempty -- genTypeInput
         parseTypeInput
         prettyTypeInput
     tmI =
       TermInput
         termSizeInput
-        mempty -- stripNoteTermInput
         mempty -- genTermInput
         parseTermInput
         prettyTermInput

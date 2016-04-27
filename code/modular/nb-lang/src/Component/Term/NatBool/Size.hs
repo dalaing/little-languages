@@ -15,7 +15,7 @@ import Component.Term.Size (TermSizeInput(..), TermSizeRule(..))
 
 import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 
-termSizeTmIsZero :: WithNatBoolTerm tm n a
+termSizeTmIsZero :: WithNatBoolTerm tm
                  => (tm n a -> Int)
                  -> tm n a
                  -> Maybe Int
@@ -23,7 +23,7 @@ termSizeTmIsZero size =
   fmap ((+ 1) . size) .
   preview _TmIsZero
 
-termSizeInput :: WithNatBoolTerm tm n a
+termSizeInput :: WithNatBoolTerm tm
               => TermSizeInput tm n a
 termSizeInput =
   TermSizeInput

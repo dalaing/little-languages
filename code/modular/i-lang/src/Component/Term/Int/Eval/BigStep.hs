@@ -16,7 +16,7 @@ import Component.Term.Eval.BigStep (BigStepRule(..), BigStepInput(..))
 import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 -- |
-eInt :: WithIntTerm tm n a
+eInt :: WithIntTerm tm
      => tm n a             -- ^
      -> Maybe (tm n a)     -- ^
 eInt =
@@ -24,7 +24,7 @@ eInt =
   preview _TmIntLit
 
 -- |
-eAdd :: WithIntTerm tm n a
+eAdd :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a
       -> Maybe (tm n a)
@@ -37,7 +37,7 @@ eAdd step tm = do
   return $ review _TmIntLit (i1 + i2)
 
 -- |
-eSub :: WithIntTerm tm n a
+eSub :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a
       -> Maybe (tm n a)
@@ -50,7 +50,7 @@ eSub step tm = do
   return $ review _TmIntLit (i1 - i2)
 
 -- |
-eMul :: WithIntTerm tm n a
+eMul :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a
       -> Maybe (tm n a)
@@ -63,7 +63,7 @@ eMul step tm = do
   return $ review _TmIntLit (i1 * i2)
 
 -- |
-eExp :: WithIntTerm tm n a
+eExp :: WithIntTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a
       -> Maybe (tm n a)
@@ -79,7 +79,7 @@ eExp step tm = do
     else i1 ^ i2
 
 -- |
-bigStepInput :: WithIntTerm tm n a
+bigStepInput :: WithIntTerm tm
              => BigStepInput tm n a
 bigStepInput =
   BigStepInput

@@ -21,14 +21,14 @@ import Component.Term.Parse (ParseTermInput(..), ParseTermRule(..))
 import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 -- |
-parseTmInt :: WithIntTerm tm n a
+parseTmInt :: WithIntTerm tm
            => ParserHelperOutput
            -> Parser (tm n a)           -- ^
 parseTmInt _ =
   (review _TmIntLit . fromInteger) <$> integer
 
 -- |
-parseTmAdd :: WithIntTerm tm n a
+parseTmAdd :: WithIntTerm tm
            => ParserHelperOutput
            -> Parser (tm n a -> tm n a -> tm n a) -- ^
 parseTmAdd h =
@@ -40,7 +40,7 @@ parseTmAdd h =
       <?> "+"
 
 -- |
-parseTmSub :: WithIntTerm tm n a
+parseTmSub :: WithIntTerm tm
            => ParserHelperOutput
            -> Parser (tm n a -> tm n a -> tm n a) -- ^
 parseTmSub h =
@@ -52,7 +52,7 @@ parseTmSub h =
       <?> "-"
 
 -- |
-parseTmMul :: WithIntTerm tm n a
+parseTmMul :: WithIntTerm tm
            => ParserHelperOutput
            -> Parser (tm n a -> tm n a -> tm n a) -- ^
 parseTmMul h =
@@ -64,7 +64,7 @@ parseTmMul h =
       <?> "*"
 
 -- |
-parseTmExp :: WithIntTerm tm n a
+parseTmExp :: WithIntTerm tm
            => ParserHelperOutput
            -> Parser (tm n a -> tm n a -> tm n a) -- ^
 parseTmExp h =
@@ -75,7 +75,7 @@ parseTmExp h =
       ro "^"
       <?> "^"
 
-parseTermInput :: WithIntTerm tm nTm a
+parseTermInput :: WithIntTerm tm
                => ParseTermInput ty nTy tm nTm a
 parseTermInput =
   ParseTermInput

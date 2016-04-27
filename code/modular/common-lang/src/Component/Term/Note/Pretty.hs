@@ -17,7 +17,7 @@ import           Component.Term.Note          (AsNoteTerm (..), WithNoteTerm)
 import           Component.Term.Pretty        (PrettyTermInput (..),
                                                PrettyTermRule (..))
 
-prettyTmNote :: WithNoteTerm tm n a
+prettyTmNote :: WithNoteTerm tm
              => (tm n a -> Doc)
              -> tm n a
              -> Maybe Doc
@@ -25,7 +25,7 @@ prettyTmNote prettyTerm =
   fmap (prettyTerm . snd) .
   preview _TmNote
 
-prettyTermInput :: WithNoteTerm tm nTm a
+prettyTermInput :: WithNoteTerm tm
                 => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput

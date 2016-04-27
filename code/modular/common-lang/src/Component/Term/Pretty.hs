@@ -69,7 +69,7 @@ data PrettyTermOutput tm nTm a =
 makeClassy ''PrettyTermOutput
 
 -- |
-mkPrettyTerm :: PrettyTypeOutput ty nTy
+mkPrettyTerm :: PrettyTypeOutput ty
              -> PrettyTermInput ty nTy tm nTm a  -- ^
              -> PrettyTermOutput tm nTm a -- ^
 mkPrettyTerm (PrettyTypeOutput prettyType _) (PrettyTermInput i) =

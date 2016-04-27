@@ -18,7 +18,7 @@ import Component.Term.Eval.BigStep (BigStepRule(..), BigStepInput(..))
 import Component.Term.STLC (AsSTLCTerm(..), WithSTLCTerm)
 
 -- |
-eLamApp :: ( WithSTLCTerm tm ty nTy nTm a
+eLamApp :: ( WithSTLCTerm tm ty nTy
            , Monad (tm nTm)
            )
         => (tm nTm a -> Maybe (tm nTm a))
@@ -32,7 +32,7 @@ eLamApp step tm = do
   return $ instantiate1 tm2' s
 
 -- |
-bigStepInput :: ( WithSTLCTerm tm ty nTy nTm a
+bigStepInput :: ( WithSTLCTerm tm ty nTy
                 , Monad (tm nTm)
                 )
              => BigStepInput tm nTm a

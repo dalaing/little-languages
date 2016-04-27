@@ -16,7 +16,7 @@ import Component.Term.Eval.BigStep (BigStepRule(..), BigStepInput(..))
 import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
 -- |
-eZero :: WithNatTerm tm n a
+eZero :: WithNatTerm tm
       => tm n a             -- ^
       -> Maybe (tm n a)        -- ^
 eZero =
@@ -24,7 +24,7 @@ eZero =
   preview _TmZero
 
 -- |
-eSucc :: WithNatTerm tm n a
+eSucc :: WithNatTerm tm
       => (tm n a -> Maybe (tm n a))
       -> tm n a
       -> Maybe (tm n a)
@@ -34,7 +34,7 @@ eSucc step tm = do
   return $ review _TmSucc t'
 
 -- |
-ePredZero :: WithNatTerm tm n a
+ePredZero :: WithNatTerm tm
           => (tm n a -> Maybe (tm n a))
           -> tm n a
           -> Maybe (tm n a)
@@ -45,7 +45,7 @@ ePredZero step tm = do
   return $ review _TmZero ()
 
 -- |
-ePredSucc :: WithNatTerm tm n a
+ePredSucc :: WithNatTerm tm
           => (tm n a -> Maybe (tm n a))
           -> tm n a
           -> Maybe (tm n a)
@@ -55,7 +55,7 @@ ePredSucc step tm = do
   preview _TmSucc t'
 
 -- |
-bigStepInput :: WithNatTerm tm n a
+bigStepInput :: WithNatTerm tm
              => BigStepInput tm n a
 bigStepInput =
   BigStepInput

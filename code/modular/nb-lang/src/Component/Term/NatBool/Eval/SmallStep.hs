@@ -18,7 +18,7 @@ import Component.Term.Bool (AsBoolTerm(..))
 import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 
 -- |
-eIsZeroZero :: WithNatBoolTerm tm n a
+eIsZeroZero :: WithNatBoolTerm tm
             => tm n a             -- ^
             -> Maybe (tm n a)        -- ^
 eIsZeroZero tm = do
@@ -27,7 +27,7 @@ eIsZeroZero tm = do
   return $ review _TmTrue ()
 
 -- |
-eIsZeroSucc :: WithNatBoolTerm tm n a
+eIsZeroSucc :: WithNatBoolTerm tm
             => (tm n a -> Maybe (tm n a)) -- ^
             -> tm n a                     -- ^
             -> Maybe (tm n a)             -- ^
@@ -38,7 +38,7 @@ eIsZeroSucc nv tm = do
   return $ review _TmFalse ()
 
 -- |
-eIsZero :: WithNatBoolTerm tm n a
+eIsZero :: WithNatBoolTerm tm
         => (tm n a -> Maybe (tm n a)) -- ^
         -> tm n a                     -- ^
         -> Maybe (tm n a)             -- ^
@@ -48,7 +48,7 @@ eIsZero step tm = do
   return $ review _TmIsZero tm2
 
 -- |
-smallStepInput :: WithNatBoolTerm tm n a
+smallStepInput :: WithNatBoolTerm tm
                => SmallStepInput tm n a
 smallStepInput =
   SmallStepInput

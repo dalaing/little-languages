@@ -20,8 +20,8 @@ import Component.Type.Nat (AsNatType(..), WithNatType)
 
 -- |
 inferTmZero :: ( Monad m
-               , WithNatTerm tm nTm a
-               , WithNatType ty nTy
+               , WithNatTerm tm
+               , WithNatType ty
                )
             => tm nTm a          -- ^
             -> Maybe (m (ty nTy)) -- ^
@@ -33,8 +33,8 @@ inferTmZero =
 inferTmSucc :: ( Eq (ty nTy)
                , AsUnexpected e ty nTy
                , MonadError e m
-               , WithNatTerm tm nTm a
-               , WithNatType ty nTy
+               , WithNatTerm tm
+               , WithNatType ty
                )
             => (ty nTy -> ty nTy)
             -> (tm nTm a -> m (ty nTy))       -- ^
@@ -54,8 +54,8 @@ inferTmSucc stripNote infer =
 inferTmPred :: ( Eq (ty nTy)
                , AsUnexpected e ty nTy
                , MonadError e m
-               , WithNatTerm tm nTm a
-               , WithNatType ty nTy
+               , WithNatTerm tm
+               , WithNatType ty
                )
             => (ty nTy -> ty nTy)
             -> (tm nTm a -> m (ty nTy))       -- ^
@@ -74,8 +74,8 @@ inferTmPred stripNote infer =
 -- |
 inferInput :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
-              , WithNatTerm tm nTm a
-              , WithNatType ty nTy
+              , WithNatTerm tm
+              , WithNatType ty
               )
            => InferInput r e ty nTy tm nTm a
 inferInput =

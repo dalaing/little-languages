@@ -21,8 +21,8 @@ import Component.Type.Bool (AsBoolType(..), WithBoolType)
 
 -- |
 inferTmFalse :: ( Monad m
-                , WithBoolTerm tm nTm a
-                , WithBoolType ty nTy
+                , WithBoolTerm tm
+                , WithBoolType ty
                 )
              => tm nTm a          -- ^
              -> Maybe (m (ty nTy)) -- ^
@@ -32,8 +32,8 @@ inferTmFalse =
 
 -- |
 inferTmTrue :: ( Monad m
-               , WithBoolTerm tm nTm a
-               , WithBoolType ty nTy
+               , WithBoolTerm tm
+               , WithBoolType ty
                )
             => tm nTm a          -- ^
             -> Maybe (m (ty nTy)) -- ^
@@ -46,8 +46,8 @@ inferTmIf :: ( Eq (ty nTy)
              , AsUnexpected e ty nTy
              , AsExpectedEq e ty nTy
              , MonadError e m
-             , WithBoolTerm tm nTm a
-             , WithBoolType ty nTy
+             , WithBoolTerm tm
+             , WithBoolType ty
              )
           => (ty nTy -> ty nTy)
           -> (tm nTm a -> m (ty nTy))       -- ^
@@ -71,8 +71,8 @@ inferTmIf stripNote infer =
 inferInput :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
               , AsExpectedEq e ty nTy
-              , WithBoolTerm tm nTm a
-              , WithBoolType ty nTy
+              , WithBoolTerm tm
+              , WithBoolType ty
               )
            => InferInput r e ty nTy tm nTm a
 inferInput =

@@ -16,7 +16,6 @@ library
   exposed-modules:     Component.STLC
                      , Component.Term.STLC
                      , Component.Term.STLC.Size
-                     -- , Component.Term.STLC.Strip
                      , Component.Term.STLC.Eval.Value
                      , Component.Term.STLC.Eval.SmallStep
                      , Component.Term.STLC.Eval.BigStep
@@ -25,7 +24,6 @@ library
                      , Component.Term.STLC.Pretty
                      -- , Component.Term.STLC.Gen
                      , Component.Type.STLC
-                     -- , Component.Type.STLC.Strip
                      , Component.Type.STLC.Parse
                      , Component.Type.STLC.Pretty
                      -- , Component.Type.STLC.Gen

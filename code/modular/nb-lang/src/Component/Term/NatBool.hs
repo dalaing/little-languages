@@ -19,12 +19,14 @@ module Component.Term.NatBool (
   , WithNatBoolTerm
   ) where
 
-import           Control.Lens.TH      (makeClassyPrisms)
+import Control.Lens (review)
+import Control.Lens.Prism (Prism', prism)
 import Data.Bifunctor (Bifunctor(..))
 import Data.Bifoldable (Bifoldable(..))
 import Data.Bitraversable (Bitraversable(..))
 
 import Bound2 (Bound2(..))
+import Component.Term.Note.Strip (StripNoteTerm(..))
 
 import Component.Term.Nat (WithNatTerm)
 import Component.Term.Bool (WithBoolTerm)
@@ -34,7 +36,16 @@ data NatBoolTerm tm n a =
   TmIsZero (tm n a)  -- ^
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
-makeClassyPrisms ''NatBoolTerm
+class AsNatBoolTerm s tm | s -> tm where
+  _NatBoolTerm :: Prism' (s n a) (NatBoolTerm tm n a)
+
+  _TmIsZero :: Prism' (s n a) (tm n a)
+  _TmIsZero = _NatBoolTerm . _TmIsZero
+
+instance AsNatBoolTerm (NatBoolTerm tm) tm where
+  _NatBoolTerm = id
+
+  _TmIsZero = prism TmIsZero (\x -> case x of TmIsZero y -> Right y)
 
 instance Bifunctor tm => Bifunctor (NatBoolTerm tm) where
   bimap l r (TmIsZero tm) = TmIsZero (bimap l r tm)
@@ -48,8 +59,12 @@ instance Bitraversable tm => Bitraversable (NatBoolTerm tm) where
 instance Bound2 NatBoolTerm where
   TmIsZero tm >>>>= f = TmIsZero (tm >>= f)
 
-type WithNatBoolTerm tm n a =
-  ( AsNatBoolTerm (tm n a) tm n a
-  , WithNatTerm tm n a
-  , WithBoolTerm tm n a
+instance (AsNatBoolTerm tm tm, StripNoteTerm tm tm) => StripNoteTerm (NatBoolTerm tm) tm where
+  mapMaybeNoteTerm f (TmIsZero tm1) =
+    review _TmIsZero (mapMaybeNoteTerm f tm1)
+
+type WithNatBoolTerm tm =
+  ( AsNatBoolTerm tm tm
+  , WithNatTerm tm
+  , WithBoolTerm tm
   )

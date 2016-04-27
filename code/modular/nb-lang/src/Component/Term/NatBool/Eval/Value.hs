@@ -13,6 +13,6 @@ import Component.Term.Eval.Value (ValueInput(..))
 
 import Component.Term.NatBool (WithNatBoolTerm)
 
-valueInput :: WithNatBoolTerm tm n a
+valueInput :: WithNatBoolTerm tm
            => ValueInput tm n a
 valueInput = mempty

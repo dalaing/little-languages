@@ -12,7 +12,6 @@ Portability : non-portable
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE TemplateHaskell        #-}
 module Component.Term.Bool (
     BoolTerm(..)
   , AsBoolTerm(..)
@@ -21,12 +20,14 @@ module Component.Term.Bool (
 
 import Data.Monoid ((<>))
 
-import           Control.Lens.TH (makeClassyPrisms)
+import Control.Lens (review)
+import Control.Lens.Prism (Prism', prism)
 import Data.Bifunctor (Bifunctor(..))
 import Data.Bifoldable (Bifoldable(..))
 import Data.Bitraversable (Bitraversable(..))
 
 import Bound2 (Bound2(..))
+import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
 data BoolTerm tm n a =
@@ -35,7 +36,24 @@ data BoolTerm tm n a =
   | TmIf (tm n a) (tm n a) (tm n a) -- ^
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
-makeClassyPrisms ''BoolTerm
+class AsBoolTerm s tm | s -> tm where
+  _BoolTerm :: Prism' (s n a) (BoolTerm tm n a)
+
+  _TmFalse :: Prism' (s n a) ()
+  _TmFalse = _BoolTerm . _TmFalse
+
+  _TmTrue :: Prism' (s n a) ()
+  _TmTrue = _BoolTerm . _TmTrue
+
+  _TmIf :: Prism' (s n a) (tm n a, tm n a, tm n a)
+  _TmIf = _BoolTerm . _TmIf
+
+instance AsBoolTerm (BoolTerm tm) tm where
+  _BoolTerm = id
+
+  _TmFalse = prism (const TmFalse) (\x -> case x of TmFalse -> Right (); _ -> Left x)
+  _TmTrue = prism (const TmTrue) (\x -> case x of TmTrue -> Right (); _ -> Left x)
+  _TmIf = prism (\(x, y, z) -> TmIf x y z) (\x -> case x of TmIf a b c -> Right (a, b, c); _ -> Left x)
 
 instance Bifunctor tm => Bifunctor (BoolTerm tm) where
   bimap _ _ TmFalse = TmFalse
@@ -57,4 +75,12 @@ instance Bound2 BoolTerm where
   TmTrue           >>>>= _ = TmTrue
   TmIf tm1 tm2 tm3 >>>>= f = TmIf (tm1 >>= f) (tm2 >>= f) (tm3 >>= f)
 
-type WithBoolTerm tm n a = AsBoolTerm (tm n a) tm n a
+instance (AsBoolTerm tm tm, StripNoteTerm tm tm) => StripNoteTerm (BoolTerm tm) tm where
+  mapMaybeNoteTerm _ TmFalse =
+    review _TmFalse ()
+  mapMaybeNoteTerm _ TmTrue =
+    review _TmTrue ()
+  mapMaybeNoteTerm f (TmIf tm1 tm2 tm3) =
+    review _TmIf (mapMaybeNoteTerm f tm1, mapMaybeNoteTerm f tm2, mapMaybeNoteTerm f tm3)
+
+type WithBoolTerm tm = AsBoolTerm tm tm 

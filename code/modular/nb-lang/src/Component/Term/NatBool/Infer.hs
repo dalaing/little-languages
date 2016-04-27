@@ -23,9 +23,9 @@ import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 inferTmIsZero :: ( Eq (ty nTy)
                  , AsUnexpected e ty nTy
                  , MonadError e m
-                 , WithNatBoolTerm tm nTm a
-                 , WithNatType ty nTy
-                 , WithBoolType ty nTy
+                 , WithNatBoolTerm tm
+                 , WithNatType ty
+                 , WithBoolType ty
                  )
               => (ty nTy -> ty nTy)
               -> (tm nTm a -> m (ty nTy))       -- ^
@@ -44,9 +44,9 @@ inferTmIsZero stripNote infer =
 -- |
 inferInput :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
-              , WithNatBoolTerm tm nTm a
-              , WithNatType ty nTy
-              , WithBoolType ty nTy
+              , WithNatBoolTerm tm
+              , WithNatType ty
+              , WithBoolType ty
               )
            => InferInput r e ty nTy tm nTm a
 inferInput =

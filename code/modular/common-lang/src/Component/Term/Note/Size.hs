@@ -17,7 +17,7 @@ import Component.Term.Size (TermSizeInput(..), TermSizeRule(..))
 
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
-termSizeTmNote :: WithNoteTerm tm n a
+termSizeTmNote :: WithNoteTerm tm
                => (tm n a -> Int)
                -> tm n a
                -> Maybe Int
@@ -25,7 +25,7 @@ termSizeTmNote size =
   fmap ((+ 1) . size . snd) .
   preview _TmNote
 
-termSizeInput :: WithNoteTerm tm n a
+termSizeInput :: WithNoteTerm tm
               => TermSizeInput tm n a
 termSizeInput =
   TermSizeInput

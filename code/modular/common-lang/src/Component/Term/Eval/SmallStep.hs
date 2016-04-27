@@ -23,7 +23,7 @@ import Data.Foldable (asum)
 import Control.Lens.TH (makeClassy)
 
 import Component.Term.Eval.Value (ValueOutput(..))
-import Component.Term.Note.Strip (StripNoteTermOutput(..))
+import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
 data SmallStepRule tm n a =
@@ -70,21 +70,21 @@ data SmallStepOutput tm n a =
 makeClassy ''SmallStepOutput
 
 -- |
-mkSmallStep :: StripNoteTermOutput tm
-            -> ValueOutput tm n a
+mkSmallStep :: StripNoteTerm tm tm
+            => ValueOutput tm n a
             -> SmallStepInput tm n a  -- ^
             -> SmallStepOutput tm n a -- ^
-mkSmallStep (StripNoteTermOutput _ stripNote) v (SmallStepInput i) =
+mkSmallStep v (SmallStepInput i) =
   let
     smallStepRules' =
       fmap (fixSmallStepRule (_value v) smallStep') i
     smallStep' tm =
       asum .
-      fmap ($ stripNote tm) $
+      fmap ($ stripNoteTerm tm) $
       smallStepRules'
     smallStepEval' tm =
       case smallStep' tm of
-        Nothing -> stripNote tm
+        Nothing -> stripNoteTerm tm
         Just tm' -> smallStepEval' tm'
   in
     SmallStepOutput

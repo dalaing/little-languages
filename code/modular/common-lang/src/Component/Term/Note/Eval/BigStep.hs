@@ -14,7 +14,7 @@ import Control.Lens (preview, review)
 import Component.Term.Eval.BigStep (BigStepRule(..), BigStepInput(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
-bigStepTmNote :: WithNoteTerm tm n a
+bigStepTmNote :: WithNoteTerm tm
                 => (tm n a -> Maybe (tm n a))
                 -> tm n a
                 -> Maybe (tm n a)
@@ -23,7 +23,7 @@ bigStepTmNote bigStep tm = do
   tm1' <- bigStep tm1
   return $ review _TmNote (n, tm1')
 
-bigStepInput :: WithNoteTerm tm n a
+bigStepInput :: WithNoteTerm tm
            => BigStepInput tm n a
 bigStepInput =
   BigStepInput

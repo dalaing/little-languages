@@ -14,31 +14,25 @@ import           Component                           (ComponentInput (..))
 import           Component.Term                      (TermInput (..))
 import           Component.Type                      (TypeInput (..))
 import           Component.Type.Error.Unexpected        (AsUnexpected)
-import Component.Term.Parent (AsParentTerm)
-import Component.Type.Parent (AsParentType)
 
 import           Component.Term.Int                (IntTerm, WithIntTerm)
 import           Component.Term.Int.Eval.BigStep   (bigStepInput)
 import           Component.Term.Int.Eval.SmallStep (smallStepInput)
 import           Component.Term.Int.Eval.Value     (valueInput)
-import           Component.Term.Int.Strip          (stripNoteTermInput)
 import           Component.Term.Int.Gen            (genTermInput)
 import           Component.Term.Int.Infer          (inferInput)
 import           Component.Term.Int.Parse          (parseTermInput)
 import           Component.Term.Int.Pretty         (prettyTermInput)
 import           Component.Term.Int.Size           (termSizeInput)
 import           Component.Type.Int                (IntType, WithIntType)
-import           Component.Type.Int.Strip          (stripNoteTypeInput)
 import           Component.Type.Int.Gen            (genTypeInput)
 import           Component.Type.Int.Parse          (parseTypeInput)
 import           Component.Type.Int.Pretty         (prettyTypeInput)
 
 intRules :: ( Eq (ty nTy)
             , AsUnexpected e ty nTy
-            , WithIntType ty nTy
-            , WithIntTerm tm nTm a
-            , AsParentType (IntType ty) ty
-            , AsParentTerm (IntTerm tm) tm
+            , WithIntType ty
+            , WithIntTerm tm
             )
          => ComponentInput r e ty nTy tm nTm a
 intRules =
@@ -46,14 +40,12 @@ intRules =
   where
     tyI =
       TypeInput
-        stripNoteTypeInput
         genTypeInput
         parseTypeInput
         prettyTypeInput
     tmI =
       TermInput
         termSizeInput
-        stripNoteTermInput
         genTermInput
         parseTermInput
         prettyTermInput

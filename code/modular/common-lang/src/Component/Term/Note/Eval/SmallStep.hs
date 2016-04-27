@@ -14,7 +14,7 @@ import Control.Lens (preview, review)
 import Component.Term.Eval.SmallStep (SmallStepRule(..), SmallStepInput(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
-smallStepTmNote :: WithNoteTerm tm n a
+smallStepTmNote :: WithNoteTerm tm
                 => (tm n a -> Maybe (tm n a))
                 -> tm n a
                 -> Maybe (tm n a)
@@ -22,7 +22,7 @@ smallStepTmNote smallStep tm = do
   (_, tm1) <- preview _TmNote tm
   smallStep tm1
 
-smallStepInput :: WithNoteTerm tm n a
+smallStepInput :: WithNoteTerm tm
            => SmallStepInput tm n a
 smallStepInput =
   SmallStepInput

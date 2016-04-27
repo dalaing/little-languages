@@ -17,8 +17,8 @@ import           Component.Term.Infer (InferInput (..), InferRule (..))
 import           Component.Term.Note  (AsNoteTerm (..), WithNoteTerm)
 import           Component.Type.Note  (AsNoteType (..), WithNoteType)
 
-inferTmNote :: ( WithNoteType ty nTy
-               , WithNoteTerm tm nTm a
+inferTmNote :: ( WithNoteType ty
+               , WithNoteTerm tm
                , TranslateNote nTm nTy
                , Monad m
                )
@@ -34,8 +34,8 @@ inferTmNote _ infer =
       ty <- infer tm
       return $ review _TyNote (translateNote n, ty)
 
-inferInput :: ( WithNoteType ty nTy
-              , WithNoteTerm tm nTm a
+inferInput :: ( WithNoteType ty
+              , WithNoteTerm tm
               , TranslateNote nTm nTy
               )
             => InferInput r e ty nTy tm nTm a

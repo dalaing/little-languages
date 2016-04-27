@@ -16,7 +16,6 @@ library
   exposed-modules:     Component.NatBool
                      , Component.Term.NatBool
                      , Component.Term.NatBool.Size
-                     , Component.Term.NatBool.Strip
                      , Component.Term.NatBool.Eval.Value
                      , Component.Term.NatBool.Eval.SmallStep
                      , Component.Term.NatBool.Eval.BigStep

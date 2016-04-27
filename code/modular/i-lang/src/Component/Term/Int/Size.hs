@@ -15,14 +15,14 @@ import Component.Term.Size (TermSizeInput(..), TermSizeRule(..))
 
 import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
-termSizeTmInt :: WithIntTerm tm n a
+termSizeTmInt :: WithIntTerm tm
                => tm n a
                -> Maybe Int
 termSizeTmInt =
   fmap (const 1) .
   preview _TmIntLit
 
-termSizeTmAdd :: WithIntTerm tm n a
+termSizeTmAdd :: WithIntTerm tm
               => (tm n a -> Int)
               -> tm n a
               -> Maybe Int
@@ -33,7 +33,7 @@ termSizeTmAdd size =
     termSizeTmAdd' (x, y) =
       1 + size x + size y
 
-termSizeTmSub :: WithIntTerm tm n a
+termSizeTmSub :: WithIntTerm tm
               => (tm n a -> Int)
               -> tm n a
               -> Maybe Int
@@ -44,7 +44,7 @@ termSizeTmSub size =
     termSizeTmSub' (x, y) =
       1 + size x + size y
 
-termSizeTmMul :: WithIntTerm tm n a
+termSizeTmMul :: WithIntTerm tm
               => (tm n a -> Int)
               -> tm n a
               -> Maybe Int
@@ -55,7 +55,7 @@ termSizeTmMul size =
     termSizeTmMul' (x, y) =
       1 + size x + size y
 
-termSizeTmExp :: WithIntTerm tm n a
+termSizeTmExp :: WithIntTerm tm
               => (tm n a -> Int)
               -> tm n a
               -> Maybe Int
@@ -66,7 +66,7 @@ termSizeTmExp size =
     termSizeTmExp' (x, y) =
       1 + size x + size y
 
-termSizeInput :: WithIntTerm tm n a
+termSizeInput :: WithIntTerm tm
               => TermSizeInput tm n a
 termSizeInput =
   TermSizeInput

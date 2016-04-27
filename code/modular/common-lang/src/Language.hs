@@ -20,6 +20,8 @@ import           Component.Type.Error.UnknownType.Class (AsUnknownType)
 import           Component                           (ComponentInput (..),
                                                       ComponentOutput (..),
                                                       mkComponent)
+import Component.Term.Note.Strip (StripNoteTerm)
+import Component.Type.Note.Strip (StripNoteType)
 
 data LanguageInput r e ty nTy tm nTm a =
   LanguageInput {
@@ -35,6 +37,8 @@ mkLanguage :: ( AsUnknownType e
               , Show (ty nTy)
               , Eq (tm nTm a)
               , Show (tm nTm a)
+              , StripNoteTerm tm tm
+              , StripNoteType ty ty
               )
            => LanguageInput r e ty nTy tm nTm a
            -> ComponentOutput r e ty nTy tm nTm a
@@ -53,6 +57,8 @@ mkLanguageDefaultParser :: ( AsUnknownType e
                            , Show (ty nTy)
                            , Eq (tm nTm a)
                            , Show (tm nTm a)
+                           , StripNoteTerm tm tm
+                           , StripNoteType ty ty
                            )
                         => ComponentInput r e ty nTy tm nTm a
                         -> ComponentOutput r e ty nTy tm nTm a

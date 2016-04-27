@@ -27,8 +27,8 @@ prettyTyArr tm1 tm2 =
   tm2
 
 -- |
-prettyTypeInput :: WithSTLCType ty nTy
-                => PrettyTypeInput ty nTy
+prettyTypeInput :: WithSTLCType ty
+                => PrettyTypeInput ty
 prettyTypeInput =
   PrettyTypeInput
     [ PrettyTypeExpression

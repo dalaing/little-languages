@@ -15,14 +15,14 @@ import Component.Term.Size (TermSizeInput(..), TermSizeRule(..))
 
 import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
-termSizeTmZero :: WithNatTerm tm n a
+termSizeTmZero :: WithNatTerm tm
                => tm n a
                -> Maybe Int
 termSizeTmZero =
   fmap (const 1) .
   preview _TmZero
 
-termSizeTmSucc :: WithNatTerm tm n a
+termSizeTmSucc :: WithNatTerm tm
                => (tm n a -> Int)
                -> tm n a
                -> Maybe Int
@@ -30,7 +30,7 @@ termSizeTmSucc size =
   fmap ((+ 1) . size) .
   preview _TmSucc
 
-termSizeTmPred :: WithNatTerm tm n a
+termSizeTmPred :: WithNatTerm tm
                => (tm n a -> Int)
                -> tm n a
                -> Maybe Int
@@ -38,7 +38,7 @@ termSizeTmPred size =
   fmap ((+ 1) . size) .
   preview _TmPred
 
-termSizeInput :: WithNatTerm tm n a
+termSizeInput :: WithNatTerm tm
               => TermSizeInput tm n a
 termSizeInput =
   TermSizeInput

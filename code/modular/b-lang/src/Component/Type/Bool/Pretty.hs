@@ -18,15 +18,15 @@ import Component.Type.Pretty (PrettyTypeInput(..), PrettyTypeRule(..))
 
 import Component.Type.Bool (AsBoolType(..), WithBoolType)
 
-prettyTyBool :: WithBoolType ty n
+prettyTyBool :: WithBoolType ty
              => ty n
              -> Maybe Doc
 prettyTyBool =
   fmap (const . reservedConstructor $ "Bool") .
   preview _TyBool
 
-prettyTypeInput :: WithBoolType ty n
-                => PrettyTypeInput ty n
+prettyTypeInput :: WithBoolType ty
+                => PrettyTypeInput ty
 prettyTypeInput =
   PrettyTypeInput
     [PrettyTypeBase prettyTyBool]

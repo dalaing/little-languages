@@ -17,15 +17,15 @@ import Component.Type.Pretty (PrettyTypeInput(..), PrettyTypeRule(..))
 
 import Component.Type.Nat (AsNatType(..), WithNatType)
 
-prettyTyNat :: WithNatType ty n
+prettyTyNat :: WithNatType ty
              => ty n
              -> Maybe Doc
 prettyTyNat =
   fmap (const . reservedConstructor $ "Nat") .
   preview _TyNat
 
-prettyTypeInput :: WithNatType ty n
-                => PrettyTypeInput ty n
+prettyTypeInput :: WithNatType ty
+                => PrettyTypeInput ty
 prettyTypeInput =
   PrettyTypeInput
     [PrettyTypeBase prettyTyNat]

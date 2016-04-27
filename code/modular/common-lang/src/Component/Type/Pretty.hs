@@ -9,6 +9,7 @@ Portability : non-portable
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 module Component.Type.Pretty (
     PrettyTypeRule(..)
   , PrettyTypeInput(..)
@@ -26,14 +27,14 @@ import Text.PrettyPrint.ANSI.Leijen (Doc, text, parens)
 import Common.Text (ExpressionInfo(..))
 
 -- |
-data PrettyTypeRule ty n =
-    PrettyTypeBase (ty n -> Maybe Doc)                   -- ^
-  | PrettyTypeExpression ExpressionInfo (ty n -> Maybe (ty n, ty n)) (Doc -> Doc -> Doc)
-  | PrettyTypeRecurse ((ty n -> Doc) -> ty n -> Maybe Doc) -- ^
+data PrettyTypeRule ty =
+    PrettyTypeBase (forall n. ty n -> Maybe Doc)                   -- ^
+  | PrettyTypeExpression ExpressionInfo (forall n. ty n -> Maybe (ty n, ty n)) (Doc -> Doc -> Doc)
+  | PrettyTypeRecurse (forall n. (ty n -> Doc) -> ty n -> Maybe Doc) -- ^
 
 -- |
 fixPrettyTypeRule :: (ty n -> Doc)
-                  -> PrettyTypeRule ty n
+                  -> PrettyTypeRule ty
                   -> ty n
                   -> Maybe Doc
 fixPrettyTypeRule _ (PrettyTypeBase f) x =
@@ -45,27 +46,27 @@ fixPrettyTypeRule step (PrettyTypeRecurse f) x =
   f step x
 
 -- |
-data PrettyTypeInput ty n =
-  PrettyTypeInput [PrettyTypeRule ty n] -- ^
+data PrettyTypeInput ty =
+  PrettyTypeInput [PrettyTypeRule ty] -- ^
 
-instance Monoid (PrettyTypeInput ty n) where
+instance Monoid (PrettyTypeInput ty) where
   mempty =
     PrettyTypeInput mempty
   mappend (PrettyTypeInput v1) (PrettyTypeInput v2) =
     PrettyTypeInput (mappend v1 v2)
 
 -- |
-data PrettyTypeOutput ty n =
+data PrettyTypeOutput ty =
   PrettyTypeOutput {
-    _prettyType      :: ty n -> Doc         -- ^
-  , _prettyTypeRules :: [ty n -> Maybe Doc] -- ^
+    _prettyType      :: forall n. ty n -> Doc         -- ^
+  , _prettyTypeRules :: forall n. [ty n -> Maybe Doc] -- ^
   }
 
 makeClassy ''PrettyTypeOutput
 
 -- |
-mkPrettyType :: PrettyTypeInput ty n  -- ^
-             -> PrettyTypeOutput ty n -- ^
+mkPrettyType :: PrettyTypeInput ty  -- ^
+             -> PrettyTypeOutput ty -- ^
 mkPrettyType (PrettyTypeInput i) =
   let
     prettyTypeRules' =

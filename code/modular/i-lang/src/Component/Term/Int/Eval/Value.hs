@@ -15,14 +15,14 @@ import Component.Term.Eval.Value (ValueRule(..), ValueInput(..))
 
 import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
-valueTmInt :: WithIntTerm tm n a
+valueTmInt :: WithIntTerm tm
             => tm n a
             -> Maybe (tm n a)
 valueTmInt =
   fmap (review _TmIntLit) .
   preview _TmIntLit
 
-valueInput :: WithIntTerm tm n a
+valueInput :: WithIntTerm tm
            => ValueInput tm n a
 valueInput =
   ValueInput

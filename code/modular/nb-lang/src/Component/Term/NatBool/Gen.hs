@@ -19,14 +19,14 @@ import           Component.Type.Bool (AsBoolType (..), WithBoolType)
 import           Component.Term.NatBool (AsNatBoolTerm (..), WithNatBoolTerm)
 
 -- |
-genTmIsZero :: WithNatBoolTerm tm n a
+genTmIsZero :: WithNatBoolTerm tm
             => Gen (tm n a)
             -> Gen (tm n a)
 genTmIsZero g =
   review _TmIsZero <$> g
 
 -- |
-shrinkTmIsZero :: WithNatBoolTerm tm n a
+shrinkTmIsZero :: WithNatBoolTerm tm
              => (tm n a -> [tm n a])
              -> tm n a        -- ^
              -> Maybe [tm n a] -- ^
@@ -38,9 +38,9 @@ shrinkTmIsZero s =
       s tm ++ [tm] ++
       fmap (review _TmIsZero) (s tm)
 
-genContainingTmIsZero :: ( WithNatBoolTerm tm nTm a
-                         , WithNatType ty nTy
-                         , WithBoolType ty nTy
+genContainingTmIsZero :: ( WithNatBoolTerm tm
+                         , WithNatType ty
+                         , WithBoolType ty
                          )
                       => (ty nTy -> Int -> Gen (tm nTm a))
                       -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
@@ -58,9 +58,9 @@ genContainingTmIsZero _ genContaining tm ty s =
       tm1 <- genContaining tm (review _TyNat ()) s'
       return $ review _TmIsZero tm1
 
-genWellTypedTmIsZero :: ( WithNatBoolTerm tm nTm a
-                        , WithNatType ty nTy
-                        , WithBoolType ty nTy
+genWellTypedTmIsZero :: ( WithNatBoolTerm tm
+                        , WithNatType ty
+                        , WithBoolType ty
                         )
                      => (ty nTy -> Int -> Gen (tm nTm a))
                      -> ty nTy
@@ -73,9 +73,9 @@ genWellTypedTmIsZero genWellTyped ty s = do
     tm1 <- genWellTyped (review _TyNat ()) s'
     return $ review _TmIsZero tm1
 
-genIllTypedTmIsZero :: ( WithNatBoolTerm tm nTm a
-                       , WithNatType ty nTy
-                       , WithBoolType ty nTy
+genIllTypedTmIsZero :: ( WithNatBoolTerm tm
+                       , WithNatType ty
+                       , WithBoolType ty
                        )
                   => (ty nTy -> Gen (ty nTy))
                   -> (ty nTy -> Int -> Gen (tm nTm a))
@@ -90,9 +90,9 @@ genIllTypedTmIsZero genNotType genWellTyped ty s = do
     tm1 <- genWellTyped nty s'
     return $ review _TmIsZero tm1
 
-genTermInput :: ( WithNatBoolTerm tm nTm a
-                , WithNatType ty nTy
-                , WithBoolType ty nTy
+genTermInput :: ( WithNatBoolTerm tm
+                , WithNatType ty
+                , WithBoolType ty
                 )
              => GenTermInput ty nTy tm nTm a
 genTermInput =

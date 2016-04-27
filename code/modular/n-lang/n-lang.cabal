@@ -16,7 +16,6 @@ library
   exposed-modules:     Component.Nat
                      , Component.Term.Nat
                      , Component.Term.Nat.Size
-                     , Component.Term.Nat.Strip
                      , Component.Term.Nat.Eval.Value
                      , Component.Term.Nat.Eval.SmallStep
                      , Component.Term.Nat.Eval.BigStep
@@ -25,7 +24,6 @@ library
                      , Component.Term.Nat.Pretty
                      , Component.Term.Nat.Gen
                      , Component.Type.Nat
-                     , Component.Type.Nat.Strip
                      , Component.Type.Nat.Parse
                      , Component.Type.Nat.Pretty
                      , Component.Type.Nat.Gen

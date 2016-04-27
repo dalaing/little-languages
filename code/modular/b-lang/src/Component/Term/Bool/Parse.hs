@@ -19,7 +19,7 @@ import Common.Parse (reserveConstructors, reserveIdentifiers, ParserHelperOutput
 import Component.Term.Parse (ParseTermInput(..), ParseTermRule(..))
 
 -- |
-parseTmFalse :: WithBoolTerm tm n a
+parseTmFalse :: WithBoolTerm tm
              => ParserHelperOutput
              -> Parser (tm n a)           -- ^
 parseTmFalse h =
@@ -29,7 +29,7 @@ parseTmFalse h =
     review _TmFalse () <$ rc "False" <?> "False"
 
 -- |
-parseTmTrue :: WithBoolTerm tm n a
+parseTmTrue :: WithBoolTerm tm
             => ParserHelperOutput
             -> Parser (tm n a)           -- ^
 parseTmTrue h =
@@ -39,7 +39,7 @@ parseTmTrue h =
     review _TmTrue () <$ rc "True" <?> "True"
 
 -- |
-parseTmIf :: WithBoolTerm tm n a
+parseTmIf :: WithBoolTerm tm
           => ParserHelperOutput
           -> Parser (tm n a)           -- ^
           -> Parser (tm n a)           -- ^
@@ -54,7 +54,7 @@ parseTmIf h parseTerm =
         ri "else" <*> parseTerm)
       <?> "if-then-else"
 
-parseTermInput :: WithBoolTerm tm nTm a
+parseTermInput :: WithBoolTerm tm
                => ParseTermInput ty nTy tm nTm a
 parseTermInput =
   ParseTermInput

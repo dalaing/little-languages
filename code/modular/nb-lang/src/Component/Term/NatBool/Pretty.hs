@@ -19,7 +19,7 @@ import           Component.Term.Pretty        (PrettyTermInput(..), PrettyTermRu
 import           Component.Term.NatBool         (AsNatBoolTerm (..), WithNatBoolTerm)
 
 -- |
-prettyTmIsZero :: WithNatBoolTerm tm n a
+prettyTmIsZero :: WithNatBoolTerm tm
                => (tm n a -> Doc) -- ^
                -> tm n a         -- ^
                -> Maybe Doc   -- ^
@@ -31,7 +31,7 @@ prettyTmIsZero prettyTerm =
       reservedIdentifier "isZero" <+> prettyTerm tm
 
 -- |
-prettyTermInput :: WithNatBoolTerm tm nTm a
+prettyTermInput :: WithNatBoolTerm tm
                 => PrettyTermInput ty nTy tm nTm a
 prettyTermInput =
   PrettyTermInput

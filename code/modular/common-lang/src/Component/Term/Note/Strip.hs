@@ -5,32 +5,28 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
-{-# LANGUAGE RankNTypes        #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE TemplateHaskell        #-}
-{-# LANGUAGE KindSignatures        #-}
 module Component.Term.Note.Strip (
+  StripNoteTerm(..)
+{-
     StripNoteTermRule(..)
   , StripNoteTermInput(..)
   , StripNoteTermOutput(..)
   , HasStripNoteTermOutput(..)
   , mkStripNoteTerm
   , stripNoteTermInput
+-}
   ) where
 
-import Data.Maybe (fromJust)
-import Data.Foldable (asum)
+class StripNoteTerm x p | x -> p where
+  mapMaybeNoteTerm :: (n -> Maybe m) -> x n a -> p m a
 
-import Control.Lens (preview, review)
-import Control.Lens.TH (makeClassy)
+  stripNoteTerm :: x n a -> p m a
+  stripNoteTerm = mapMaybeNoteTerm (const Nothing)
 
-import Component.Term.Parent (AsParentTerm(..))
-import Component.Term.Note (NoteTerm(..))
-
+{-
 data StripNoteTermRule (ty :: * -> *) nTy tm =
     StripNoteTermBase (forall nTm mTm a. (nTm -> Maybe mTm) -> (tm nTm a -> tm mTm a) -> tm nTm a -> Maybe (tm mTm a))
   | StripNoteTermRecurse (forall nTm mTm a. (tm nTm a -> tm mTm a) -> tm nTm a -> Maybe (tm mTm a))
@@ -98,3 +94,4 @@ stripNoteTermInput :: AsParentTerm (NoteTerm tm) tm => StripNoteTermInput ty nTy
 stripNoteTermInput =
   StripNoteTermInput
     [StripNoteTermBase stripNoteTmNote]
+-}

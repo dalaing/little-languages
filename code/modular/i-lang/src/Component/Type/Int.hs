@@ -17,13 +17,26 @@ module Component.Type.Int (
   , WithIntType
   ) where
 
-import           Control.Lens.TH (makeClassyPrisms)
+import Control.Lens (review)
+import Control.Lens.Prism (Prism', prism)
+
+import Component.Type.Note.Strip (StripNoteType(..))
 
 -- |
 data IntType (ty :: * -> *) n =
   TyInt -- ^
   deriving (Eq, Ord, Show)
 
-makeClassyPrisms ''IntType
+class AsIntType s ty | s -> ty where
+  _IntType :: Prism' (s n) (IntType ty n)
+  _TyInt :: Prism' (s n) ()
+  _TyInt =
+    _IntType .
+    prism
+      (const TyInt)
+      (\x -> case x of TyInt -> Right ())
 
-type WithIntType ty n = AsIntType (ty n) ty n
+instance (AsIntType ty ty, StripNoteType ty ty) => StripNoteType (IntType ty) ty where
+  mapMaybeNoteType _ TyInt = review _TyInt ()
+
+type WithIntType ty = AsIntType ty ty

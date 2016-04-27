@@ -16,7 +16,7 @@ import Component.Term.Eval.BigStep (BigStepRule(..), BigStepInput(..))
 import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 
 -- |
-eTrue :: WithBoolTerm tm n a
+eTrue :: WithBoolTerm tm
       => tm n a              -- ^
       -> Maybe (tm n a)        -- ^
 eTrue =
@@ -24,7 +24,7 @@ eTrue =
   preview _TmTrue
 
 -- |
-eFalse :: WithBoolTerm tm n a
+eFalse :: WithBoolTerm tm
        => tm n a              -- ^
        -> Maybe (tm n a)        -- ^
 eFalse =
@@ -32,7 +32,7 @@ eFalse =
   preview _TmFalse
 
 -- |
-eIfTrue :: WithBoolTerm tm n a
+eIfTrue :: WithBoolTerm tm
         => (tm n a -> Maybe (tm n a)) -- ^
         -> tm n a              -- ^
         -> Maybe (tm n a)         -- ^
@@ -43,7 +43,7 @@ eIfTrue step tm = do
   step tm2
 
 -- |
-eIfFalse :: WithBoolTerm tm n a
+eIfFalse :: WithBoolTerm tm
          => (tm n a -> Maybe (tm n a)) -- ^
          -> tm n a              -- ^
          -> Maybe (tm n a)         -- ^
@@ -54,7 +54,7 @@ eIfFalse step tm = do
   step tm3
 
 -- |
-bigStepInput :: WithBoolTerm tm n a
+bigStepInput :: WithBoolTerm tm
              => BigStepInput tm n a
 bigStepInput =
   BigStepInput

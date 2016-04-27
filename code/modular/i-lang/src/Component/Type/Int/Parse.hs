@@ -19,7 +19,7 @@ import Component.Type.Parse (ParseTypeInput(..), ParseTypeRule(..))
 import Component.Type.Int (AsIntType(..), WithIntType)
 
 -- |
-parseTyInt :: WithIntType ty n
+parseTyInt :: WithIntType ty
            => ParserHelperOutput
            -> Parser (ty n)           -- ^
 parseTyInt h =
@@ -28,7 +28,7 @@ parseTyInt h =
   in
     review _TyInt () <$ rc "Int" <?> "Int"
 
-parseTypeInput :: WithIntType ty n
+parseTypeInput :: WithIntType ty
                => ParseTypeInput ty n
 parseTypeInput =
   ParseTypeInput

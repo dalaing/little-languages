@@ -20,8 +20,8 @@ import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 -- |
 inferTmInt :: ( Monad m
-               , WithIntTerm tm nTm a
-               , WithIntType ty nTy
+               , WithIntTerm tm
+               , WithIntType ty
                )
             => tm nTm a          -- ^
             -> Maybe (m (ty nTy)) -- ^
@@ -33,8 +33,8 @@ inferTmInt =
 inferTmAdd :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
               , MonadError e m
-              , WithIntTerm tm nTm a
-              , WithIntType ty nTy
+              , WithIntTerm tm
+              , WithIntType ty
               )
            => (ty nTy -> ty nTy)
            -> (tm nTm a -> m (ty nTy))       -- ^
@@ -56,8 +56,8 @@ inferTmAdd stripNote infer =
 inferTmSub :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
               , MonadError e m
-              , WithIntTerm tm nTm a
-              , WithIntType ty nTy
+              , WithIntTerm tm
+              , WithIntType ty
               )
            => (ty nTy -> ty nTy)
            -> (tm nTm a -> m (ty nTy))       -- ^
@@ -79,8 +79,8 @@ inferTmSub stripNote infer =
 inferTmMul :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
               , MonadError e m
-              , WithIntTerm tm nTm a
-              , WithIntType ty nTy
+              , WithIntTerm tm
+              , WithIntType ty
               )
            => (ty nTy -> ty nTy)
            -> (tm nTm a -> m (ty nTy))       -- ^
@@ -102,8 +102,8 @@ inferTmMul stripNote infer =
 inferTmExp :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
               , MonadError e m
-              , WithIntTerm tm nTm a
-              , WithIntType ty nTy
+              , WithIntTerm tm
+              , WithIntType ty
               )
            => (ty nTy -> ty nTy)
            -> (tm nTm a -> m (ty nTy))       -- ^
@@ -124,8 +124,8 @@ inferTmExp stripNote infer =
 -- |
 inferInput :: ( Eq (ty nTy)
               , AsUnexpected e ty nTy
-              , WithIntTerm tm nTm a
-              , WithIntType ty nTy
+              , WithIntTerm tm
+              , WithIntType ty
               )
            => InferInput r e ty nTy tm nTm a
 inferInput =

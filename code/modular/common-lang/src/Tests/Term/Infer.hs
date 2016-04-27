@@ -41,7 +41,7 @@ mkInferTests c =
     [ testProperty "patterns unique" $ propPatternUnique c
     , testProperty "unknown never occurs" $ propUnknownNever c
     , testProperty "well-typed infer" $ propWellTypedInfer c
---    , testProperty "ill-typed infer" $ propIllTypedInfer c
+    , testProperty "ill-typed infer" $ propIllTypedInfer c
     , testProperty "progress" $ propProgress c
     , testProperty "preservation" $ propPreservation c
     ]
@@ -114,7 +114,6 @@ propWellTypedInfer c =
       isRight .
       infer'
 
-{-
 propIllTypedInfer :: ( Show (tm nTm a)
                      , Monoid r
                      )
@@ -123,13 +122,18 @@ propIllTypedInfer :: ( Show (tm nTm a)
 propIllTypedInfer c =
   let
     genIllTypedTerm' = view genIllTypedTerm c
-    shrIllTypedTerm' = view shrIllTypedTerm c
+    genContainingTerm' = view genContainingTerm c
+    shrContainingTerm' = view shrContainingTerm c
+    genAnyType' = view genAnyType c
+    gen = do
+      ty <- genAnyType'
+      tm <- genIllTypedTerm' ty
+      genContainingTerm' tm ty
     infer' = runInfer mempty . view infer c
   in
-    forAllShrink genIllTypedTerm' shrIllTypedTerm' $
+    forAllShrink gen shrContainingTerm' $
       isLeft .
       infer'
--}
 
 propProgress :: ( Show (tm nTm a)
                 , Monoid r

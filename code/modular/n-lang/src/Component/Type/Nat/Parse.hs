@@ -19,7 +19,7 @@ import Component.Type.Parse (ParseTypeInput(..), ParseTypeRule(..))
 import Component.Type.Nat (AsNatType(..), WithNatType)
 
 -- |
-parseTyNat :: WithNatType ty n
+parseTyNat :: WithNatType ty
              => ParserHelperOutput
              -> Parser (ty n)           -- ^
 parseTyNat h =
@@ -28,7 +28,7 @@ parseTyNat h =
   in
     review _TyNat () <$ rc "Nat" <?> "Nat"
 
-parseTypeInput :: WithNatType ty n
+parseTypeInput :: WithNatType ty
                => ParseTypeInput ty n
 parseTypeInput =
   ParseTypeInput

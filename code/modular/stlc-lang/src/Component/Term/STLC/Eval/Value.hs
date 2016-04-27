@@ -15,14 +15,14 @@ import Component.Term.Eval.Value (ValueRule(..), ValueInput(..))
 
 import Component.Term.STLC (AsSTLCTerm(..), WithSTLCTerm)
 
-valueTmLam :: WithSTLCTerm tm ty nTy nTm a
+valueTmLam :: WithSTLCTerm tm ty nTy
            => tm nTm a
            -> Maybe (tm nTm a)
 valueTmLam =
   fmap (review _TmLam) .
   preview _TmLam
 
-valueInput :: WithSTLCTerm tm ty nTy nTm a
+valueInput :: WithSTLCTerm tm ty nTy
            => ValueInput tm nTm a
 valueInput =
   ValueInput

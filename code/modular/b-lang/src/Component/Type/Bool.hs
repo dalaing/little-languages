@@ -9,8 +9,6 @@ Portability : non-portable
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE KindSignatures #-}
 module Component.Type.Bool (
     BoolType(..)
@@ -18,13 +16,26 @@ module Component.Type.Bool (
   , WithBoolType
   ) where
 
-import Control.Lens.TH (makeClassyPrisms)
+import Control.Lens (review)
+import Control.Lens.Prism (Prism', prism)
+
+import Component.Type.Note.Strip (StripNoteType(..))
 
 -- |
 data BoolType (ty :: * -> *) n =
   TyBool -- ^
   deriving (Eq, Ord, Show)
 
-makeClassyPrisms ''BoolType
+class AsBoolType s ty | s -> ty where
+  _BoolType :: Prism' (s n) (BoolType ty n)
+  _TyBool :: Prism' (s n) ()
+  _TyBool =
+    _BoolType .
+    prism
+      (const TyBool)
+      (\x -> case x of TyBool -> Right ())
 
-type WithBoolType ty n = AsBoolType (ty n) ty n
+instance (AsBoolType ty ty, StripNoteType ty ty) => StripNoteType (BoolType ty) ty where
+  mapMaybeNoteType _ TyBool = review _TyBool ()
+
+type WithBoolType ty = AsBoolType ty ty

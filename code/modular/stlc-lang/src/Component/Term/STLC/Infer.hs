@@ -18,14 +18,14 @@ import Bound (instantiate1)
 import Component.Type.Error.Unexpected (AsUnexpected)
 import Component.Term.Infer (InferRule(..), InferInput(..))
 
-import Component.Type.STLC (WithSTLCType, HasContext, findInContext, applyArrow, withInContext)
+import Component.Type.STLC (AsSTLCType(..), WithSTLCType, HasContext, findInContext, applyArrow, withInContext)
 import Component.Term.STLC (AsSTLCTerm(..), AsSTLCVar(..), WithSTLCTerm)
 import Component.Type.Error.FreeVar (AsFreeVar)
 import Component.Type.Error.NotArrow (AsNotArrow)
 
 inferTmVar :: ( Ord a
-              , WithSTLCType ty nTy
-              , WithSTLCTerm tm ty nTy nTm a
+              , WithSTLCType ty
+              , WithSTLCTerm tm ty nTy
               , HasContext r ty nTy a
               , MonadReader r m
               , AsFreeVar e a
@@ -38,8 +38,8 @@ inferTmVar =
   preview _TmVar
 
 inferTmApp :: ( Eq (ty nTy)
-              , WithSTLCType ty nTy
-              , WithSTLCTerm tm ty nTy nTm a
+              , WithSTLCType ty
+              , WithSTLCTerm tm ty nTy
               , AsUnexpected e ty nTy
               , AsNotArrow e ty nTy
               , MonadError e m
@@ -57,8 +57,8 @@ inferTmApp stripNote infer =
       ty2 <- infer tm2
       applyArrow stripNote ty1 ty2
 
-inferTmLam :: ( WithSTLCType ty nTy
-              , WithSTLCTerm tm ty nTy nTm String
+inferTmLam :: ( WithSTLCType ty
+              , WithSTLCTerm tm ty nTy
               , HasContext r ty nTy String
               , MonadReader r m
               , Monad (tm nTm)
@@ -71,12 +71,13 @@ inferTmLam _ infer =
     fmap inferTmLam' .
     preview _TmLam
   where
-    inferTmLam' (n, ty, s) =
-      withInContext n ty $ infer (instantiate1 (review _TmVar n) s)
+    inferTmLam' (n, ty1, s) = do
+      ty2 <- withInContext n ty1 $ infer (instantiate1 (review _TmVar n) s)
+      return $ review _TyArr (ty1, ty2)
 
 inferInput :: ( Eq (ty nTy)
-              , WithSTLCType ty nTy
-              , WithSTLCTerm tm ty nTy nTm String
+              , WithSTLCType ty
+              , WithSTLCTerm tm ty nTy
               , HasContext r ty nTy String
               , AsUnexpected e ty nTy
               , AsFreeVar e String

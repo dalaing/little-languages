@@ -14,7 +14,6 @@ Portability : non-portable
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE TemplateHaskell        #-}
 module Component.Term.Note (
     NoteTerm(..)
   , AsNoteTerm(..)
@@ -26,15 +25,27 @@ import Data.Monoid ((<>))
 import Data.Bifunctor (Bifunctor(..))
 import Data.Bifoldable (Bifoldable(..))
 import Data.Bitraversable
-import           Control.Lens.TH (makeClassyPrisms)
+import Control.Lens (review)
+import           Control.Lens.Prism (Prism', prism)
 
 import           Bound2           (Bound2 (..))
+
+import Component.Term.Note.Strip (StripNoteTerm(..))
 
 data NoteTerm tm n a =
   TmNote n (tm n a)
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
-makeClassyPrisms ''NoteTerm
+class AsNoteTerm s tm | s -> tm where
+  _NoteTerm :: Prism' (s n a) (NoteTerm tm n a)
+  _TmNote :: Prism' (s n a) (n, tm n a)
+  _TmNote =
+    _NoteTerm .
+    prism
+      (uncurry TmNote)
+      (\x -> case x of TmNote n tm -> Right (n, tm))
+
+type WithNoteTerm tm = AsNoteTerm tm tm
 
 instance Bifunctor tm => Bifunctor (NoteTerm tm) where
   bimap l r (TmNote n tm) = TmNote (l n) (bimap l r tm)
@@ -48,4 +59,9 @@ instance Bitraversable tm => Bitraversable (NoteTerm tm) where
 instance Bound2 NoteTerm where
   TmNote n tm >>>>= f = TmNote n (tm >>= f)
 
-type WithNoteTerm tm n a = AsNoteTerm (tm n a) tm n a
+instance (AsNoteTerm tm tm, StripNoteTerm tm tm) => StripNoteTerm (NoteTerm tm) tm where
+
+  mapMaybeNoteTerm f (TmNote n tm) =
+    case f n of
+      Nothing -> mapMaybeNoteTerm f tm
+      Just m -> review _TmNote (m, mapMaybeNoteTerm f tm)

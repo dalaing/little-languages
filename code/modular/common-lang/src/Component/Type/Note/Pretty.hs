@@ -17,7 +17,7 @@ import           Component.Type.Note          (AsNoteType (..), WithNoteType)
 import           Component.Type.Pretty        (PrettyTypeInput (..),
                                                PrettyTypeRule (..))
 
-prettyTyNote :: WithNoteType ty n
+prettyTyNote :: WithNoteType ty
              => (ty n -> Doc)
              -> ty n
              -> Maybe Doc
@@ -25,8 +25,8 @@ prettyTyNote prettyType =
   fmap (prettyType . snd) .
   preview _TyNote
 
-prettyTypeInput :: WithNoteType ty n
-                => PrettyTypeInput ty n
+prettyTypeInput :: WithNoteType ty
+                => PrettyTypeInput ty
 prettyTypeInput =
   PrettyTypeInput
     [PrettyTypeRecurse prettyTyNote]

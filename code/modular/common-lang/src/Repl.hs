@@ -28,7 +28,7 @@ import           Component.Type.Pretty        (HasPrettyTypeOutput (..))
 import           Component.Type.Error.Pretty  (HasPrettyTypeErrorOutput (..))
 import Component.Term.Note (WithNoteTerm)
 
-mkParseAndEval :: ( WithNoteTerm tm Span a
+mkParseAndEval :: ( WithNoteTerm tm
                   , Monoid r
                   )
                => ComponentOutput r e ty Span tm Span a
@@ -53,7 +53,7 @@ mkParseAndEval c s =
           text ":" <+>
           prettyType' ty
 
-mkRepl :: ( WithNoteTerm tm Span String
+mkRepl :: ( WithNoteTerm tm
           , Monoid r
           )
        => ComponentOutput r e ty Span tm Span String

@@ -24,7 +24,6 @@ library
                      , Language
                      , Component
                      , Component.Term
-                     , Component.Term.Parent
                      , Component.Term.Size
                      , Component.Term.Eval.Value
                      , Component.Term.Eval.SmallStep
@@ -34,7 +33,6 @@ library
                      , Component.Term.Parse
                      , Component.Term.Gen
                      , Component.Type
-                     , Component.Type.Parent
                      , Component.Type.Pretty
                      , Component.Type.Parse
                      , Component.Type.Gen
