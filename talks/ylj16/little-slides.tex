@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[aspectration=169]{beamer}
 
 \title{Little Languages}
 \author{Dave Laing}
@@ -441,13 +441,6 @@ There are some properties that we want to hold for our small-step function.
 \end{frame}
 
 \begin{frame}[c]
-  \begin{center}
-We want to phrase the properties so that we can reuse both the properties and
-the methods we use to become confident that the properties hold.
-  \end{center}
-\end{frame}
-
-\begin{frame}[c]
   Property 1
   \begin{center}
 All values are normal forms.
@@ -478,104 +471,19 @@ Small-step is normalizing.
 \section{Testing the small-step semantics}
 
 \begin{frame}[fragile]
+  \begin{center}
+  Need some generators and friends
+  \end{center}
   \begin{minted}{haskell}
-genTmTrue :: Gen Term
-genTmTrue = 
-  pure TmTrue
-
-shrTmTrue :: Term 
-           -> Maybe [Term]
-shrTmTrue TmTrue = 
-  Just []
-shrTmTrue _ = 
-  Nothing
+genAnyTerm :: Gen Term
+shrAnyTerm :: Term -> [Term]
   \end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
-  \begin{minted}{haskell}
-genTmFalse :: Gen Term
-genTmFalse = 
-  pure TmFalse
-
-shrTmFalse :: Term 
-           -> Maybe [Term]
-shrTmFalse TmFalse = 
-  Just []
-shrTmFalse _ = 
-  Nothing
-  \end{minted}
-\end{frame}
-
-\begin{frame}[fragile]
-  \begin{minted}{haskell}
-genTmIf :: Gen Term 
-        -> Gen Term 
-        -> Gen Term 
-        -> Gen Term
-genTmIf g1 g2 g3 = 
-  TmIf <$> g1 <*> g2 <*> g3
-  \end{minted}
-\end{frame}
-
-\begin{frame}[fragile]
-  \begin{minted}{haskell}
-shrTmIf :: (Term -> [Term]) 
-        -> (Term -> [Term]) 
-        -> (Term -> [Term]) 
-        -> Term 
-        -> Maybe [Term]
-shrTmIf s1 s2 s3 = 
-    fmap shrTmIf' . 
-    preview _TmIf
-  where
-    shrTmIf' (tm1, tm2, tm3) =
-      s1 tm1 ++ [tm1] ++
-      s2 tm2 ++ [tm2] ++
-      s3 tm3 ++ [tm3] ++
-      fmap (\u1 -> TmIf u1 tm2 tm3) (s1 tm1) ++
-      fmap (\u2 -> TmIf tm1 u2 tm3) (s2 tm2) ++
-      fmap (\u3 -> TmIf tm1 tm2 u3) (s3 tm3)
-  \end{minted}
-\end{frame}
-
-\begin{frame}[fragile]
-  \begin{minted}{haskell}
-genTerm :: Gen Term
-genTerm = sized genTerm'
-
-genTerm' :: Int -> Gen Term
-genTerm' s = oneof (zeroSize ++ nonZeroSize)
-  where
-    zeroSize = [genTmFalse, genTmTrue]
-    nonZeroSize = 
-      let
-        child = genTerm' (s `div` 3)
-      in
-        if s == 0 then [] else [genTmIf child child child]
-  \end{minted}
-\end{frame}
-
-\begin{frame}[fragile]
-  \begin{minted}{haskell}
-shrinkTermRules :: [Term -> Maybe [Term]] 
-shrinkTermRules =
-  [ shrTmTrue
-  , shrTmFalse
-  , shrTmIf shrinkTerm shrinkTerm shrinkTerm
-  ]
-
-shrinkTerm :: Term 
-           -> [Term]
-shrinkTerm tm =
-  fromMaybe [] .
-  asum .
-  map ($ tm) $
-  shrinkTermRules
-  \end{minted}
-\end{frame}
-
-\begin{frame}[fragile]
+  \begin{center}
+  We can wrap them in newtypes
+  \end{center}
   \begin{minted}{haskell}
 newtype AnyTerm = 
   AnyTerm { 
@@ -584,22 +492,25 @@ newtype AnyTerm =
    
 instance Arbitrary AnyTerm where 
   arbitrary = 
-    AnyTerm <$> genTerm
+    AnyTerm <$> genAnyTerm
   shrink = 
     fmap AnyTerm .
-    shrinkTerm .
+    shrAnyTerm .
     getAnyTerm
   \end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{center}
+  We can use them in properties directly
+  \end{center}
   \begin{minted}{haskell}
-forAllShrink genTerm shrinkTerm $ \tm -> ...
+forAllShrink genAnyTerm shrAnyTerm $ \tm -> ...
   \end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
-Helpers
+  We also need some helpers
   \begin{minted}{haskell}
 isValue      = 
   isJust . value
@@ -689,6 +600,15 @@ prop_normalizing (AnyTerm tm) =
   case smallStep tm of
     Nothing -> True
     Just tm' -> termSize tm' < termSize tm
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+  Bonus Property
+  \begin{minted}{haskell}
+prop_correct_fast :: AnyTerm -> Property
+prop_correct_fast (AnyTerm tm) =
+  smallStepEval tm === fastCowboyEval tm
   \end{minted}
 \end{frame}
 
@@ -859,7 +779,7 @@ TmFalse
 
 \begin{frame}[fragile]
   \begin{center}
-    In general: Need some new generators and friends
+  Need some more generators and friends
   \end{center}
   \begin{minted}{haskell}
 genAnyType       :: Gen Type
@@ -899,24 +819,7 @@ prop_preservation (WellTypedTerm tm) =
 
 \begin{frame}[fragile]
   \begin{center}
-   Check that only one inference pattern applies per term.
-  \end{center}
-  \begin{minted}{haskell}
-prop_patternUnique :: WellTypedTerm -> Property
-prop_patternUnique (WellTypedTerm tm) =
-  let
-    matches =
-      length .
-      mapMaybe (\i -> fmap runInfer . i $ tm) $
-      inferTermRules
-  in
-    matches === 1
-  \end{minted}
-\end{frame} 
-
-\begin{frame}[fragile]
-  \begin{center}
-   Check that ill-typed terms result in type errors and that well-typed terms
+   Good to double check that ill-typed terms result in type errors and that well-typed terms
    result in types.
   \end{center}
   \begin{minted}{haskell}
@@ -930,7 +833,7 @@ prop_wellTypedInfer (WellTypedTerm tm ) =
   \end{minted}
 \end{frame} 
 
-\section{Parsing B}
+\section{Parsing and printing B}
 
 \begin{frame}[c]
   \begin{center}
@@ -940,39 +843,31 @@ Parse with $\tt{parsers}$ and $\tt{trifecta}$, print with $\tt{ansi-wl-pprint}$.
 
 \begin{frame}[fragile]
   \begin{minted}{haskell}
-identifierStyle :: TokenParsing m
-                => IdentifierStyle m
-identifierStyle =
-  IdentifierStyle {
-    _styleName      = "identitfier"
-  , _styleStart     = lower <|> char '_'
-  , _styleLetter    = alphaNum <|> char '_'
-  , _styleReserved  = HS.fromList 
-      ["if" , "then" , "else"]
-  , _styleHighlight = Identifier
-  , _styleReservedHighlight = ReservedIdentifier
-  }
+parseTmFalse :: (Monad m , TokenParsing m)
+             => m Term           
+parseTmFalse =
+  TmFalse <$ symbol "False" <?> "False"
 
-reservedIdentifier :: (Monad m , TokenParsing m)
-                   => String -> m ()
-reservedIdentifier =
-  reserve identifierStyle
+prettyTmFalse :: Term -> Maybe Doc
+prettyTmFalse TmFalse =
+  Just $ text "False"
+prettyTmFalse _ =
+  Nothing
   \end{minted}
 \end{frame} 
 
 \begin{frame}[fragile]
   \begin{minted}{haskell}
-parseTmFalse :: (Monad m , TokenParsing m)
-             => m Term           
-parseTmFalse =
-  TmFalse <$ reservedConstructor "False"
-  <?> "False"
-
 parseTmTrue :: (Monad m , TokenParsing m)
             => m Term
 parseTmTrue =
-  TmTrue <$ reservedConstructor "True"
-  <?> "True"
+  TmTrue <$ symbol "True" <?> "True"
+
+prettyTmTrue :: Term -> Maybe Doc
+prettyTmTrue TmTrue =
+  Just $ text "True"
+prettyTmTrue _ =
+  Nothing
   \end{minted}
 \end{frame} 
 
@@ -982,10 +877,23 @@ parseTmIf :: (Monad m , TokenParsing m)
           => m Term -> m Term
 parseTmIf parseTerm =
   TmIf <$
-    reservedIdentifier "if" <*> parseTerm <*
-    reservedIdentifier "then" <*> parseTerm <*
-    reservedIdentifier "else" <*> parseTerm
+    symbol "if" <*> parseTerm <*
+    symbol "then" <*> parseTerm <*
+    symbol "else" <*> parseTerm
   <?> "if-then-else"
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prettyTmIf :: (Term -> Doc) -> Term -> Maybe Doc
+prettyTmIf prettyTerm (TmIf tm1 tm2 tm3) =
+  Just $
+    text "if" <+> prettyTerm tm1 </>
+    text "then" <+> prettyTerm tm2 </>
+    text "else" <+> prettyTerm tm3
+prettyTmIf _ _ =
+  Nothing
   \end{minted}
 \end{frame} 
 
@@ -1013,50 +921,6 @@ parseTerm =
   \end{minted}
 \end{frame} 
 
-\section{Printing B}
-
-\begin{frame}[fragile]
-Tip: Steal the highlighting from $\tt{trifecta}$ for your printing.
-  \begin{minted}{haskell}
-import Text.Parser.Token.Highlight  (Highlight (..))
-import Text.Trifecta.Highlight      (withHighlight)
-
-reservedIdentifier :: String -> Doc
-reservedIdentifier =
-  withHighlight ReservedIdentifier .
-  text
-  \end{minted}
-\end{frame} 
-
-\begin{frame}[fragile]
-  \begin{minted}{haskell}
-prettyTmFalse :: Term -> Maybe Doc
-prettyTmFalse TmFalse =
-  Just $ reservedConstructor "False"
-prettyTmFalse _ =
-  Nothing
-
-prettyTmTrue :: Term -> Maybe Doc
-prettyTmTrue TmTrue =
-  Just $ reservedConstructor "True"
-prettyTmTrue _ =
-  Nothing
-  \end{minted}
-\end{frame} 
-
-\begin{frame}[fragile]
-  \begin{minted}{haskell}
-prettyTmIf :: (Term -> Doc) -> Term -> Maybe Doc
-prettyTmIf prettyTerm (TmIf tm1 tm2 tm3) =
-  Just $
-    reservedIdentifier "if" <+> prettyTerm tm1 </>
-    reservedIdentifier "then" <+> prettyTerm tm2 </>
-    reservedIdentifier "else" <+> prettyTerm tm3
-prettyTmIf _ _ =
-  Nothing
-  \end{minted}
-\end{frame} 
-
 \begin{frame}[fragile]
   \begin{minted}{haskell}
 prettyTermRules :: [Term -> Maybe Doc]
@@ -1075,7 +939,72 @@ prettyTerm tm =
   \end{minted}
 \end{frame} 
 
+\section{Parsing B}
+
 \begin{frame}[fragile]
+Tip: Use the token parsers / identifier styles if you can
+  \begin{minted}{haskell}
+identifierStyle :: TokenParsing m
+                => IdentifierStyle m
+identifierStyle =
+  IdentifierStyle {
+    _styleName      = "identitfier"
+  , _styleStart     = lower <|> char '_'
+  , _styleLetter    = alphaNum <|> char '_'
+  , _styleReserved  = HS.fromList 
+      ["if" , "then" , "else"]
+  , _styleHighlight = Identifier
+  , _styleReservedHighlight = ReservedIdentifier
+  }
+
+reservedIdentifier :: (Monad m , TokenParsing m)
+                   => String -> m ()
+reservedIdentifier =
+  reserve identifierStyle
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+Tip: Steal the highlighting from $\tt{trifecta}$ for your printing.
+  \begin{minted}{haskell}
+import Text.Parser.Token.Highlight  (Highlight (..))
+import Text.Trifecta.Highlight      (withHighlight)
+
+reservedIdentifier :: String -> Doc
+reservedIdentifier =
+  withHighlight ReservedIdentifier .
+  text
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+parseTmIf :: (Monad m , TokenParsing m)
+          => m Term -> m Term
+parseTmIf parseTerm =
+  TmIf <$
+    reservedIdentifier "if" <*> parseTerm <*
+    reservedIdentifier "then" <*> parseTerm <*
+    reservedIdentifier "else" <*> parseTerm
+  <?> "if-then-else"
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+prettyTmIf :: (Term -> Doc) -> Term -> Maybe Doc
+prettyTmIf prettyTerm (TmIf tm1 tm2 tm3) =
+  Just $
+    reservedIdentifier "if" <+> prettyTerm tm1 </>
+    reservedIdentifier "then" <+> prettyTerm tm2 </>
+    reservedIdentifier "else" <+> prettyTerm tm3
+prettyTmIf _ _ =
+  Nothing
+  \end{minted}
+\end{frame} 
+
+\begin{frame}[fragile]
+Tip: At least do minimal testing of your parser and printer
   \begin{minted}{haskell}
 prop_prettyParse :: AnyTerm -> Property
 prop_prettyParse (AnyTerm tm) =
@@ -1087,7 +1016,7 @@ prop_prettyParse (AnyTerm tm) =
 
 \begin{frame}[fragile]
   \begin{center}
-   The core of a REPL 
+   Now we have the core of a REPL 
   \end{center}
   \begin{minted}{haskell}
 parseAndEval :: String
@@ -1131,6 +1060,10 @@ class AsBoolTerm s tm | s -> tm where
   _TmIf    = _BoolTerm . _TmIf
 
 instance AsBoolTerm (BoolTerm tm) tm
+  _BoolTerm = id
+  _TmFalse = ...
+  _TmTrue = ...
+  _TmIf = ...
   \end{minted}
 \end{frame} 
 
@@ -1216,25 +1149,47 @@ eIf step tm = do
 inferTmIf :: ( Eq ty
              , AsUnexpected e ty , AsExpectedEq e ty
              , MonadError e m
-             , AsBoolTerm tm tm , AsBoolType ty
+             , AsBoolTerm tm tm , AsBoolType ty ty
              )
           => (tm -> m ty)
           -> tm
           -> Maybe (m ty)
-inferTmIf infer =
-    fmap inferTmIf' . preview _TmIf
-  where
-    inferTmIf' (tm1, tm2, tm3) = do
-      ty1 <- infer tm1
-      expect ty1 (review _TyBool ())
-      ty2 <- infer tm2
-      ty3 <- infer tm3
-      expectEq ty2 ty3
-      return ty3
+inferTmIf infer tm = do
+  (tm1, tm2, tm3) <- preview _TmIf tm
+  return $ do$
+    ty1 <- infer tm1
+    expect ty1 (review _TyBool ())
+    ty2 <- infer tm2
+    ty3 <- infer tm3
+    expectEq ty2 ty3
+    return ty3
   \end{minted}
 \end{frame} 
 
 \section{Annotating the AST}
+
+\begin{frame}[fragile]
+  \begin{overprint}
+   \onslide<1>
+\begin{verbatim}
+> if S O then False else True
+
+
+Unexpected type: 
+  actual: Nat
+  expected: Bool
+\end{verbatim}
+   \onslide<2>
+\begin{verbatim}
+> if S O then False else True
+if S O then False else True<EOF>
+   ~~~
+Unexpected type: 
+  actual: Nat
+  expected: Bool
+\end{verbatim}
+  \end{overprint}
+\end{frame} 
 
 \begin{frame}[fragile]
   \begin{minted}{haskell}
@@ -1266,20 +1221,18 @@ withSpan p = do
 
 \begin{frame}[fragile]
   \begin{minted}{haskell}
-inferTmNote :: ( AsNoteType ty n
-               , WithNoteTerm tm n tm
+inferTmNote :: ( AsNoteType ty n ty
+               , AsNoteTerm tm n tm
                , Monad m
                )
              => (tm -> m ty)
              -> tm
              -> Maybe (m ty)
-inferTmNote infer =
-    fmap inferTmNote' .
-    preview _TmNote
-  where
-    inferTmNote' (n, tm) = do
-      ty <- infer tm
-      return $ review _TyNote (n, ty)
+inferTmNote infer tm = do
+  (n, tm) <- preview _TmNote tm
+  return $ do
+    ty <- infer tm
+    return $ review _TyNote (n, ty)
   \end{minted}
 \end{frame} 
 
@@ -1288,10 +1241,10 @@ inferTmNote infer =
 prettyUnexpected :: (ty -> Doc)
                  -> (ty, ty)
                  -> Doc
-prettyUnexpected prettyType (ty1, ty2) =
+prettyUnexpected prettyType (ac, ex) =
   hang 2 (text "Unexpected type:" PP.<$>
-          text "actual:" <+> prettyType ty1 PP.<$>
-          text "expected:" <+> prettyType ty2)
+          text "actual:" <+> prettyType ac PP.<$>
+          text "expected:" <+> prettyType ex)
   \end{minted}
 \end{frame} 
 
@@ -1305,23 +1258,11 @@ prettyUnexpectedSrcLoc :: ( Show ty
                        -> ty
                        -> Doc
 prettyUnexpectedSrcLoc prettyType (n, ac) ex =
-  explain
-    (render n)
-      (Err 
-        (Just (text "Unexpected type:" <+> prettyType ac)) 
-        [] 
-        (S.singleton (prettyToString . prettyType $ ex)))
+  (render n) PP.<$>
+  hang 2 (text "Unexpected type:" PP.<$>
+          text "actual:" <+> prettyType ac PP.<$>
+          text "expected:" <+> prettyType ex)
   \end{minted}
-\end{frame} 
-
-\begin{frame}[fragile]
-\begin{verbatim}
-> if S O then False else True
-(interactive):1:4: error: 
-  Unexpected type: Nat, expected: Bool
-if S O then False else True<EOF>
-   ~~~~
-\end{verbatim}
 \end{frame} 
 
 \section{STLC}
@@ -1338,23 +1279,29 @@ t =& \ \text{x} & \text{(Var)}\\
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{center}
+   Var
+  \end{center}
   \begin{minted}{haskell}
 x + 1
-^ Var
   \end{minted}  
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{center}
+   Lam
+  \end{center}
   \begin{minted}{haskell}
 \x : Int -> Int => x + 1
-^ Lam
   \end{minted}  
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{center}
+   App
+  \end{center}
   \begin{minted}{haskell}
 (\x : Int -> Int => x + 1) 2
-                          ^ app
   \end{minted}  
 \end{frame}
 
@@ -1662,7 +1609,7 @@ eAppAbs tm = do
   \end{displaymath}  
   \begin{minted}{haskell}
 inferTmVar :: ( Ord a
-              , AsSTLCType ty
+              , AsSTLCType ty ty
               , AsSTLCTerm tm ty tm a
               , MonadReader (M.Map a ty) m
               , AsFreeVar e a
@@ -1694,9 +1641,10 @@ inferTmLam :: ( AsSTLCType ty ty
            -> tm String
            -> Maybe (m ty)
 inferTmLam infer tm = do
-  (n, ty, s) <- preview _TmLam
-  local (M.insert n ty) $
+  (n, ty1, s) <- preview _TmLam
+  ty2 <- local (M.insert n ty1) $
     infer (instantiate1 (review _TmVar n) s)
+  return $ review _TyArr (ty1, ty2)
   \end{minted}  
 \end{frame}
 
@@ -1709,7 +1657,7 @@ inferTmLam infer tm = do
   \end{displaymath}  
   \begin{minted}{haskell}
 inferTmApp :: ( Eq ty
-              , AsSTLCType ty, AsSTLCTerm tm ty tm a
+              , AsSTLCType ty ty, AsSTLCTerm tm ty tm a
               , AsUnexpected e ty, AsNotArrow e ty
               , MonadError e m
               )
@@ -1729,18 +1677,6 @@ inferTmApp infer tm = do
 
 \section{Extending B (part 2)}
 
-\begin{frame}[c]
-If we don't care about controlling evaluation order / analysing certain bits of
-the AST:
-\begin{itemize}
-\item we could capture add with a lambda so it can be reused in-language (can
-  still control eval order a little (and-in-term-of-if))
-\item we could also include add as a nullary term with type Int -> Int -> Int, and let LC drive the
-  evaluation to that point (requires some deeper pattern matching in the semantics)
-\item we could prepopulate the context, if we extend it so primitives won't get overridden
-\end{itemize}
-\end{frame}
-
 \begin{frame}[fragile]
   \begin{minted}{haskell}
 (\not : Bool -> Bool => 
@@ -1749,6 +1685,31 @@ the AST:
   )
 ) (... code using not ...)
   \end{minted}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+let 
+  not x = if x then False else True
+in
+  ... code using not ...
+  \end{minted}  
+\end{frame}
+
+\begin{frame}[fragile]
+  \begin{minted}{haskell}
+import Prelude (not)
+
+... code using not ...
+  \end{minted}  
+\end{frame}
+
+\begin{frame}[c]
+Thanks!
+\end{frame}
+  
+\begin{frame}[c]
+All of this and more will appear on dlaing.org before too long. 
 \end{frame}
 
 \section{Further avenues}
