@@ -295,35 +295,6 @@ Small-step semantics (maths)
 
 \begin{frame}[c]
   \begin{center}
-Let's evaluate a term.
-  \end{center}
-\end{frame}
-
-\begin{frame}[c]
-Original
-  \begin{displaymath}
-    \text{if (if f then f else t) then f else t}
-  \end{displaymath}
-Step 1
-  \begin{displaymath}
-    \prftree[r]{E-If}
-    {\prftree[r]{E-IfFalse}{\text{if f then f else t} \longrightarrow \text{t}}}
-    {\text{if (if f then f else t) then f else t} \longrightarrow \text{if t then f else
-      t}}
-  \end{displaymath}
-Step 2
-  \begin{displaymath}
-    \prftree[r]{E-IfTrue}
-    {\text{if t then f else t} \longrightarrow f}
-  \end{displaymath}
-Final
-  \begin{displaymath}
-    \text{f}
-  \end{displaymath}
-\end{frame}
-
-\begin{frame}[c]
-  \begin{center}
 If no step is defined for a term, it is a \em{normal form}.
   \end{center}
 \end{frame}
@@ -428,7 +399,7 @@ smallStepEval :: Term
 smallStepEval tm =
   case smallStep tm of
     Nothing -> tm
-    Just tm' -> eval tm'
+    Just tm' -> smallStepEval tm'
  \end{minted}
 \end{frame}
 
@@ -518,7 +489,7 @@ isValue      =
 canStep      =
   isJust . smallStep
 
-isNormalform = 
+isNormalForm = 
   isNothing . smallStep
 
 termSize TmFalse = 
@@ -939,8 +910,6 @@ prettyTerm tm =
   \end{minted}
 \end{frame} 
 
-\section{Parsing B}
-
 \begin{frame}[fragile]
 Tip: Use the token parsers / identifier styles if you can
   \begin{minted}{haskell}
@@ -1319,7 +1288,7 @@ x + 1
    Variables can be free or bound.
   \end{center}
   \begin{minted}{haskell}
- \x : Int => x + (\x : Int => x * x) (x + 1)
+ x + (\x : Int => x * x) (x + 1)
   \end{minted}  
 \end{frame}
 
@@ -1363,87 +1332,304 @@ data Var b a =
     B b 
   | F a
 
-newtype Scope b f a = 
-  Scope (f (Var b (f a))
+newtype Scope b f a = ...
+-- just don't look
   \end{minted}  
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{overprint}
+   \onslide<1> 
   \begin{minted}{haskell}
 abstract1 :: (Monad f, Eq a) 
           => a 
-          -> f a 
-          -> Scope () f a
-abstract1 :: String 
+          -> f    a 
+          -> Scope () f    a
+
+
+
+
+
+
+  \end{minted}  
+   \onslide<2>
+  \begin{minted}{haskell}
+abstract1 :: 
+             String 
           -> Term String 
           -> Scope () Term String
 
-lam :: String 
-    -> Term String 
-    -> Scope () Term String
-lam v tm = abstract1 v tm
+
+
+
+
+
   \end{minted}  
+   \onslide<3> 
+  \begin{minted}{haskell}
+abstract1 :: 
+             String 
+          -> Term String 
+          -> Scope () Term String
+
+> abstract1 
+    "x" 
+    (TmIf (TmVar "x") TmFalse TmTrue)
+
+
+  \end{minted}  
+   \onslide<4> 
+  \begin{minted}{haskell}
+abstract1 :: 
+             String 
+          -> Term String 
+          -> Scope () Term String
+
+> abstract1 
+    "x" 
+    (TmIf (TmVar "x") TmFalse TmTrue)
+
+Scope (TmIf (TmVar (B ())) TmFalse TmTrue) 
+  \end{minted}  
+  \end{overprint}
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{overprint}
+   \onslide<1> 
   \begin{minted}{haskell}
 instantiate1 :: Monad f 
-             => f a 
-             -> Scope n f a 
-             -> f a 
-instantiate1 :: Term String 
+             => f    a 
+             -> Scope () f    a 
+             -> f    a 
+
+
+
+
+
+
+  \end{minted}  
+   \onslide<2>
+  \begin{minted}{haskell}
+instantiate1 :: 
+                Term String 
              -> Scope () Term String 
              -> Term String
 
-invLam :: String 
-       -> Scope () Term String 
-       -> Term String
-invLam v s = instantiate1 (return v) s
 
-appLam :: Term String 
-       -> Scope () Term String 
-       -> Term String
-appLam x f = instantiate1 x f
+
+
+
+
   \end{minted}  
+   \onslide<3> 
+  \begin{minted}{haskell}
+instantiate1 :: 
+                Term String 
+             -> Scope () Term String 
+             -> Term String
+
+> instantiate1 
+    (pure "x") 
+    (Scope (TmIf (TmVar (B ())) TmFalse TmTrue))
+
+
+  \end{minted}  
+   \onslide<4> 
+  \begin{minted}{haskell}
+instantiate1 :: 
+                Term String 
+             -> Scope () Term String 
+             -> Term String
+
+> instantiate1 
+    (pure "x") 
+    (Scope (TmIf (TmVar (B ())) TmFalse TmTrue))
+
+TmIf (TmVar "x") TmFalse TmTrue
+  \end{minted}  
+   \onslide<5> 
+  \begin{minted}{haskell}
+instantiate1 :: 
+                Term String 
+             -> Scope () Term String 
+             -> Term String
+
+> instantiate1 
+    TmTrue 
+    (Scope (TmIf (TmVar (B ())) TmFalse TmTrue))
+
+
+  \end{minted}  
+   \onslide<6> 
+  \begin{minted}{haskell}
+instantiate1 :: 
+                Term String 
+             -> Scope () Term String 
+             -> Term String
+
+> instantiate1 
+    TmTrue 
+    (Scope (TmIf (TmVar (B ())) TmFalse TmTrue))
+
+TmIf TmTrue TmFalse TmTrue
+  \end{minted}  
+  \end{overprint}
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{overprint}
+   \onslide<1> 
   \begin{minted}{haskell}
 abstract :: Monad f 
-         => (a -> Maybe b) 
-         -> f a 
-         -> Scope b f a 
-abstract :: (String -> Maybe Int) 
+         => (a      -> Maybe b  ) 
+         -> f    a 
+         -> Scope b   f    a 
+
+
+
+
+
+
+  \end{minted}  
+   \onslide<2> 
+  \begin{minted}{haskell}
+abstract :: 
+            (String -> Maybe Int) 
          -> Term String 
          -> Scope Int Term String
 
-multiLam :: [String] 
+
+
+
+
+
+  \end{minted}  
+   \onslide<3> 
+  \begin{minted}{haskell}
+abstract :: 
+            (String -> Maybe Int) 
          -> Term String 
          -> Scope Int Term String
-multiLam vs tm = abstract (`elemIndex` vs) tm
+
+> abstract 
+    (`elemIndex` ["x", "y"]) 
+    (TmIf TmTrue (TmVar "x") (TmVar "y"))
+
+
   \end{minted}  
+   \onslide<4> 
+  \begin{minted}{haskell}
+abstract :: 
+            (String -> Maybe Int) 
+         -> Term String 
+         -> Scope Int Term String
+
+> abstract 
+    (`elemIndex` ["x", "y"]) 
+    (TmIf TmTrue (TmVar "x") (TmVar "y"))
+
+Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (B 1)))
+  \end{minted}  
+   \onslide<5> 
+  \begin{minted}{haskell}
+abstract :: 
+            (String -> Maybe Int) 
+         -> Term String 
+         -> Scope Int Term String
+
+> abstract 
+    (`elemIndex` ["x", "y"]) 
+    (TmIf TmTrue (TmVar "x") (TmVar "z"))
+
+
+  \end{minted}  
+   \onslide<6> 
+  \begin{minted}{haskell}
+abstract :: 
+            (String -> Maybe Int) 
+         -> Term String 
+         -> Scope Int Term String
+
+> abstract 
+    (`elemIndex` ["x", "y"]) 
+    (TmIf TmTrue (TmVar "x") (TmVar "z"))
+
+Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (F (TmVar "z"))))
+  \end{minted}  
+  \end{overprint}
 \end{frame}
 
 \begin{frame}[fragile]
+  \begin{overprint}
+   \onslide<1> 
   \begin{minted}{haskell}
 instantiate :: Monad f 
-            => (b -> f a) 
-            -> Scope b f a 
-            -> f a
-instantiate :: (Int -> Term String) 
-            -> Scope Int Term String 
-            -> Term String
-
-invMultiLam :: [String] 
-            -> Scope Int Term String 
-            -> Term String
-invMultiLam vs s = instantiate (return . (vs !!)) s
-
-appMultiLam :: [Term String] 
-            -> Scope Int Term String 
-            -> Term String
-appMultiLam tms s = instantiate (tms !!) s
+            => (b   -> f    a) 
+            -> Scope b   f    a 
+            -> f    a
   \end{minted}  
+   \onslide<2> 
+  \begin{minted}{haskell}
+instantiate :: 
+               (Int -> Term String) 
+            -> Scope Int Term String 
+            -> Term String
+
+  \end{minted}  
+   \onslide<3> 
+  \begin{minted}{haskell}
+instantiate :: 
+               (Int -> Term String) 
+            -> Scope Int Term String 
+            -> Term String
+
+> instantiate 
+    ([TmFalse, TmTrue] !!) 
+    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (B 1))))
+
+
+  \end{minted}  
+   \onslide<4> 
+  \begin{minted}{haskell}
+instantiate :: 
+               (Int -> Term String) 
+            -> Scope Int Term String 
+            -> Term String
+
+> instantiate 
+    ([TmFalse, TmTrue] !!) 
+    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (B 1))))
+
+TmIf TmTrue TmFalse TmTrue
+  \end{minted}  
+   \onslide<5> 
+  \begin{minted}{haskell}
+instantiate :: 
+               (Int -> Term String) 
+            -> Scope Int Term String 
+            -> Term String
+
+> instantiate 
+    ([TmFalse, TmTrue] !!) 
+    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (F (TmVar "z")))))
+
+
+  \end{minted}  
+   \onslide<6> 
+  \begin{minted}{haskell}
+instantiate :: 
+               (Int -> Term String) 
+            -> Scope Int Term String 
+            -> Term String
+
+> instantiate 
+    ([TmFalse, TmTrue] !!) 
+    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (F (TmVar "z")))))
+
+TmIf TmTrue TmFalse (TmVar "z")
+  \end{minted}  
+  \end{overprint}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -1504,7 +1690,6 @@ instance Monad tm => Monad (StlcTerm ty tm) where
 data StlcVar a =
     TmVar a
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
-
 makeClassyPrisms ''StlcVar
 
 data StlcTerm ty tm a =
@@ -1704,6 +1889,8 @@ import Prelude (not)
   \end{minted}  
 \end{frame}
 
+\section{Conclusion}
+
 \begin{frame}[c]
 Thanks!
 \end{frame}
@@ -1715,16 +1902,27 @@ All of this and more will appear on dlaing.org before too long.
 \section{Further avenues}
 
 \begin{frame}[c]
-\begin{itemize}
-\item other LC additions
-\item pattern matching
-\item HM inference and/or bidirectional typing
-\item bidirectional parsing and printing with QuickCheck support
-\item syntax wrappers / hbound
-\item smallcheck
-\item reusable tools 
-\item LLVM
-\end{itemize}
+Many more pieces we can add
+\end{frame}
+
+\begin{frame}[c]
+Pattern matching gets fun (and can use bound)
+\end{frame}
+
+\begin{frame}[c]
+ADTs gets fun (and can use bound)
+\end{frame}
+
+\begin{frame}[c]
+Type inference and/or bidirectional typing
+\end{frame}
+
+\begin{frame}[c]
+Tagged and/or hbound
+\end{frame}
+
+\begin{frame}[c]
+LLVM output
 \end{frame}
 
 \end{document}
