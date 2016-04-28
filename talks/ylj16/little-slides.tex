@@ -26,8 +26,6 @@
 \maketitle
 \end{frame}
 
-\section{Introduction}
-
 \begin{frame}[c]
   \begin{center}
     Haskell is great for writing DSLs.
@@ -491,7 +489,12 @@ canStep      =
 
 isNormalForm = 
   isNothing . smallStep
+  \end{minted}
+\end{frame}
 
+\begin{frame}[fragile]
+  We also need some helpers
+  \begin{minted}{haskell}
 termSize TmFalse = 
   1
 termSize TmTrue  =
@@ -683,6 +686,56 @@ inferTmFalse _ =
     {t_3 \colon \text{T}}
     {\text{if $t_1$ then $t_2$ else $t_3$} \colon \text{T}}
   \end{displaymath}
+  \begin{overprint}
+  \onslide<1>   
+  \begin{minted}{haskell}
+inferTmIf :: MonadError TypeError m 
+          => (Term -> m Type)
+          -> Term 
+          -> Maybe (m Type)
+inferTmIf infer (TmIf tm1 tm2 tm3) = Just $ do
+
+
+
+
+
+
+inferTmIf _ _ =
+  Nothing
+  \end{minted}
+  \onslide<2>   
+  \begin{minted}{haskell}
+inferTmIf :: MonadError TypeError m 
+          => (Term -> m Type)
+          -> Term 
+          -> Maybe (m Type)
+inferTmIf infer (TmIf tm1 tm2 tm3) = Just $ do
+  ty1 <- infer tm1
+  expect ty1 TyBool
+
+
+
+
+inferTmIf _ _ =
+  Nothing
+  \end{minted}
+  \onslide<3>   
+  \begin{minted}{haskell}
+inferTmIf :: MonadError TypeError m 
+          => (Term -> m Type)
+          -> Term 
+          -> Maybe (m Type)
+inferTmIf infer (TmIf tm1 tm2 tm3) = Just $ do
+  ty1 <- infer tm1
+  expect ty1 TyBool
+  ty2 <- infer tm2
+  ty3 <- infer tm3
+  expectEq ty2 ty3
+
+inferTmIf _ _ =
+  Nothing
+  \end{minted}
+  \onslide<4>   
   \begin{minted}{haskell}
 inferTmIf :: MonadError TypeError m 
           => (Term -> m Type)
@@ -698,6 +751,7 @@ inferTmIf infer (TmIf tm1 tm2 tm3) = Just $ do
 inferTmIf _ _ =
   Nothing
   \end{minted}
+  \end{overprint}
 \end{frame}
 
 % gathering the rules
@@ -987,6 +1041,68 @@ prop_prettyParse (AnyTerm tm) =
   \begin{center}
    Now we have the core of a REPL 
   \end{center}
+  \begin{overprint}
+   \onslide<1> 
+  \begin{minted}{haskell}
+parseAndEval :: String
+             -> Doc
+parseAndEval s =
+
+
+
+
+
+
+
+
+
+  \end{minted}
+   \onslide<2> 
+  \begin{minted}{haskell}
+parseAndEval :: String
+             -> Doc
+parseAndEval s =
+  case parseFromString parseTerm s of
+    Left d -> d
+
+
+
+
+
+
+
+  \end{minted}
+   \onslide<3> 
+  \begin{minted}{haskell}
+parseAndEval :: String
+             -> Doc
+parseAndEval s =
+  case parseFromString parseTerm s of
+    Left d -> d
+    Right tm -> case runInfer . inferTerm $ tm of
+
+
+
+
+
+
+  \end{minted}
+   \onslide<4> 
+  \begin{minted}{haskell}
+parseAndEval :: String
+             -> Doc
+parseAndEval s =
+  case parseFromString parseTerm s of
+    Left d -> d
+    Right tm -> case runInfer . inferTerm $ tm of
+      Left e -> 
+        prettyTypeError e
+
+
+
+
+  \end{minted}
+   \onslide<5> 
   \begin{minted}{haskell}
 parseAndEval :: String
              -> Doc
@@ -1001,6 +1117,7 @@ parseAndEval s =
         text ":" <+> 
         prettyType ty
   \end{minted}
+  \end{overprint}
 \end{frame} 
 
 \section{B with Class}
@@ -1125,7 +1242,7 @@ inferTmIf :: ( Eq ty
           -> Maybe (m ty)
 inferTmIf infer tm = do
   (tm1, tm2, tm3) <- preview _TmIf tm
-  return $ do$
+  return $ do
     ty1 <- infer tm1
     expect ty1 (review _TyBool ())
     ty2 <- infer tm2
@@ -1134,6 +1251,12 @@ inferTmIf infer tm = do
     return ty3
   \end{minted}
 \end{frame} 
+
+\begin{frame}[c]
+  \begin{center}
+   Data types for the various rules, monoids for all of the data types.
+  \end{center}
+\end{frame}
 
 \section{Annotating the AST}
 
@@ -1261,7 +1384,7 @@ x + 1
    Lam
   \end{center}
   \begin{minted}{haskell}
-\x : Int -> Int => x + 1
+\x : Int . x + 1
   \end{minted}  
 \end{frame}
 
@@ -1270,7 +1393,7 @@ x + 1
    App
   \end{center}
   \begin{minted}{haskell}
-(\x : Int -> Int => x + 1) 2
+(\x : Int . x + 1) 2
   \end{minted}  
 \end{frame}
 
@@ -1279,7 +1402,7 @@ x + 1
    Variables can be free or bound.
   \end{center}
   \begin{minted}{haskell}
- \x : Int => x + y
+ \x : Int . x + y
   \end{minted}  
 \end{frame}
 
@@ -1288,7 +1411,7 @@ x + 1
    Variables can be free or bound.
   \end{center}
   \begin{minted}{haskell}
- x + (\x : Int => x * x) (x + 1)
+ x + (\x : Int . x * x) (x + 1)
   \end{minted}  
 \end{frame}
 
@@ -1297,8 +1420,8 @@ x + 1
    Substitution can be simple.
   \end{center}
   \begin{minted}{haskell}
-(\x : Int => x + y) 2
-             2 + y
+(\x : Int . x + y) 2
+            2 + y
   \end{minted}  
 \end{frame}
 
@@ -1307,10 +1430,10 @@ x + 1
    Substitution can be tricky.
   \end{center}
   \begin{minted}{haskell}
-(\x : Int => x + (\x : Int => x * x) (x + 1)) 2
-             2 + (\x : Int => x * x) (2 + 1)
-             2 + (\x : Int => x * x) 3
-             2 +              3 * 3
+(\x : Int . x + (\x : Int . x * x) (x + 1)) 2
+            2 + (\x : Int . x * x) (2 + 1)
+            2 + (\x : Int . x * x) 3
+            2 +             3 * 3
   \end{minted}  
 \end{frame}
 
@@ -1585,8 +1708,8 @@ instantiate ::
             -> Term String
 
 > instantiate 
-    ([TmFalse, TmTrue] !!) 
-    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (B 1))))
+  ([TmFalse, TmTrue] !!) 
+  (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (B 1))))
 
 
   \end{minted}  
@@ -1598,8 +1721,8 @@ instantiate ::
             -> Term String
 
 > instantiate 
-    ([TmFalse, TmTrue] !!) 
-    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (B 1))))
+  ([TmFalse, TmTrue] !!) 
+  (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (B 1))))
 
 TmIf TmTrue TmFalse TmTrue
   \end{minted}  
@@ -1611,8 +1734,8 @@ instantiate ::
             -> Term String
 
 > instantiate 
-    ([TmFalse, TmTrue] !!) 
-    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (F (TmVar "z")))))
+  ([TmFalse, TmTrue] !!) 
+  (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (F (TmVar "z")))))
 
 
   \end{minted}  
@@ -1624,8 +1747,8 @@ instantiate ::
             -> Term String
 
 > instantiate 
-    ([TmFalse, TmTrue] !!) 
-    (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (F (TmVar "z")))))
+  ([TmFalse, TmTrue] !!) 
+  (Scope (TmIf TmTrue (TmVar (B 0)) (TmVar (F (TmVar "z")))))
 
 TmIf TmTrue TmFalse (TmVar "z")
   \end{minted}  
@@ -1680,6 +1803,7 @@ instance Monad tm => Monad (StlcTerm ty tm) where
   return = TmVar 
 
   TmVar x       >>= f = f x
+
   TmLam v t s   >>= f = TmLam v t (s >>>= f)
   TmApp tm1 tm2 >>= f = TmApp (tm1 >>= f) (tm2 >>= f)
   \end{minted}  
@@ -1792,10 +1916,131 @@ eAppAbs tm = do
     {x \colon T \in \Gamma}
     {\Gamma \vdash x \colon T}
   \end{displaymath}  
+  \begin{overprint}
+   \onslide<1> 
   \begin{minted}{haskell}
-inferTmVar :: ( Ord a
-              , AsSTLCType ty ty
+inferTmVar :: (
+
+
+
+
+
+              )
+           => tm a
+           -> Maybe (m ty)
+inferTmVar tm = do
+
+
+
+
+  \end{minted}  
+   \onslide<2> 
+  \begin{minted}{haskell}
+inferTmVar :: ( AsSTLCType ty ty
               , AsSTLCTerm tm ty tm a
+
+
+
+
+              )
+           => tm a
+           -> Maybe (m ty)
+inferTmVar tm = do
+
+
+
+
+  \end{minted}  
+   \onslide<3> 
+  \begin{minted}{haskell}
+inferTmVar :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm a
+              , Ord a
+              , MonadReader (M.Map a ty) m
+
+
+              )
+           => tm a
+           -> Maybe (m ty)
+inferTmVar tm = do
+
+
+
+
+  \end{minted}  
+   \onslide<4> 
+  \begin{minted}{haskell}
+inferTmVar :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm a
+              , Ord a
+              , MonadReader (M.Map a ty) m
+              , AsFreeVar e a
+              , MonadError e m
+              )
+           => tm a
+           -> Maybe (m ty)
+inferTmVar tm = do
+
+
+
+
+  \end{minted}  
+   \onslide<5> 
+  \begin{minted}{haskell}
+inferTmVar :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm a
+              , Ord a
+              , MonadReader (M.Map a ty) m
+              , AsFreeVar e a
+              , MonadError e m
+              )
+           => tm a
+           -> Maybe (m ty)
+inferTmVar tm = do
+  v <- preview _TmVar tm
+
+
+
+  \end{minted}  
+   \onslide<6> 
+  \begin{minted}{haskell}
+inferTmVar :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm a
+              , Ord a
+              , MonadReader (M.Map a ty) m
+              , AsFreeVar e a
+              , MonadError e m
+              )
+           => tm a
+           -> Maybe (m ty)
+inferTmVar tm = do
+  v <- preview _TmVar tm
+  case asks (M.lookup v) of
+
+
+  \end{minted}  
+   \onslide<7> 
+  \begin{minted}{haskell}
+inferTmVar :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm a
+              , Ord a
+              , MonadReader (M.Map a ty) m
+              , AsFreeVar e a
+              , MonadError e m
+              )
+           => tm a
+           -> Maybe (m ty)
+inferTmVar tm = do
+  v <- preview _TmVar tm
+  case asks (M.lookup v) of
+    Nothing -> throwing _FreeVar a 
+
+  \end{minted}  
+   \onslide<8> 
+  \begin{minted}{haskell}
+inferTmVar :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm a
+              , Ord a
               , MonadReader (M.Map a ty) m
               , AsFreeVar e a
               , MonadError e m
@@ -1808,6 +2053,7 @@ inferTmVar tm = do
     Nothing -> throwing _FreeVar a 
     Just ty -> return ty
   \end{minted}  
+  \end{overprint}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -1816,6 +2062,118 @@ inferTmVar tm = do
     {\Gamma, x_1 \colon T_1 \vdash t_2 \colon T_2}
     {\Gamma \vdash \lambda x_1 \colon T_1 \ldotp t_2 \colon T_1 \rightarrow T_2}
   \end{displaymath}  
+  \begin{overprint}
+    \onslide<1>
+  \begin{minted}{haskell}
+inferTmLam :: (
+
+
+
+              )
+           => (tm String -> m ty)
+           -> tm String
+           -> Maybe (m ty)
+inferTmLam infer tm = do
+
+
+
+
+  \end{minted}  
+    \onslide<2>
+  \begin{minted}{haskell}
+inferTmLam :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm String
+
+
+              )
+           => (tm String -> m ty)
+           -> tm String
+           -> Maybe (m ty)
+inferTmLam infer tm = do
+
+
+
+
+  \end{minted}  
+    \onslide<3>
+  \begin{minted}{haskell}
+inferTmLam :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm String
+              , MonadReader (M.Map String ty) m
+
+              )
+           => (tm String -> m ty)
+           -> tm String
+           -> Maybe (m ty)
+inferTmLam infer tm = do
+
+
+
+
+  \end{minted}  
+    \onslide<4>
+  \begin{minted}{haskell}
+inferTmLam :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm String
+              , MonadReader (M.Map String ty) m
+              , Monad tm
+              )
+           => (tm String -> m ty)
+           -> tm String
+           -> Maybe (m ty)
+inferTmLam infer tm = do
+
+
+
+
+  \end{minted}  
+    \onslide<5>
+  \begin{minted}{haskell}
+inferTmLam :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm String
+              , MonadReader (M.Map String ty) m
+              , Monad tm
+              )
+           => (tm String -> m ty)
+           -> tm String
+           -> Maybe (m ty)
+inferTmLam infer tm = do
+  (n, ty1, s) <- preview _TmLam
+
+  \end{minted}  
+    \onslide<6>
+  \begin{minted}{haskell}
+inferTmLam :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm String
+              , MonadReader (M.Map String ty) m
+              , Monad tm
+              )
+           => (tm String -> m ty)
+           -> tm String
+           -> Maybe (m ty)
+inferTmLam infer tm = do
+  (n, ty1, s) <- preview _TmLam
+  ty2 <- local (M.insert n ty1) $
+    infer (                                 )
+
+  \end{minted}  
+    \onslide<7>
+  \begin{minted}{haskell}
+inferTmLam :: ( AsSTLCType ty ty
+              , AsSTLCTerm tm ty tm String
+              , MonadReader (M.Map String ty) m
+              , Monad tm
+              )
+           => (tm String -> m ty)
+           -> tm String
+           -> Maybe (m ty)
+inferTmLam infer tm = do
+  (n, ty1, s) <- preview _TmLam
+  ty2 <- local (M.insert n ty1) $
+    infer (instantiate1 (review _TmVar n) s)
+
+  \end{minted}  
+    \onslide<8>
   \begin{minted}{haskell}
 inferTmLam :: ( AsSTLCType ty ty
               , AsSTLCTerm tm ty tm String
@@ -1831,6 +2189,7 @@ inferTmLam infer tm = do
     infer (instantiate1 (review _TmVar n) s)
   return $ review _TyArr (ty1, ty2)
   \end{minted}  
+  \end{overprint}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -1840,10 +2199,101 @@ inferTmLam infer tm = do
     {\Gamma \vdash t_2 \colon T_1}
     {t_1 t_2 \colon T_2}
   \end{displaymath}  
+  \begin{overprint}
+  \onslide<1>
   \begin{minted}{haskell}
-inferTmApp :: ( Eq ty
-              , AsSTLCType ty ty, AsSTLCTerm tm ty tm a
-              , AsUnexpected e ty, AsNotArrow e ty
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+
+
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+
+
+
+
+
+
+
+
+
+  \end{minted}  
+  \onslide<2>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
+              , MonadError e m
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+
+
+
+
+
+
+
+
+
+  \end{minted}  
+  \onslide<3>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
+              , MonadError e m
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+  (tm1, tm2) <- preview _TmApp tm
+  return $ do
+
+
+
+
+
+
+
+  \end{minted}  
+  \onslide<4>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
+              , MonadError e m
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+  (tm1, tm2) <- preview _TmApp tm
+  return $ do
+    ty1 <- infer tm1
+    ty2 <- infer tm2
+
+
+
+
+
+  \end{minted}  
+  \onslide<5>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
+              , MonadError e m
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+  (tm1, tm2) <- preview _TmApp tm
+  return $ do
+    ty1 <- infer tm1
+    ty2 <- infer tm2
+    case preview _TyArr ty1 of
+
+
+
+
+  \end{minted}  
+  \onslide<6>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
               , MonadError e m
               )
            => (tm a -> m ty) -> tm a -> Maybe (m ty)
@@ -1854,10 +2304,65 @@ inferTmApp infer tm = do
     ty2 <- infer tm2
     case preview _TyArr ty1 of
       Nothing -> throwing _NotArrow (ty1, ty2)
-      Just (tyFrom, tyTo) = do
+
+
+
+  \end{minted}  
+  \onslide<7>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
+              , MonadError e m
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+  (tm1, tm2) <- preview _TmApp tm
+  return $ do
+    ty1 <- infer tm1
+    ty2 <- infer tm2
+    case preview _TyArr ty1 of
+      Nothing -> throwing _NotArrow (ty1, ty2)
+      Just (tyFrom, tyTo) -> do
+
+
+  \end{minted}  
+  \onslide<8>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
+              , MonadError e m
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+  (tm1, tm2) <- preview _TmApp tm
+  return $ do
+    ty1 <- infer tm1
+    ty2 <- infer tm2
+    case preview _TyArr ty1 of
+      Nothing -> throwing _NotArrow (ty1, ty2)
+      Just (tyFrom, tyTo) -> do
+        expect tyFrom ty2
+
+  \end{minted}  
+  \onslide<9>
+  \begin{minted}{haskell}
+inferTmApp :: ( AsSTLCType ty ty, AsSTLCTerm tm ty tm a
+              , AsUnexpected e ty, AsNotArrow e ty, Eq ty
+              , MonadError e m
+              )
+           => (tm a -> m ty) -> tm a -> Maybe (m ty)
+inferTmApp infer tm = do
+  (tm1, tm2) <- preview _TmApp tm
+  return $ do
+    ty1 <- infer tm1
+    ty2 <- infer tm2
+    case preview _TyArr ty1 of
+      Nothing -> throwing _NotArrow (ty1, ty2)
+      Just (tyFrom, tyTo) -> do
         expect tyFrom ty2
         return tyTo
   \end{minted}  
+  \end{overprint}
 \end{frame}
 
 \section{Extending B (part 2)}
