@@ -12,7 +12,7 @@ module Tests.Term.Eval (
 import           Control.Lens                  (view)
 import           Data.List                     (group)
 import           Data.Maybe                    (mapMaybe)
-import           Test.QuickCheck               (Property, forAllShrink,
+import           Test.QuickCheck               (Property,
                                                 property, (===), (==>))
 import           Test.Tasty                    (TestTree, testGroup)
 import           Test.Tasty.QuickCheck         (testProperty)
@@ -21,8 +21,8 @@ import           Component                     (ComponentOutput)
 import           Component.Term.Eval.BigStep   (HasBigStepOutput (..))
 import           Component.Term.Eval.SmallStep (HasSmallStepOutput (..))
 import           Component.Term.Eval.Value     (HasValueOutput (..))
-import           Component.Term.Gen            (HasGenTermOutput (..))
-import           Component.Term.Size           (HasTermSizeOutput (..))
+import           Component.Term.Gen            (forAllWellTypedTerm)
+import           Component.Term.SubTerm        (HasSubTermOutput (..))
 
 mkEvalTests :: ( Eq (tm nTm a)
                , Show (tm nTm a)
@@ -45,12 +45,10 @@ propValueNormal :: Show (tm nTm a)
                 -> Property
 propValueNormal c =
   let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
     isValue' = view isValue c
     isNormalForm' = view isNormalForm c
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
+    forAllWellTypedTerm c $ \tm ->
       isValue' tm ==> isNormalForm' tm
 
 propNormalValue :: Show (tm nTm a)
@@ -58,12 +56,10 @@ propNormalValue :: Show (tm nTm a)
                 -> Property
 propNormalValue c =
   let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
     isValue' = view isValue c
     isNormalForm' = view isNormalForm c
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
+    forAllWellTypedTerm c $ \tm ->
       isNormalForm' tm ==> isValue' tm
 
     -- - either isValue, or there are 1 or more steps we can take that have the same result
@@ -74,12 +70,10 @@ propSmallDeterminate :: ( Eq (tm nTm a)
                      -> Property
 propSmallDeterminate c =
   let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
     canStep' = view canStep c
     smallStepRules' = view smallStepRules c
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
+    forAllWellTypedTerm c $ \tm ->
       canStep' tm ==>
         let
           distinctResults =
@@ -95,12 +89,10 @@ propSmallShrinks :: Show (tm nTm a)
                  -> Property
 propSmallShrinks c =
   let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
     smallStep' = view smallStep c
     termSize' = view termSize c
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm -> property $
+    forAllWellTypedTerm c $ \tm -> property $
       case smallStep' tm of
         Nothing -> True
         Just tm' -> termSize' tm' < termSize' tm
@@ -110,12 +102,10 @@ propSmallUnique :: Show (tm nTm a)
                 -> Property
 propSmallUnique c =
   let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
     valueRules' = view valueRules c
     smallStepRules' = view smallStepRules c
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
+    forAllWellTypedTerm c $ \tm ->
       let
         matches =
           length .
@@ -129,11 +119,9 @@ propBigUnique :: Show (tm nTm a)
               -> Property
 propBigUnique c =
   let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
     bigStepRules' = view bigStepRules c
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
+    forAllWellTypedTerm c $ \tm ->
       let
         matches =
           length .
@@ -149,10 +137,8 @@ propSmallBig :: ( Eq (tm nTm a)
              -> Property
 propSmallBig c =
   let
-    genAnyTerm' = view genAnyTerm c
-    shrAnyTerm' = view shrAnyTerm c
     smallStepEval' = view smallStepEval c
     bigStepEval' = view bigStepEval c
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
+    forAllWellTypedTerm c $ \tm ->
       smallStepEval' tm === bigStepEval' tm

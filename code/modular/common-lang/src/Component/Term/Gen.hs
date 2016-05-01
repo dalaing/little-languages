@@ -19,15 +19,17 @@ module Component.Term.Gen (
   , GenTermOutput(..)
   , HasGenTermOutput(..)
   , mkGenTerm
+  , forAllWellTypedTerm
   ) where
 
 import Data.Foldable (asum)
 import Data.Maybe (fromMaybe, mapMaybe)
 
+import Control.Lens (view)
 import Control.Lens.TH (makeClassy)
-import Test.QuickCheck (Gen, oneof, sized)
+import Test.QuickCheck (Gen, oneof, sized, forAllShrink, Property, Testable)
 
-import Component.Type.Gen (GenTypeOutput(..))
+import Component.Type.Gen (GenTypeOutput(..), HasGenTypeOutput(..))
 
 -- |
 data GenAnyTermRule tm n a =
@@ -128,8 +130,6 @@ fixGenIllTypedTermRule :: (ty nTy -> Gen (ty nTy))
                        -> Int
                        -> GenIllTypedTermRule ty nTy tm nTm a
                        -> Maybe (Gen (tm nTm a))
-fixGenIllTypedTermRule _ _ _ 0 _ =
-  Nothing
 fixGenIllTypedTermRule notType wellTyped ty s (GenIllTypedTermRecurse f) =
   f notType wellTyped ty s
 
@@ -175,6 +175,22 @@ data GenTermOutput ty nTy tm nTm a =
   }
 
 makeClassy ''GenTermOutput
+
+forAllWellTypedTerm :: ( HasGenTermOutput gto ty nTy tm nTm a
+                       , HasGenTypeOutput gto ty nTy
+                       , Show (tm nTm a)
+                       , Testable prop
+                       )
+                    => gto
+                    -> (tm nTm a -> prop)
+                    -> Property
+forAllWellTypedTerm gto =
+    forAllShrink gen shr
+  where
+    genWellTypedTerm' = view genWellTypedTerm gto
+    genAnyType' = view genAnyType gto
+    gen = genAnyType' >>= genWellTypedTerm'
+    shr = view shrWellTypedTerm gto
 
 -- |
 mkGenTerm :: GenTypeOutput ty nTy
