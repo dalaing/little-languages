@@ -13,20 +13,21 @@ module Component.Term.Note.Size (
 
 import Control.Lens (preview)
 
-import Component.Term.Size (TermSizeInput(..), TermSizeRule(..))
+import Component.Term.SubTerm (SubTermInput(..), SubTermRule(..))
 
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
-termSizeTmNote :: WithNoteTerm tm
-               => (tm n a -> Int)
-               -> tm n a
-               -> Maybe Int
-termSizeTmNote size =
-  fmap ((+ 1) . size . snd) .
-  preview _TmNote
+subTermTmNote :: WithNoteTerm tm
+              => (tm n a -> [tm n a])
+              -> tm n a
+              -> Maybe [tm n a]
+subTermTmNote subTerms tm =
+  fmap ((tm :) . subTerms . snd) .
+  preview _TmNote $
+  tm
 
 termSizeInput :: WithNoteTerm tm
-              => TermSizeInput tm n a
+              => SubTermInput tm n a
 termSizeInput =
-  TermSizeInput
-    [TermSizeRecurse termSizeTmNote]
+  SubTermInput
+    [SubTermRecurse subTermTmNote]

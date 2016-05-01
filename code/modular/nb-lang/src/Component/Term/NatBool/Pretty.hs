@@ -12,8 +12,7 @@ module Component.Term.NatBool.Pretty (
 import           Control.Lens                 (preview)
 import           Text.PrettyPrint.ANSI.Leijen (Doc, (<+>))
 
-import           Common.Pretty                (reservedConstructor,
-                                               reservedIdentifier)
+import           Common.Pretty                (reservedIdentifier)
 import           Component.Term.Pretty        (PrettyTermInput(..), PrettyTermRule (..))
 
 import           Component.Term.NatBool         (AsNatBoolTerm (..), WithNatBoolTerm)

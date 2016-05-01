@@ -30,7 +30,7 @@ import           Component.Term.Infer                   (HasInferOutput (..))
 import           Component.Term.Note.Strip              (StripNoteTerm)
 import           Component.Term.Parse                   (HasParseTermOutput (..))
 import           Component.Term.Pretty                  (HasPrettyTermOutput (..))
-import           Component.Term.Size                    (HasTermSizeOutput (..))
+import           Component.Term.SubTerm                 (HasSubTermOutput (..))
 import           Component.Type                         (HasTypeOutput (..),
                                                          TypeInput (..),
                                                          TypeOutput (..),
@@ -80,8 +80,8 @@ instance HasPrettyTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty where
 instance HasPrettyTypeErrorOutput (ComponentOutput r e ty nTy tm nTm a) e where
   prettyTypeErrorOutput = cTypeErrorOutput . toePrettyTypeErrorOutput
 
-instance HasTermSizeOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
-  termSizeOutput = cTermOutput . toTermSizeOutput
+instance HasSubTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+  subTermOutput = cTermOutput . toSubTermOutput
 
 instance HasGenTermOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy tm nTm a where
   genTermOutput = cTermOutput . toGenTermOutput
@@ -105,6 +105,7 @@ instance HasBigStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
   bigStepOutput = cTermOutput . toBigStepOutput
 
 mkComponent :: ( AsUnknownType e
+               , Eq (tm nTm a)
                , StripNoteTerm tm tm
                , StripNoteType ty ty
                )

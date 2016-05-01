@@ -21,7 +21,7 @@ import Component.Type.Note (WithNoteType)
 import           Component.Type.Error.Unexpected        (AsUnexpected)
 
 import           Component.Term.STLC                (WithSTLCTerm)
-import           Component.Term.STLC.Size           (termSizeInput)
+import           Component.Term.STLC.SubTerm        (subTermInput)
 import           Component.Term.STLC.Eval.Value     (valueInput)
 import           Component.Term.STLC.Eval.SmallStep (smallStepInput)
 import           Component.Term.STLC.Eval.BigStep   (bigStepInput)
@@ -78,7 +78,7 @@ stlcRules =
         prettyTypeInput
     tmI =
       TermInput
-        termSizeInput
+        subTermInput
         mempty -- genTermInput
         parseTermInput
         prettyTermInput

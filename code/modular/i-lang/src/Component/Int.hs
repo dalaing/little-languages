@@ -15,7 +15,7 @@ import           Component.Term                      (TermInput (..))
 import           Component.Type                      (TypeInput (..))
 import           Component.Type.Error.Unexpected        (AsUnexpected)
 
-import           Component.Term.Int                (IntTerm, WithIntTerm)
+import           Component.Term.Int                (WithIntTerm)
 import           Component.Term.Int.Eval.BigStep   (bigStepInput)
 import           Component.Term.Int.Eval.SmallStep (smallStepInput)
 import           Component.Term.Int.Eval.Value     (valueInput)
@@ -23,8 +23,8 @@ import           Component.Term.Int.Gen            (genTermInput)
 import           Component.Term.Int.Infer          (inferInput)
 import           Component.Term.Int.Parse          (parseTermInput)
 import           Component.Term.Int.Pretty         (prettyTermInput)
-import           Component.Term.Int.Size           (termSizeInput)
-import           Component.Type.Int                (IntType, WithIntType)
+import           Component.Term.Int.SubTerm        (subTermInput)
+import           Component.Type.Int                (WithIntType)
 import           Component.Type.Int.Gen            (genTypeInput)
 import           Component.Type.Int.Parse          (parseTypeInput)
 import           Component.Type.Int.Pretty         (prettyTypeInput)
@@ -45,7 +45,7 @@ intRules =
         prettyTypeInput
     tmI =
       TermInput
-        termSizeInput
+        subTermInput
         genTermInput
         parseTermInput
         prettyTermInput

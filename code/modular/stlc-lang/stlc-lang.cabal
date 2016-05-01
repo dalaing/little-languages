@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Component.STLC
                      , Component.Term.STLC
-                     , Component.Term.STLC.Size
+                     , Component.Term.STLC.SubTerm
                      , Component.Term.STLC.Eval.Value
                      , Component.Term.STLC.Eval.SmallStep
                      , Component.Term.STLC.Eval.BigStep

@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Component.Bool
                      , Component.Term.Bool
-                     , Component.Term.Bool.Size
+                     , Component.Term.Bool.SubTerm
                      , Component.Term.Bool.Eval.Value
                      , Component.Term.Bool.Eval.SmallStep
                      , Component.Term.Bool.Eval.BigStep

@@ -42,15 +42,15 @@ import           Component.Term.Parse                   (ParseTermInput (..),
 import           Component.Term.Pretty                  (PrettyTermInput (..),
                                                          PrettyTermOutput,
                                                          mkPrettyTerm)
-import           Component.Term.Size                    (TermSizeInput (..),
-                                                         TermSizeOutput,
-                                                         mkTermSize)
+import           Component.Term.SubTerm                 (SubTermInput (..),
+                                                         SubTermOutput,
+                                                         mkSubTerm)
 import           Component.Type                         (TypeOutput (..))
 import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
 
 data TermInput r e ty nTy tm nTm a =
   TermInput {
-    _termSizeInput   :: TermSizeInput tm nTm a
+    _subTermInput    :: SubTermInput tm nTm a
   , _genTermInput    :: GenTermInput ty nTy tm nTm a
   , _parseTermInput  :: ParseTermInput ty nTy tm nTm a
   , _prettyTermInput :: PrettyTermInput ty nTy tm nTm a
@@ -87,7 +87,7 @@ instance Monoid (TermInput r e ty nTy tm nTm a) where
 
 data TermOutput r e ty nTy tm nTm a =
   TermOutput {
-    _toTermSizeOutput   :: TermSizeOutput tm nTm a
+    _toSubTermOutput    :: SubTermOutput tm nTm a
   , _toGenTermOutput    :: GenTermOutput ty nTy tm nTm a
   , _toParseTermOutput  :: ParseTermOutput tm nTm a
   , _toPrettyTermOutput :: PrettyTermOutput tm nTm a
@@ -100,6 +100,7 @@ data TermOutput r e ty nTy tm nTm a =
 makeClassy ''TermOutput
 
 mkTerm :: ( AsUnknownType e
+          , Eq (tm nTm a)
           , StripNoteTerm tm tm
           , StripNoteType ty ty
           )
@@ -112,7 +113,7 @@ mkTerm h (TypeOutput gty paty prty) (TermInput t g pa pr i v s b) =
     vo = mkValue v
   in
     TermOutput
-      (mkTermSize t)
+      (mkSubTerm t)
       (mkGenTerm gty g)
       (mkParseTerm h paty pa)
       (mkPrettyTerm prty pr)

@@ -16,7 +16,7 @@ import           Component.Type                      (TypeInput (..))
 import           Component.Type.Error.ExpectedEq        (AsExpectedEq)
 import           Component.Type.Error.Unexpected        (AsUnexpected)
 
-import           Component.Term.Bool                (BoolTerm, WithBoolTerm)
+import           Component.Term.Bool                (WithBoolTerm)
 import           Component.Term.Bool.Eval.BigStep   (bigStepInput)
 import           Component.Term.Bool.Eval.SmallStep (smallStepInput)
 import           Component.Term.Bool.Eval.Value     (valueInput)
@@ -24,8 +24,8 @@ import           Component.Term.Bool.Gen            (genTermInput)
 import           Component.Term.Bool.Infer          (inferInput)
 import           Component.Term.Bool.Parse          (parseTermInput)
 import           Component.Term.Bool.Pretty         (prettyTermInput)
-import           Component.Term.Bool.Size           (termSizeInput)
-import           Component.Type.Bool                (BoolType, WithBoolType)
+import           Component.Term.Bool.SubTerm        (subTermInput)
+import           Component.Type.Bool                (WithBoolType)
 import           Component.Type.Bool.Gen            (genTypeInput)
 import           Component.Type.Bool.Parse          (parseTypeInput)
 import           Component.Type.Bool.Pretty         (prettyTypeInput)
@@ -47,7 +47,7 @@ boolRules =
         prettyTypeInput
     tmI =
       TermInput
-        termSizeInput
+        subTermInput
         genTermInput
         parseTermInput
         prettyTermInput

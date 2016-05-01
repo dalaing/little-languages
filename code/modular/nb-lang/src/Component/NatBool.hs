@@ -22,7 +22,7 @@ import           Component.Term.NatBool.Gen            (genTermInput)
 import           Component.Term.NatBool.Infer          (inferInput)
 import           Component.Term.NatBool.Parse          (parseTermInput)
 import           Component.Term.NatBool.Pretty         (prettyTermInput)
-import           Component.Term.NatBool.Size           (termSizeInput)
+import           Component.Term.NatBool.SubTerm        (subTermInput)
 import           Component.Type.Nat (WithNatType)
 import           Component.Type.Bool (WithBoolType)
 
@@ -38,7 +38,7 @@ natBoolRules =
   where
     tmI =
       TermInput
-        termSizeInput
+        subTermInput
         genTermInput
         parseTermInput
         prettyTermInput

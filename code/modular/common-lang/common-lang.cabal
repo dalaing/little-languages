@@ -24,7 +24,7 @@ library
                      , Language
                      , Component
                      , Component.Term
-                     , Component.Term.Size
+                     , Component.Term.SubTerm
                      , Component.Term.Eval.Value
                      , Component.Term.Eval.SmallStep
                      , Component.Term.Eval.BigStep
