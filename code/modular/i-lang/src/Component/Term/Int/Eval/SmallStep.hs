@@ -148,7 +148,7 @@ eExp2 value step tm = do
 
 -- |
 smallStepInput :: WithIntTerm tm
-               => SmallStepInput tm nTy nTm a
+               => SmallStepInput tm
 smallStepInput =
   SmallStepInput
     [ SmallStepBase eAddIntInt

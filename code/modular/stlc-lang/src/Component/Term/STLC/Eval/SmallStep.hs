@@ -49,7 +49,7 @@ eAppLam tm = do
 smallStepInput :: ( WithSTLCTerm tm ty
                   , ForallT Monad tm
                   )
-               => SmallStepInput tm nTy nTm String
+               => SmallStepInput tm
 smallStepInput =
   SmallStepInput
    [ SmallStepBase eAppLam

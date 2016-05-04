@@ -24,7 +24,7 @@ bigStepTmNote bigStep tm = do
   return $ review _TmNote (n, tm1')
 
 bigStepInput :: WithNoteTerm tm
-           => BigStepInput tm nTy nTm a
+           => BigStepInput tm
 bigStepInput =
   BigStepInput
     [BigStepRecurse bigStepTmNote]

@@ -64,7 +64,7 @@ prettyTmExp tm1 tm2 =
 
 -- |
 prettyTermInput :: WithIntTerm tm
-                => PrettyTermInput ty nTy tm nTm a
+                => PrettyTermInput ty tm
 prettyTermInput =
   PrettyTermInput
     [ PrettyTermBase prettyTmInt

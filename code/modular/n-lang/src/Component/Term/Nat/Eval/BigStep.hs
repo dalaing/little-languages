@@ -56,7 +56,7 @@ ePredSucc step tm = do
 
 -- |
 bigStepInput :: WithNatTerm tm
-             => BigStepInput tm nTy nTm a
+             => BigStepInput tm
 bigStepInput =
   BigStepInput
     [ BigStepBase eZero

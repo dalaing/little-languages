@@ -35,7 +35,7 @@ eLamApp step tm = do
 bigStepInput :: ( WithSTLCTerm tm ty
                 , ForallT Monad tm
                 )
-             => BigStepInput tm nTy nTm String
+             => BigStepInput tm
 bigStepInput =
   BigStepInput
     [BigStepRecurse eLamApp]

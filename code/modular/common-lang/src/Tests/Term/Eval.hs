@@ -5,6 +5,8 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE PolyKinds #-}
 module Tests.Term.Eval (
     mkEvalTests
   ) where
@@ -24,10 +26,10 @@ import           Component.Term.Eval.Value     (HasValueOutput (..))
 import           Component.Term.Gen            (forAllWellTypedTerm)
 import           Component.Term.SubTerm        (HasSubTermOutput (..))
 
-mkEvalTests :: ( Eq (tm nTy nTm a)
-               , Show (tm nTy nTm a)
+mkEvalTests :: ( Eq (tm nTy nTm String)
+               , Show (tm nTy nTm String)
                )
-            => ComponentOutput r e ty nTy tm nTm a
+            => ComponentOutput r e ty nTy tm nTm String
             -> TestTree
 mkEvalTests c =
   testGroup "eval"
@@ -40,8 +42,8 @@ mkEvalTests c =
     , testProperty "small step and big step agree" $ propSmallBig c
     ]
 
-propValueNormal :: Show (tm nTy nTm a)
-                => ComponentOutput r e ty nTy tm nTm a
+propValueNormal :: Show (tm nTy nTm String)
+                => ComponentOutput r e ty nTy tm nTm String
                 -> Property
 propValueNormal c =
   let
@@ -51,8 +53,8 @@ propValueNormal c =
     forAllWellTypedTerm c $ \tm ->
       isValue' tm ==> isNormalForm' tm
 
-propNormalValue :: Show (tm nTy nTm a)
-                => ComponentOutput r e ty nTy tm nTm a
+propNormalValue :: Show (tm nTy nTm String)
+                => ComponentOutput r e ty nTy tm nTm String
                 -> Property
 propNormalValue c =
   let
@@ -63,10 +65,10 @@ propNormalValue c =
       isNormalForm' tm ==> isValue' tm
 
     -- - either isValue, or there are 1 or more steps we can take that have the same result
-propSmallDeterminate :: ( Eq (tm nTy nTm a)
-                        , Show (tm nTy nTm a)
+propSmallDeterminate :: ( Eq (tm nTy nTm String)
+                        , Show (tm nTy nTm String)
                         )
-                     => ComponentOutput r e ty nTy tm nTm a
+                     => ComponentOutput r e ty nTy tm nTm String
                      -> Property
 propSmallDeterminate c =
   let
@@ -84,8 +86,8 @@ propSmallDeterminate c =
         in
           distinctResults === 1
 
-propSmallShrinks :: Show (tm nTy nTm a)
-                 => ComponentOutput r e ty nTy tm nTm a
+propSmallShrinks :: Show (tm nTy nTm String)
+                 => ComponentOutput r e ty nTy tm nTm String
                  -> Property
 propSmallShrinks c =
   let
@@ -97,8 +99,8 @@ propSmallShrinks c =
         Nothing -> True
         Just tm' -> termSize' tm' < termSize' tm
 
-propSmallUnique :: Show (tm nTy nTm a)
-                => ComponentOutput r e ty nTy tm nTm a
+propSmallUnique :: Show (tm nTy nTm String)
+                => ComponentOutput r e ty nTy tm nTm String
                 -> Property
 propSmallUnique c =
   let
@@ -114,8 +116,8 @@ propSmallUnique c =
       in
         matches === 1
 
-propBigUnique :: Show (tm nTy nTm a)
-              => ComponentOutput r e ty nTy tm nTm a
+propBigUnique :: Show (tm nTy nTm String)
+              => ComponentOutput r e ty nTy tm nTm String
               -> Property
 propBigUnique c =
   let
@@ -130,10 +132,10 @@ propBigUnique c =
       in
         matches === 1
 
-propSmallBig :: ( Eq (tm nTy nTm a)
-                , Show (tm nTy nTm a)
+propSmallBig :: ( Eq (tm nTy nTm String)
+                , Show (tm nTy nTm String)
                 )
-             => ComponentOutput r e ty nTy tm nTm a
+             => ComponentOutput r e ty nTy tm nTm String
              -> Property
 propSmallBig c =
   let

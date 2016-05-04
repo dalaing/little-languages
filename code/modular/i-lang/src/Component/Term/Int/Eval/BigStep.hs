@@ -80,7 +80,7 @@ eExp step tm = do
 
 -- |
 bigStepInput :: WithIntTerm tm
-             => BigStepInput tm nTy nTm a
+             => BigStepInput tm
 bigStepInput =
   BigStepInput
     [ BigStepBase eInt

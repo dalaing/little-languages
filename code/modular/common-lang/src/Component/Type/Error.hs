@@ -42,8 +42,8 @@ data TypeErrorOutput e =
 
 makeClassy ''TypeErrorOutput
 
-mkTypeError :: TypeOutput ty n
-            -> TypeErrorInput e ty n
+mkTypeError :: TypeOutput ty nTy
+            -> TypeErrorInput e ty nTy
             -> TypeErrorOutput e 
 mkTypeError to (TypeErrorInput pr) =
   let

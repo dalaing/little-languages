@@ -27,14 +27,14 @@ import           Component.Term.Eval.SmallStep (HasSmallStepOutput (..))
 
 mkInferTests :: ( Eq e
                 , Show e
-                , Eq (tm nTy nTm a)
-                , Show (tm nTy nTm a)
+                , Eq (tm nTy nTm String)
+                , Show (tm nTy nTm String)
                 , Eq (ty nTy)
                 , Show (ty nTy)
                 , AsUnknownType e
                 , Monoid r
                 )
-             => ComponentOutput r e ty nTy tm nTm a
+             => ComponentOutput r e ty nTy tm nTm String
              -> TestTree
 mkInferTests c =
   testGroup "infer"
@@ -60,10 +60,10 @@ isLeft (Left _) =
 isLeft _ =
   False
 
-propPatternUnique :: ( Show (tm nTy nTm a)
+propPatternUnique :: ( Show (tm nTy nTm String)
                      , Monoid r
                      )
-                  => ComponentOutput r e ty nTy tm nTm a
+                  => ComponentOutput r e ty nTy tm nTm String
                   -> Property
 propPatternUnique c =
   let
@@ -131,10 +131,10 @@ propIllTypedInfer c =
       -- all (isLeft . infer') $ tm : shrIllTypedTerm' tm
       isLeft . infer' $ tm
 
-propProgress :: ( Show (tm nTy nTm a)
+propProgress :: ( Show (tm nTy nTm String)
                 , Monoid r
                 )
-             => ComponentOutput r e ty nTy tm nTm a
+             => ComponentOutput r e ty nTy tm nTm String
              -> Property
 propProgress c =
   let
@@ -149,13 +149,13 @@ propProgress c =
 
 propPreservation :: ( Eq e
                     , Show e
-                    , Eq (tm nTy nTm a)
-                    , Show (tm nTy nTm a)
+                    , Eq (tm nTy nTm String)
+                    , Show (tm nTy nTm String)
                     , Eq (ty nTy)
                     , Show (ty nTy)
                     , Monoid r
                     )
-                 => ComponentOutput r e ty nTy tm nTm a
+                 => ComponentOutput r e ty nTy tm nTm String
                  -> Property
 propPreservation c =
   let

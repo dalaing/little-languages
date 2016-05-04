@@ -31,7 +31,7 @@ prettyTmIsZero prettyTerm =
 
 -- |
 prettyTermInput :: WithNatBoolTerm tm
-                => PrettyTermInput ty nTy tm nTm a
+                => PrettyTermInput ty tm
 prettyTermInput =
   PrettyTermInput
     [PrettyTermRecurse prettyTmIsZero]

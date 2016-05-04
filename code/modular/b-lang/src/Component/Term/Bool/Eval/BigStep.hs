@@ -55,7 +55,7 @@ eIfFalse step tm = do
 
 -- |
 bigStepInput :: WithBoolTerm tm
-             => BigStepInput tm nTy nTm a
+             => BigStepInput tm
 bigStepInput =
   BigStepInput
     [ BigStepBase eFalse

@@ -9,6 +9,7 @@ Portability : non-portable
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 module Component.Term.Eval.Value (
     ValueRule(..)
   , ValueInput(..)
@@ -25,44 +26,44 @@ import Control.Lens.TH (makeClassy)
 import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
-data ValueRule tm nTy nTm a =
-    ValueBase (tm nTy nTm a -> Maybe (tm nTy nTm a))                        -- ^
-  | ValueRecurse ((tm nTy nTm a -> Maybe (tm nTy nTm a)) -> tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+data ValueRule tm =
+    ValueBase (forall nTy nTm. tm nTy nTm String -> Maybe (tm nTy nTm String))                        -- ^
+  | ValueRecurse (forall nTy nTm. (tm nTy nTm String -> Maybe (tm nTy nTm String)) -> tm nTy nTm String -> Maybe (tm nTy nTm String)) -- ^
 
 -- |
-fixValueRule :: (tm nTy nTm a -> Maybe (tm nTy nTm a))
-             -> ValueRule tm nTy nTm a
-             -> tm nTy nTm a
-             -> Maybe (tm nTy nTm a)
+fixValueRule :: (tm nTy nTm String -> Maybe (tm nTy nTm String))
+             -> ValueRule tm
+             -> tm nTy nTm String
+             -> Maybe (tm nTy nTm String)
 fixValueRule _ (ValueBase f) x =
   f x
 fixValueRule step (ValueRecurse f) x =
   f step x
 
 -- |
-data ValueInput tm nTy nTm a =
-  ValueInput [ValueRule tm nTy nTm a] -- ^
+data ValueInput tm =
+  ValueInput [ValueRule tm] -- ^
 
-instance Monoid (ValueInput tm nTy nTm a) where
+instance Monoid (ValueInput tm) where
   mempty =
     ValueInput mempty
   mappend (ValueInput v1) (ValueInput v2) =
     ValueInput (mappend v1 v2)
 
 -- |
-data ValueOutput tm nTy nTm a =
+data ValueOutput tm =
   ValueOutput {
-    _value      :: tm nTy nTm a -> Maybe (tm nTy nTm a)   -- ^
-  , _valueRules :: [tm nTy nTm a -> Maybe (tm nTy nTm a)] -- ^
-  , _isValue    :: tm nTy nTm a -> Bool -- ^
+    _value      :: forall nTy nTm. tm nTy nTm String -> Maybe (tm nTy nTm String)   -- ^
+  , _valueRules :: forall nTy nTm. [tm nTy nTm String -> Maybe (tm nTy nTm String)] -- ^
+  , _isValue    :: forall nTy nTm. tm nTy nTm String -> Bool -- ^
   }
 
 makeClassy ''ValueOutput
 
 -- |
 mkValue :: StripNoteTerm tm tm
-        => ValueInput tm nTy nTm a -- ^
-        -> ValueOutput tm nTy nTm a -- ^
+        => ValueInput tm -- ^
+        -> ValueOutput tm -- ^
 mkValue (ValueInput i) =
   let
     valueRules' =

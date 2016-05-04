@@ -91,19 +91,19 @@ instance HasGenTermOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy tm nTm a 
 instance HasParseTermOutput (ComponentOutput r e ty nTy tm nTm a) tm where
   parseTermOutput = cTermOutput . toParseTermOutput
 
-instance HasPrettyTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
+instance HasPrettyTermOutput (ComponentOutput r e ty nTy tm nTm a) tm where
   prettyTermOutput = cTermOutput . toPrettyTermOutput
 
 instance HasInferOutput (ComponentOutput r e ty nTy tm nTm a) r e ty nTy tm nTm a where
   inferOutput = cTermOutput . toInferOutput
 
-instance HasValueOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
+instance HasValueOutput (ComponentOutput r e ty nTy tm nTm a) tm where
   valueOutput = cTermOutput . toValueOutput
 
-instance HasSmallStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
+instance HasSmallStepOutput (ComponentOutput r e ty nTy tm nTm a) tm where
   smallStepOutput = cTermOutput . toSmallStepOutput
 
-instance HasBigStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
+instance HasBigStepOutput (ComponentOutput r e ty nTy tm nTm a) tm where
   bigStepOutput = cTermOutput . toBigStepOutput
 
 mkComponent :: ( AsUnknownType e

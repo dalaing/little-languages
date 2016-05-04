@@ -41,7 +41,7 @@ eIsZeroSucc step tm = do
 
 -- |
 bigStepInput :: WithNatBoolTerm tm
-             => BigStepInput tm nTy nTm a
+             => BigStepInput tm
 bigStepInput =
   BigStepInput
     [ BigStepRecurse eIsZeroZero

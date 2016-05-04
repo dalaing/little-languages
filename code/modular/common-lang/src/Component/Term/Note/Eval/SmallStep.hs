@@ -23,7 +23,7 @@ smallStepTmNote smallStep tm = do
   smallStep tm1
 
 smallStepInput :: WithNoteTerm tm
-           => SmallStepInput tm nTy nTm a
+           => SmallStepInput tm
 smallStepInput =
   SmallStepInput
     [SmallStepRecurse smallStepTmNote]

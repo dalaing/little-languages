@@ -9,6 +9,7 @@ Portability : non-portable
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 module Component.Term.Eval.BigStep (
     BigStepRule(..)
   , BigStepInput(..)
@@ -25,44 +26,44 @@ import Control.Lens.TH (makeClassy)
 import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
-data BigStepRule tm nTy nTm a =
-    BigStepBase (tm nTy nTm a -> Maybe (tm nTy nTm a))                        -- ^
-  | BigStepRecurse ((tm nTy nTm a -> Maybe (tm nTy nTm a)) -> tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+data BigStepRule tm =
+    BigStepBase (forall nTy nTm. tm nTy nTm String -> Maybe (tm nTy nTm String))                        -- ^
+  | BigStepRecurse (forall nTy nTm. (tm nTy nTm String -> Maybe (tm nTy nTm String)) -> tm nTy nTm String -> Maybe (tm nTy nTm String)) -- ^
 
 -- |
-fixBigStepRule :: (tm nTy nTm a -> Maybe (tm nTy nTm a))
-             -> BigStepRule tm nTy nTm a
-             -> tm nTy nTm a
-             -> Maybe (tm nTy nTm a)
+fixBigStepRule :: (tm nTy nTm String -> Maybe (tm nTy nTm String))
+             -> BigStepRule tm
+             -> tm nTy nTm String
+             -> Maybe (tm nTy nTm String)
 fixBigStepRule _ (BigStepBase f) x =
   f x
 fixBigStepRule step (BigStepRecurse f) x =
   f step x
 
 -- |
-data BigStepInput tm nTy nTm a =
-  BigStepInput [BigStepRule tm nTy nTm a] -- ^
+data BigStepInput tm =
+  BigStepInput [BigStepRule tm] -- ^
 
-instance Monoid (BigStepInput tm nTy nTm a) where
+instance Monoid (BigStepInput tm) where
   mempty =
     BigStepInput mempty
   mappend (BigStepInput v1) (BigStepInput v2) =
     BigStepInput (mappend v1 v2)
 
 -- |
-data BigStepOutput tm nTy nTm a =
+data BigStepOutput tm =
   BigStepOutput {
-    _bigStep      :: tm nTy nTm a -> Maybe (tm nTy nTm a)   -- ^
-  , _bigStepRules :: [tm nTy nTm a -> Maybe (tm nTy nTm a)] -- ^
-  , _bigStepEval  :: tm nTy nTm a -> tm nTy nTm a        -- ^
+    _bigStep      :: forall nTy nTm. tm nTy nTm String -> Maybe (tm nTy nTm String)   -- ^
+  , _bigStepRules :: forall nTy nTm. [tm nTy nTm String -> Maybe (tm nTy nTm String)] -- ^
+  , _bigStepEval  :: forall nTy nTm. tm nTy nTm String -> tm nTy nTm String        -- ^
   }
 
 makeClassy ''BigStepOutput
 
 -- |
 mkBigStep :: StripNoteTerm tm tm
-          => BigStepInput tm nTy nTm a -- ^
-          -> BigStepOutput tm nTy nTm a-- ^
+          => BigStepInput tm -- ^
+          -> BigStepOutput tm -- ^
 mkBigStep (BigStepInput i) =
   let
     bigStepRules' =

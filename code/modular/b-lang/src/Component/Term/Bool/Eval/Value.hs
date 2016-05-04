@@ -30,7 +30,7 @@ valueTmTrue =
   preview _TmTrue
 
 valueInput :: WithBoolTerm tm
-           => ValueInput tm nTy nTm a
+           => ValueInput tm
 valueInput =
   ValueInput
     [ ValueBase valueTmFalse

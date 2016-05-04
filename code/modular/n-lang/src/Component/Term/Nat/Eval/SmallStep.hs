@@ -56,7 +56,7 @@ ePred step tm = do
 
 -- |
 smallStepInput :: WithNatTerm tm
-               => SmallStepInput tm nTy nTm a
+               => SmallStepInput tm
 smallStepInput =
   SmallStepInput
     [ SmallStepBase ePredZero

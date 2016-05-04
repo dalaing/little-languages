@@ -58,7 +58,7 @@ prettyTmApp tm1 tm2 =
 prettyTermInput :: ( WithSTLCTerm tm ty
                    , ForallT Monad tm
                    )
-                => PrettyTermInput ty nTy tm nTm String
+                => PrettyTermInput ty tm 
 prettyTermInput =
   PrettyTermInput
     [ PrettyTermBase prettyTmVar

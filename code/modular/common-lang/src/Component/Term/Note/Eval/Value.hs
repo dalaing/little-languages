@@ -23,7 +23,7 @@ valueTmNote value tm = do
   value tm1
 
 valueInput :: WithNoteTerm tm
-           => ValueInput tm nTy nTm a
+           => ValueInput tm 
 valueInput =
   ValueInput
     [ValueRecurse valueTmNote]

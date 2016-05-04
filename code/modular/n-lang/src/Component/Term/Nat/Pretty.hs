@@ -52,7 +52,7 @@ prettyTmPred prettyTerm =
 
 -- |
 prettyTermInput :: WithNatTerm tm
-                => PrettyTermInput ty nTy tm nTm a
+                => PrettyTermInput ty tm
 prettyTermInput =
   PrettyTermInput
     [ PrettyTermBase prettyTmZero

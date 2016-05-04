@@ -23,7 +23,7 @@ valueTmInt =
   preview _TmIntLit
 
 valueInput :: WithIntTerm tm
-           => ValueInput tm nTy nTm a
+           => ValueInput tm 
 valueInput =
   ValueInput
     [ValueBase valueTmInt]

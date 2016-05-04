@@ -54,11 +54,11 @@ data TermInput r e ty nTy tm nTm a =
     _subTermInput    :: SubTermInput tm nTy nTm a
   , _genTermInput    :: GenTermInput ty nTy tm nTm a
   , _parseTermInput  :: ParseTermInput ty tm
-  , _prettyTermInput :: PrettyTermInput ty nTy tm nTm a
+  , _prettyTermInput :: PrettyTermInput ty tm
   , _inferInput      :: InferInput r e ty nTy tm nTm a
-  , _valueInput      :: ValueInput tm nTy nTm a
-  , _smallStepInput  :: SmallStepInput tm nTy nTm a
-  , _bigStepInput    :: BigStepInput tm nTy nTm a
+  , _valueInput      :: ValueInput tm
+  , _smallStepInput  :: SmallStepInput tm
+  , _bigStepInput    :: BigStepInput tm
   }
 
 instance GetReservedWords (TermInput r e ty nTy tm nTm a) where
@@ -91,11 +91,11 @@ data TermOutput r e ty nTy tm nTm a =
     _toSubTermOutput    :: SubTermOutput tm nTy nTm a
   , _toGenTermOutput    :: GenTermOutput ty nTy tm nTm a
   , _toParseTermOutput  :: ParseTermOutput tm
-  , _toPrettyTermOutput :: PrettyTermOutput tm nTy nTm a
+  , _toPrettyTermOutput :: PrettyTermOutput tm
   , _toInferOutput      :: InferOutput r e ty nTy tm nTm a
-  , _toValueOutput      :: ValueOutput tm nTy nTm a
-  , _toSmallStepOutput  :: SmallStepOutput tm nTy nTm a
-  , _toBigStepOutput    :: BigStepOutput tm nTy nTm a
+  , _toValueOutput      :: ValueOutput tm
+  , _toSmallStepOutput  :: SmallStepOutput tm
+  , _toBigStepOutput    :: BigStepOutput tm
   }
 
 makeClassy ''TermOutput

@@ -32,7 +32,7 @@ valueTmSucc value tm = do
   return $ review _TmSucc tm1'
 
 valueInput :: WithNatTerm tm
-           => ValueInput tm nTy nTm a
+           => ValueInput tm
 valueInput =
   ValueInput
     [ ValueBase valueTmZero

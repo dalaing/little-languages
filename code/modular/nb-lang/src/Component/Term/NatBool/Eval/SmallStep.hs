@@ -49,7 +49,7 @@ eIsZero step tm = do
 
 -- |
 smallStepInput :: WithNatBoolTerm tm
-               => SmallStepInput tm nTy nTm a
+               => SmallStepInput tm
 smallStepInput =
   SmallStepInput
     [ SmallStepBase eIsZeroZero

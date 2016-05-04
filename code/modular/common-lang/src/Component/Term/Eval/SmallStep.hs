@@ -9,6 +9,7 @@ Portability : non-portable
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
 module Component.Term.Eval.SmallStep (
     SmallStepRule(..)
   , SmallStepInput(..)
@@ -26,18 +27,18 @@ import Component.Term.Eval.Value (ValueOutput(..))
 import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
-data SmallStepRule tm nTy nTm a =
-    SmallStepBase (tm nTy nTm a -> Maybe (tm nTy nTm a))                        -- ^
-  | SmallStepValue ((tm nTy nTm a -> Maybe (tm nTy nTm a)) -> tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
-  | SmallStepRecurse ((tm nTy nTm a -> Maybe (tm nTy nTm a)) -> tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
-  | SmallStepValueRecurse ((tm nTy nTm a -> Maybe (tm nTy nTm a)) -> (tm nTy nTm a -> Maybe (tm nTy nTm a)) -> tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+data SmallStepRule tm =
+    SmallStepBase (forall nTy nTm. tm nTy nTm String -> Maybe (tm nTy nTm String))                        -- ^
+  | SmallStepValue (forall nTy nTm. (tm nTy nTm String -> Maybe (tm nTy nTm String)) -> tm nTy nTm String -> Maybe (tm nTy nTm String)) -- ^
+  | SmallStepRecurse (forall nTy nTm. (tm nTy nTm String -> Maybe (tm nTy nTm String)) -> tm nTy nTm String -> Maybe (tm nTy nTm String)) -- ^
+  | SmallStepValueRecurse (forall nTy nTm. (tm nTy nTm String -> Maybe (tm nTy nTm String)) -> (tm nTy nTm String -> Maybe (tm nTy nTm String)) -> tm nTy nTm String -> Maybe (tm nTy nTm String)) -- ^
 
 -- |
-fixSmallStepRule :: (tm nTy nTm a -> Maybe (tm nTy nTm a))
-                 -> (tm nTy nTm a -> Maybe (tm nTy nTm a))
-                 -> SmallStepRule tm nTy nTm a
-                 -> tm nTy nTm a
-                 -> Maybe (tm nTy nTm a)
+fixSmallStepRule :: (tm nTy nTm String -> Maybe (tm nTy nTm String))
+                 -> (tm nTy nTm String -> Maybe (tm nTy nTm String))
+                 -> SmallStepRule tm
+                 -> tm nTy nTm String
+                 -> Maybe (tm nTy nTm String)
 fixSmallStepRule _ _ (SmallStepBase f) x =
   f x
 fixSmallStepRule value _ (SmallStepValue f) x =
@@ -48,32 +49,32 @@ fixSmallStepRule value step (SmallStepValueRecurse f) x =
   f value step x
 
 -- |
-data SmallStepInput tm nTy nTm a =
-  SmallStepInput [SmallStepRule tm nTy nTm a] -- ^
+data SmallStepInput tm =
+  SmallStepInput [SmallStepRule tm] -- ^
 
-instance Monoid (SmallStepInput tm nTy nTm a) where
+instance Monoid (SmallStepInput tm) where
   mempty =
     SmallStepInput mempty
   mappend (SmallStepInput v1) (SmallStepInput v2) =
     SmallStepInput (mappend v1 v2)
 
 -- |
-data SmallStepOutput tm nTy nTm a =
+data SmallStepOutput tm =
   SmallStepOutput {
-    _smallStep      :: tm nTy nTm a -> Maybe (tm nTy nTm a)   -- ^
-  , _smallStepRules :: [tm nTy nTm a -> Maybe (tm nTy nTm a)] -- ^
-  , _smallStepEval  :: tm nTy nTm a -> tm nTy nTm a  -- ^
-  , _canStep        :: tm nTy nTm a -> Bool -- ^
-  , _isNormalForm   :: tm nTy nTm a -> Bool -- ^
+    _smallStep      :: forall nTy nTm. tm nTy nTm String -> Maybe (tm nTy nTm String)   -- ^
+  , _smallStepRules :: forall nTy nTm. [tm nTy nTm String -> Maybe (tm nTy nTm String)] -- ^
+  , _smallStepEval  :: forall nTy nTm. tm nTy nTm String -> tm nTy nTm String  -- ^
+  , _canStep        :: forall nTy nTm. tm nTy nTm String -> Bool -- ^
+  , _isNormalForm   :: forall nTy nTm. tm nTy nTm String -> Bool -- ^
   }
 
 makeClassy ''SmallStepOutput
 
 -- |
 mkSmallStep :: StripNoteTerm tm tm
-            => ValueOutput tm nTy nTm a
-            -> SmallStepInput tm nTy nTm a  -- ^
-            -> SmallStepOutput tm nTy nTm a -- ^
+            => ValueOutput tm
+            -> SmallStepInput tm -- ^
+            -> SmallStepOutput tm -- ^
 mkSmallStep v (SmallStepInput i) =
   let
     smallStepRules' =

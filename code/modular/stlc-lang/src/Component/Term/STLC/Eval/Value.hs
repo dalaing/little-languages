@@ -23,7 +23,7 @@ valueTmLam =
   preview _TmLam
 
 valueInput :: WithSTLCTerm tm ty
-           => ValueInput tm nTy nTm a
+           => ValueInput tm 
 valueInput =
   ValueInput
    [ValueBase valueTmLam]

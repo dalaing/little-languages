@@ -45,7 +45,7 @@ eIf step tm = do
 
 -- |
 smallStepInput :: WithBoolTerm tm
-               => SmallStepInput tm nTy nTm a
+               => SmallStepInput tm
 smallStepInput =
   SmallStepInput
     [ SmallStepBase eIfTrue

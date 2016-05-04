@@ -30,17 +30,17 @@ import           Component.Type.Parse  (ParseTypeInput (..),
 import           Component.Type.Pretty (PrettyTypeInput (..),
                                         PrettyTypeOutput (..), mkPrettyType)
 
-data TypeInput ty n =
+data TypeInput ty nTy =
   TypeInput {
-    _genTypeInput    :: GenTypeInput ty n
+    _genTypeInput    :: GenTypeInput ty nTy
   , _parseTypeInput  :: ParseTypeInput ty
   , _prettyTypeInput :: PrettyTypeInput ty
   }
 
-instance GetReservedWords (TypeInput ty n) where
+instance GetReservedWords (TypeInput ty nTy) where
   reservedWords = reservedWords . _parseTypeInput
 
-instance Monoid (TypeInput ty n) where
+instance Monoid (TypeInput ty nTy) where
   mempty =
     TypeInput
       mempty
@@ -52,9 +52,9 @@ instance Monoid (TypeInput ty n) where
       (mappend pa1 pa2)
       (mappend pr1 pr2)
 
-data TypeOutput ty n =
+data TypeOutput ty nTy =
   TypeOutput {
-    _toGenTypeOutput    :: GenTypeOutput ty n
+    _toGenTypeOutput    :: GenTypeOutput ty nTy
   , _toParseTypeOutput  :: ParseTypeOutput ty
   , _toPrettyTypeOutput :: PrettyTypeOutput ty
   }
@@ -63,8 +63,8 @@ makeClassy ''TypeOutput
 
 mkType :: WithNoteType ty
        => ParserHelperOutput
-       -> TypeInput ty n
-       -> TypeOutput ty n
+       -> TypeInput ty nTy
+       -> TypeOutput ty nTy
 mkType h (TypeInput g pa pr) =
   TypeOutput
     (mkGenType g)

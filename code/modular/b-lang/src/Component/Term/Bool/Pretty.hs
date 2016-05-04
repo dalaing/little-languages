@@ -50,7 +50,7 @@ prettyTmIf prettyTerm =
 
 -- |
 prettyTermInput :: WithBoolTerm tm
-                => PrettyTermInput ty nTy tm nTm a
+                => PrettyTermInput ty tm
 prettyTermInput =
   PrettyTermInput
     [ PrettyTermBase prettyTmFalse
