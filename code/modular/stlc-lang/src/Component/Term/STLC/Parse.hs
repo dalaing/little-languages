@@ -6,6 +6,8 @@ Stability   : experimental
 Portability : non-portable
 -}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE GADTs #-}
 module Component.Term.STLC.Parse (
     parseTermInput
   ) where
@@ -13,40 +15,39 @@ module Component.Term.STLC.Parse (
 import Control.Lens (view, review)
 import Text.Parser.Combinators ((<?>))
 import Text.Trifecta.Parser (Parser)
-import Bound (abstract1)
+import Data.Constraint.Forall (ForallT)
 
 import Common.Text (Assoc(..), ExpressionInfo(..))
 import Common.Parse (reserveIdentifiers, reserveOperators, ParserHelperOutput, HasParserHelperOutput(..))
 import Component.Term.Parse (ParseTermInput(..), ParseTermRule(..))
-import Component.Type.Parse (ParseTypeOutput(..))
 
-import Component.Term.STLC (AsSTLCTerm(..), AsSTLCVar(..), WithSTLCTerm)
+import Component.Term.STLC (AsSTLCTerm(..), AsSTLCVar(..), WithSTLCTerm, lam_)
 
-parseTmVar :: WithSTLCTerm tm ty nTy
+parseTmVar :: WithSTLCTerm tm ty
            => ParserHelperOutput
-           -> Parser (tm nTm String)
+           -> Parser (tm nTy nTm String)
 parseTmVar h =
   fmap (review _TmVar) (view identifier h)
 
-parseTmLam :: ( WithSTLCTerm tm ty nTy
-              , Monad (tm nTm)
+parseTmLam :: ( WithSTLCTerm tm ty
+              , ForallT Monad tm
               )
            => ParserHelperOutput
            -> Parser (ty nTy)
-           -> Parser (tm nTm String)
-           -> Parser (tm nTm String)
+           -> Parser (tm nTy nTm String)
+           -> Parser (tm nTy nTm String)
 parseTmLam h parseType parseTerm = let
     ri = view reservedIdentifier h
   in
-    (\v t s -> review _TmLam (v, t, abstract1 v s))
+    lam_
       <$ ri "\\" <*> view identifier h
       <* ri ":" <*> parseType
       <* ri "." <*> parseTerm
 
 -- |
-parseTmApp :: WithSTLCTerm tm ty nTy
+parseTmApp :: WithSTLCTerm tm ty
            => ParserHelperOutput
-           -> Parser (tm nTm String -> tm nTm String -> tm nTm String) -- ^
+           -> Parser (tm nTy nTm a -> tm nTy nTm a -> tm nTy nTm a) -- ^
 parseTmApp h =
   let
     ro = view reservedOperator h
@@ -55,10 +56,10 @@ parseTmApp h =
       ro "@"
       <?> "@"
 
-parseTermInput :: ( WithSTLCTerm tm ty nTy
-                  , Monad (tm nTm)
+parseTermInput :: ( WithSTLCTerm tm ty
+                  , ForallT Monad tm
                   )
-               => ParseTermInput ty nTy tm nTm String
+               => ParseTermInput ty tm
 parseTermInput =
   ParseTermInput
     [ ParseTermBase mempty parseTmVar

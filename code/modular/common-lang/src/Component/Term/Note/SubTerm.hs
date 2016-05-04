@@ -7,8 +7,8 @@ Portability : non-portable
 -}
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE ScopedTypeVariables             #-}
-module Component.Term.Note.Size (
-    termSizeInput
+module Component.Term.Note.SubTerm (
+    subTermInput
   ) where
 
 import Control.Lens (preview)
@@ -18,16 +18,16 @@ import Component.Term.SubTerm (SubTermInput(..), SubTermRule(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
 subTermTmNote :: WithNoteTerm tm
-              => (tm n a -> [tm n a])
-              -> tm n a
-              -> Maybe [tm n a]
+              => (tm nTy nTm a -> [tm nTy nTm a])
+              -> tm nTy nTm a
+              -> Maybe [tm nTy nTm a]
 subTermTmNote subTerms tm =
   fmap ((tm :) . subTerms . snd) .
   preview _TmNote $
   tm
 
-termSizeInput :: WithNoteTerm tm
-              => SubTermInput tm n a
-termSizeInput =
+subTermInput :: WithNoteTerm tm
+              => SubTermInput tm nTy nTm a
+subTermInput =
   SubTermInput
     [SubTermRecurse subTermTmNote]

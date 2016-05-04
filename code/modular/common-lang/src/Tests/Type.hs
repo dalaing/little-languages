@@ -9,15 +9,16 @@ module Tests.Type (
     mkTypeTests
   ) where
 
-import           Test.Tasty       (TestTree, testGroup)
+import           Test.Tasty              (TestTree, testGroup)
+import           Text.Trifecta.Rendering (Span)
 
-import Component (ComponentOutput)
-import           Tests.Type.Text  (mkTextTests)
+import           Component               (ComponentOutput)
+import           Tests.Type.Text         (mkTextTests)
 
-mkTypeTests :: ( Eq (ty nTy)
-               , Show (ty nTy)
+mkTypeTests :: ( Eq (ty Span)
+               , Show (ty Span)
                )
-            => ComponentOutput r e ty nTy tm nTm a
+            => ComponentOutput r e ty Span tm nTm a
             -> TestTree
 mkTypeTests c =
   testGroup "type"

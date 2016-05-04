@@ -21,7 +21,7 @@ import Component.Term.Parse (ParseTermInput(..), ParseTermRule(..))
 -- |
 parseTmFalse :: WithBoolTerm tm
              => ParserHelperOutput
-             -> Parser (tm n a)           -- ^
+             -> Parser (tm nTy nTm a)           -- ^
 parseTmFalse h =
   let
     rc = view reservedConstructor h
@@ -31,7 +31,7 @@ parseTmFalse h =
 -- |
 parseTmTrue :: WithBoolTerm tm
             => ParserHelperOutput
-            -> Parser (tm n a)           -- ^
+            -> Parser (tm nTy nTm a)           -- ^
 parseTmTrue h =
   let
     rc = view reservedConstructor h
@@ -41,8 +41,8 @@ parseTmTrue h =
 -- |
 parseTmIf :: WithBoolTerm tm
           => ParserHelperOutput
-          -> Parser (tm n a)           -- ^
-          -> Parser (tm n a)           -- ^
+          -> Parser (tm nTy nTm a)           -- ^
+          -> Parser (tm nTy nTm a)           -- ^
 parseTmIf h parseTerm =
   let
     ri = view reservedIdentifier h
@@ -55,7 +55,7 @@ parseTmIf h parseTerm =
       <?> "if-then-else"
 
 parseTermInput :: WithBoolTerm tm
-               => ParseTermInput ty nTy tm nTm a
+               => ParseTermInput ty tm
 parseTermInput =
   ParseTermInput
     [ ParseTermBase (reserveConstructors ["False"]) parseTmFalse

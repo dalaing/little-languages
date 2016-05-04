@@ -32,7 +32,7 @@ parseTyArr h =
       <?> "->"
 
 parseTypeInput :: WithSTLCType ty
-               => ParseTypeInput ty nTy
+               => ParseTypeInput ty
 parseTypeInput =
   ParseTypeInput
     [ ParseTypeExpression

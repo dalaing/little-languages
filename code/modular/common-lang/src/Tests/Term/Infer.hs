@@ -27,8 +27,8 @@ import           Component.Term.Eval.SmallStep (HasSmallStepOutput (..))
 
 mkInferTests :: ( Eq e
                 , Show e
-                , Eq (tm nTm a)
-                , Show (tm nTm a)
+                , Eq (tm nTy nTm a)
+                , Show (tm nTy nTm a)
                 , Eq (ty nTy)
                 , Show (ty nTy)
                 , AsUnknownType e
@@ -60,7 +60,7 @@ isLeft (Left _) =
 isLeft _ =
   False
 
-propPatternUnique :: ( Show (tm nTm a)
+propPatternUnique :: ( Show (tm nTy nTm a)
                      , Monoid r
                      )
                   => ComponentOutput r e ty nTy tm nTm a
@@ -80,7 +80,7 @@ propPatternUnique c =
     in
       matches === 1
 
-propUnknownNever :: ( Show (tm nTm a)
+propUnknownNever :: ( Show (tm nTy nTm a)
                     , AsUnknownType e
                     , Monoid r
                     )
@@ -97,7 +97,7 @@ propUnknownNever c =
         Left e -> isn't _UnknownType e
         Right _ -> True
 
-propWellTypedInfer :: ( Show (tm nTm a)
+propWellTypedInfer :: ( Show (tm nTy nTm a)
                       , Monoid r
                       )
                    => ComponentOutput r e ty nTy tm nTm a
@@ -110,7 +110,7 @@ propWellTypedInfer c =
     forAllWellTypedTerm c $ \tm ->
       all (isRight . infer') $ tm : shrWellTypedTerm' tm
 
-propIllTypedInfer :: ( Show (tm nTm a)
+propIllTypedInfer :: ( Show (tm nTy nTm a)
                      , Monoid r
                      )
                   => ComponentOutput r e ty nTy tm nTm a
@@ -131,7 +131,7 @@ propIllTypedInfer c =
       -- all (isLeft . infer') $ tm : shrIllTypedTerm' tm
       isLeft . infer' $ tm
 
-propProgress :: ( Show (tm nTm a)
+propProgress :: ( Show (tm nTy nTm a)
                 , Monoid r
                 )
              => ComponentOutput r e ty nTy tm nTm a
@@ -149,8 +149,8 @@ propProgress c =
 
 propPreservation :: ( Eq e
                     , Show e
-                    , Eq (tm nTm a)
-                    , Show (tm nTm a)
+                    , Eq (tm nTy nTm a)
+                    , Show (tm nTy nTm a)
                     , Eq (ty nTy)
                     , Show (ty nTy)
                     , Monoid r

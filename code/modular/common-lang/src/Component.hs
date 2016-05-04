@@ -42,6 +42,8 @@ import           Component.Type.Error                   (HasTypeErrorOutput (..)
 import           Component.Type.Error.Pretty            (HasPrettyTypeErrorOutput (..))
 import           Component.Type.Error.UnknownType.Class (AsUnknownType)
 import           Component.Type.Gen                     (HasGenTypeOutput (..))
+import           Component.Term.Note                    (WithNoteTerm)
+import           Component.Type.Note                    (WithNoteType)
 import           Component.Type.Note.Strip              (StripNoteType)
 import           Component.Type.Parse                   (HasParseTypeOutput (..))
 import           Component.Type.Pretty                  (HasPrettyTypeOutput (..))
@@ -71,7 +73,7 @@ makeClassy ''ComponentOutput
 instance HasGenTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy where
   genTypeOutput = cTypeOutput . toGenTypeOutput
 
-instance HasParseTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy where
+instance HasParseTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty where
   parseTypeOutput = cTypeOutput . toParseTypeOutput
 
 instance HasPrettyTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty where
@@ -80,34 +82,36 @@ instance HasPrettyTypeOutput (ComponentOutput r e ty nTy tm nTm a) ty where
 instance HasPrettyTypeErrorOutput (ComponentOutput r e ty nTy tm nTm a) e where
   prettyTypeErrorOutput = cTypeErrorOutput . toePrettyTypeErrorOutput
 
-instance HasSubTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+instance HasSubTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
   subTermOutput = cTermOutput . toSubTermOutput
 
 instance HasGenTermOutput (ComponentOutput r e ty nTy tm nTm a) ty nTy tm nTm a where
   genTermOutput = cTermOutput . toGenTermOutput
 
-instance HasParseTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+instance HasParseTermOutput (ComponentOutput r e ty nTy tm nTm a) tm where
   parseTermOutput = cTermOutput . toParseTermOutput
 
-instance HasPrettyTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+instance HasPrettyTermOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
   prettyTermOutput = cTermOutput . toPrettyTermOutput
 
 instance HasInferOutput (ComponentOutput r e ty nTy tm nTm a) r e ty nTy tm nTm a where
   inferOutput = cTermOutput . toInferOutput
 
-instance HasValueOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+instance HasValueOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
   valueOutput = cTermOutput . toValueOutput
 
-instance HasSmallStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+instance HasSmallStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
   smallStepOutput = cTermOutput . toSmallStepOutput
 
-instance HasBigStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTm a where
+instance HasBigStepOutput (ComponentOutput r e ty nTy tm nTm a) tm nTy nTm a where
   bigStepOutput = cTermOutput . toBigStepOutput
 
 mkComponent :: ( AsUnknownType e
-               , Eq (tm nTm a)
+               , WithNoteTerm tm
+               , WithNoteType ty
                , StripNoteTerm tm tm
                , StripNoteType ty ty
+               , Eq (tm nTy nTm a)
                )
             => ParserHelperOutput
             -> ParserHelperOutput

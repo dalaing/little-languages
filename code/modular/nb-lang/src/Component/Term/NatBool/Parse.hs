@@ -21,8 +21,8 @@ import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 -- |
 parseTmIsZero :: WithNatBoolTerm tm
               => ParserHelperOutput
-              -> Parser (tm n a)           -- ^
-              -> Parser (tm n a)           -- ^
+              -> Parser (tm nTy nTm a)           -- ^
+              -> Parser (tm nTy nTm a)           -- ^
 parseTmIsZero h parseTerm =
   let
     ri = view reservedIdentifier h
@@ -32,7 +32,7 @@ parseTmIsZero h parseTerm =
       <?> "isZero"
 
 parseTermInput :: WithNatBoolTerm tm
-               => ParseTermInput ty nTy tm nTm a
+               => ParseTermInput ty tm 
 parseTermInput =
   ParseTermInput
     [ParseTermRecurse (reserveIdentifiers ["isZero"]) parseTmIsZero]

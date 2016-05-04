@@ -11,6 +11,7 @@ module Main (
 
 import Test.Tasty (defaultMain)
 import Data.Monoid ((<>))
+import Text.Trifecta.Rendering (Span)
 
 import Tests (mkTests)
 import Component (ComponentInput)
@@ -24,5 +25,5 @@ main =
   defaultMain .
   mkTests .
   mkLanguageDefaultParser $
-  ((languageRules <> errorRules) :: ComponentInput (Context Type () String) (TypeError () String) Type () (Term ()) () String)
+  ((languageRules <> errorRules) :: ComponentInput (Context Type Span String) (TypeError Span String) Type Span Term Span String)
 

@@ -13,6 +13,7 @@ module Component.STLC (
   ) where
 
 import Text.Trifecta.Rendering (Renderable)
+import Data.Constraint.Forall (ForallT)
 
 import           Component                           (ComponentInput (..))
 import           Component.Term                      (TermInput (..))
@@ -64,8 +65,8 @@ stlcRules :: ( Eq (ty nTy)
              , AsFreeVar e String
              , HasContext r ty nTy String
              , WithSTLCType ty
-             , WithSTLCTerm tm ty nTy
-             , Monad (tm nTm)
+             , WithSTLCTerm tm ty
+             , ForallT Monad tm
              )
           => ComponentInput r e ty nTy tm nTm String
 stlcRules =

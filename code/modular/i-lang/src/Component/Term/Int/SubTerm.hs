@@ -16,16 +16,16 @@ import Component.Term.SubTerm (SubTermInput(..), SubTermRule(..))
 import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 subTermTmInt :: WithIntTerm tm
-             => tm n a
-             -> Maybe [tm n a]
+             => tm nTy nTm a
+             -> Maybe [tm nTy nTm a]
 subTermTmInt =
   fmap (pure . review _TmIntLit) .
   preview _TmIntLit
 
 subTermTmAdd :: WithIntTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a
-             -> Maybe [tm n a]
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a
+             -> Maybe [tm nTy nTm a]
 subTermTmAdd subTerms tm =
     fmap subTermTmAdd' .
     preview _TmAdd $
@@ -35,9 +35,9 @@ subTermTmAdd subTerms tm =
       tm : subTerms x ++ subTerms y
 
 subTermTmSub :: WithIntTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a
-             -> Maybe [tm n a]
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a
+             -> Maybe [tm nTy nTm a]
 subTermTmSub subTerm tm =
     fmap subTermTmSub' .
     preview _TmSub $
@@ -47,9 +47,9 @@ subTermTmSub subTerm tm =
       tm : subTerm x ++ subTerm y
 
 subTermTmMul :: WithIntTerm tm
-              => (tm n a -> [tm n a])
-              -> tm n a
-              -> Maybe [tm n a]
+              => (tm nTy nTm a -> [tm nTy nTm a])
+              -> tm nTy nTm a
+              -> Maybe [tm nTy nTm a]
 subTermTmMul subTerm tm =
     fmap subTermTmMul' .
     preview _TmMul $
@@ -59,9 +59,9 @@ subTermTmMul subTerm tm =
       tm : subTerm x ++ subTerm y
 
 subTermTmExp :: WithIntTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a
-             -> Maybe [tm n a]
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a
+             -> Maybe [tm nTy nTm a]
 subTermTmExp subTerm tm =
     fmap subTermTmExp' .
     preview _TmExp $
@@ -71,7 +71,7 @@ subTermTmExp subTerm tm =
       tm : subTerm x ++ subTerm y
 
 subTermInput :: WithIntTerm tm
-             => SubTermInput tm n a
+             => SubTermInput tm nTy nTm a
 subTermInput =
   SubTermInput
     [ SubTermBase subTermTmInt

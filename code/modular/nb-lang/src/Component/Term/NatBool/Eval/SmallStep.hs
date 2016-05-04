@@ -19,8 +19,8 @@ import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 
 -- |
 eIsZeroZero :: WithNatBoolTerm tm
-            => tm n a             -- ^
-            -> Maybe (tm n a)        -- ^
+            => tm nTy nTm a             -- ^
+            -> Maybe (tm nTy nTm a)        -- ^
 eIsZeroZero tm = do
   tm1 <- preview _TmIsZero tm
   _ <- preview _TmZero tm1
@@ -28,9 +28,9 @@ eIsZeroZero tm = do
 
 -- |
 eIsZeroSucc :: WithNatBoolTerm tm
-            => (tm n a -> Maybe (tm n a)) -- ^
-            -> tm n a                     -- ^
-            -> Maybe (tm n a)             -- ^
+            => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+            -> tm nTy nTm a                     -- ^
+            -> Maybe (tm nTy nTm a)             -- ^
 eIsZeroSucc nv tm = do
   tm1 <- preview _TmIsZero tm
   tm2 <- preview _TmSucc tm1
@@ -39,9 +39,9 @@ eIsZeroSucc nv tm = do
 
 -- |
 eIsZero :: WithNatBoolTerm tm
-        => (tm n a -> Maybe (tm n a)) -- ^
-        -> tm n a                     -- ^
-        -> Maybe (tm n a)             -- ^
+        => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+        -> tm nTy nTm a                     -- ^
+        -> Maybe (tm nTy nTm a)             -- ^
 eIsZero step tm = do
   tm1 <- preview _TmIsZero tm
   tm2 <- step tm1
@@ -49,7 +49,7 @@ eIsZero step tm = do
 
 -- |
 smallStepInput :: WithNatBoolTerm tm
-               => SmallStepInput tm n a
+               => SmallStepInput tm nTy nTm a
 smallStepInput =
   SmallStepInput
     [ SmallStepBase eIsZeroZero

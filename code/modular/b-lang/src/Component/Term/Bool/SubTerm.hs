@@ -16,23 +16,23 @@ import Component.Term.SubTerm (SubTermInput(..), SubTermRule(..))
 import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 
 subTermTmFalse :: WithBoolTerm tm
-               => tm n a
-               -> Maybe [tm n a]
+               => tm nTy nTm a
+               -> Maybe [tm nTy nTm a]
 subTermTmFalse =
   fmap (pure . review _TmFalse) .
   preview _TmFalse
 
 subTermTmTrue :: WithBoolTerm tm
-              => tm n a
-              -> Maybe [tm n a]
+              => tm nTy nTm a
+              -> Maybe [tm nTy nTm a]
 subTermTmTrue =
   fmap (pure . review _TmTrue) .
   preview _TmTrue
 
 subTermTmIf :: WithBoolTerm tm
-            => (tm n a -> [tm n a])
-            -> tm n a
-            -> Maybe [tm n a]
+            => (tm nTy nTm a -> [tm nTy nTm a])
+            -> tm nTy nTm a
+            -> Maybe [tm nTy nTm a]
 subTermTmIf subTerms tm =
     fmap subTermTmIf' .
     preview _TmIf $
@@ -42,7 +42,7 @@ subTermTmIf subTerms tm =
       tm : subTerms tm1 ++ subTerms tm2 ++ subTerms tm3
 
 subTermInput :: WithBoolTerm tm
-             => SubTermInput tm n a
+             => SubTermInput tm nTy nTm a
 subTermInput =
   SubTermInput
     [ SubTermBase subTermTmFalse

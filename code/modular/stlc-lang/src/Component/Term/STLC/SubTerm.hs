@@ -14,25 +14,23 @@ module Component.Term.STLC.SubTerm (
   ) where
 
 import Control.Lens (review, preview)
-import Bound (instantiate1)
+import Data.Constraint.Forall (ForallT)
 
 import Component.Term.SubTerm (SubTermRule(..), SubTermInput(..))
 
-import Component.Term.STLC (AsSTLCTerm(..), AsSTLCVar(..), WithSTLCTerm)
+import Component.Term.STLC (AsSTLCTerm(..), AsSTLCVar(..), WithSTLCTerm, app_)
 
-subTermTmVar :: WithSTLCTerm tm ty tyN
-             => tm tmN a
-             -> Maybe [tm tmN a]
+subTermTmVar :: WithSTLCTerm tm ty
+             => tm nTy nTm a
+             -> Maybe [tm nTy nTm a]
 subTermTmVar =
   fmap (pure . review _TmVar) .
   preview _TmVar
 
-subTermTmApp :: ( WithSTLCTerm tm ty nTy
-                , Monad (tm nTm)
-                )
-             => (tm nTm a -> [tm nTm a])
-             -> tm nTm a
-             -> Maybe [tm nTm a]
+subTermTmApp :: WithSTLCTerm tm ty
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a
+             -> Maybe [tm nTy nTm a]
 subTermTmApp subTerms tm =
     fmap subTermTmApp' .
     preview _TmApp $
@@ -43,24 +41,24 @@ subTermTmApp subTerms tm =
 
 -- the solution is to go back to the usual WithSTLCTerm form, and to use
 -- instantiate1 to get rid of the scope
-subTermTmLam :: ( WithSTLCTerm tm ty nTy
-                , Monad (tm nTm)
+subTermTmLam :: ( WithSTLCTerm tm ty
+                , ForallT Monad tm
                 )
-             => (tm nTm String -> [tm nTm String])
-             -> tm nTm String
-             -> Maybe [tm nTm String]
+             => (tm nTy nTm String -> [tm nTy nTm String])
+             -> tm nTy nTm String
+             -> Maybe [tm nTy nTm String]
 subTermTmLam subTerms tm =
     fmap subTermTmLam' .
     preview _TmLam $
     tm
   where
     subTermTmLam' (n, _, s) =
-      tm : subTerms (instantiate1 (review _TmVar n) s)
+      tm : subTerms (app_ (review _TmVar n) s)
 
-subTermInput :: ( WithSTLCTerm tm ty nty
-                 , Monad (tm nTm)
-                 )
-              => SubTermInput tm nTm String
+subTermInput :: ( WithSTLCTerm tm ty
+                , ForallT Monad tm
+                )
+              => SubTermInput tm nTy nTm String
 subTermInput =
   SubTermInput
     [ SubTermBase subTermTmVar

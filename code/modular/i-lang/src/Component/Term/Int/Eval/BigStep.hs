@@ -17,17 +17,17 @@ import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 -- |
 eInt :: WithIntTerm tm
-     => tm n a             -- ^
-     -> Maybe (tm n a)     -- ^
+     => tm nTy nTm a             -- ^
+     -> Maybe (tm nTy nTm a)     -- ^
 eInt =
   fmap (review _TmIntLit) .
   preview _TmIntLit
 
 -- |
 eAdd :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a
-      -> Maybe (tm n a)
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a
+      -> Maybe (tm nTy nTm a)
 eAdd step tm = do
   (tm1, tm2) <- preview _TmAdd tm
   tm1' <- step tm1
@@ -38,9 +38,9 @@ eAdd step tm = do
 
 -- |
 eSub :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a
-      -> Maybe (tm n a)
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a
+      -> Maybe (tm nTy nTm a)
 eSub step tm = do
   (tm1, tm2) <- preview _TmSub tm
   tm1' <- step tm1
@@ -51,9 +51,9 @@ eSub step tm = do
 
 -- |
 eMul :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a
-      -> Maybe (tm n a)
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a
+      -> Maybe (tm nTy nTm a)
 eMul step tm = do
   (tm1, tm2) <- preview _TmMul tm
   tm1' <- step tm1
@@ -64,9 +64,9 @@ eMul step tm = do
 
 -- |
 eExp :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a
-      -> Maybe (tm n a)
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a
+      -> Maybe (tm nTy nTm a)
 eExp step tm = do
   (tm1, tm2) <- preview _TmExp tm
   tm1' <- step tm1
@@ -80,7 +80,7 @@ eExp step tm = do
 
 -- |
 bigStepInput :: WithIntTerm tm
-             => BigStepInput tm n a
+             => BigStepInput tm nTy nTm a
 bigStepInput =
   BigStepInput
     [ BigStepBase eInt

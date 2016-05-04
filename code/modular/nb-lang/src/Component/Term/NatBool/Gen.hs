@@ -20,16 +20,16 @@ import           Component.Term.NatBool (AsNatBoolTerm (..), WithNatBoolTerm)
 
 -- |
 genTmIsZero :: WithNatBoolTerm tm
-            => Gen (tm n a)
-            -> Gen (tm n a)
+            => Gen (tm nTy nTm a)
+            -> Gen (tm nTy nTm a)
 genTmIsZero g =
   review _TmIsZero <$> g
 
 -- |
 shrinkTmIsZero :: WithNatBoolTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a        -- ^
-             -> Maybe [tm n a] -- ^
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a        -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmIsZero s =
     fmap shrinkTmIsZero' .
     preview _TmIsZero
@@ -42,12 +42,12 @@ genContainingTmIsZero :: ( WithNatBoolTerm tm
                          , WithNatType ty
                          , WithBoolType ty
                          )
-                      => (ty nTy -> Int -> Gen (tm nTm a))
-                      -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                      -> tm nTm a
+                      => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                      -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                      -> tm nTy nTm a
                       -> ty nTy
                       -> Int
-                      -> Maybe (Gen (tm nTm a))
+                      -> Maybe (Gen (tm nTy nTm a))
 genContainingTmIsZero _ genContaining tm ty s =
     fmap genContainingTmIsZero' .
     preview _TyBool $
@@ -62,10 +62,10 @@ genWellTypedTmIsZero :: ( WithNatBoolTerm tm
                         , WithNatType ty
                         , WithBoolType ty
                         )
-                     => (ty nTy -> Int -> Gen (tm nTm a))
+                     => (ty nTy -> Int -> Gen (tm nTy nTm a))
                      -> ty nTy
                      -> Int
-                     -> Maybe (Gen (tm nTm a))
+                     -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmIsZero genWellTyped ty s = do
   _ <- preview _TyBool ty
   let s' = (s - 1) `max` 0
@@ -78,10 +78,10 @@ genIllTypedTmIsZero :: ( WithNatBoolTerm tm
                        , WithBoolType ty
                        )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmIsZero genNotType genWellTyped ty s = do
   _ <- preview _TyBool ty
   let s' = (s - 1) `max` 0

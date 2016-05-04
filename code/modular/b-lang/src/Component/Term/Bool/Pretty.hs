@@ -20,7 +20,7 @@ import           Component.Term.Bool         (AsBoolTerm (..), WithBoolTerm)
 
 -- |
 prettyTmFalse :: WithBoolTerm tm
-              => tm n a       -- ^
+              => tm nTy nTm a       -- ^
               -> Maybe Doc -- ^
 prettyTmFalse =
   fmap (const $ reservedConstructor "False") .
@@ -28,7 +28,7 @@ prettyTmFalse =
 
 -- |
 prettyTmTrue :: WithBoolTerm tm
-             => tm n a       -- ^
+             => tm nTy nTm a       -- ^
              -> Maybe Doc -- ^
 prettyTmTrue =
   fmap (const $ reservedConstructor "True") .
@@ -36,8 +36,8 @@ prettyTmTrue =
 
 -- |
 prettyTmIf :: WithBoolTerm tm
-           => (tm n a -> Doc) -- ^
-           -> tm n a         -- ^
+           => (tm nTy nTm a -> Doc) -- ^
+           -> tm nTy nTm a         -- ^
            -> Maybe Doc   -- ^
 prettyTmIf prettyTerm =
     fmap prettyTmIf' .

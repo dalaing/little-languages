@@ -28,17 +28,17 @@ import Data.Bitraversable
 import Control.Lens (review)
 import           Control.Lens.Prism (Prism', prism)
 
-import           Bound2           (Bound2 (..))
+import           Bound2           (Bound3 (..))
 
 import Component.Term.Note.Strip (StripNoteTerm(..))
 
-data NoteTerm tm n a =
-  TmNote n (tm n a)
+data NoteTerm tm nTy nTm a =
+  TmNote nTm (tm nTy nTm a)
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
 class AsNoteTerm s tm | s -> tm where
-  _NoteTerm :: Prism' (s n a) (NoteTerm tm n a)
-  _TmNote :: Prism' (s n a) (n, tm n a)
+  _NoteTerm :: Prism' (s nTy nTm a) (NoteTerm tm nTy nTm a)
+  _TmNote :: Prism' (s nTy nTm a) (nTm, tm nTy nTm a)
   _TmNote =
     _NoteTerm .
     prism
@@ -47,17 +47,17 @@ class AsNoteTerm s tm | s -> tm where
 
 type WithNoteTerm tm = AsNoteTerm tm tm
 
-instance Bifunctor tm => Bifunctor (NoteTerm tm) where
+instance Bifunctor (tm nTy) => Bifunctor (NoteTerm tm nTy) where
   bimap l r (TmNote n tm) = TmNote (l n) (bimap l r tm)
 
-instance Bifoldable tm => Bifoldable (NoteTerm tm) where
+instance Bifoldable (tm nTy) => Bifoldable (NoteTerm tm nTy) where
   bifoldMap l r (TmNote n tm) = l n <> bifoldMap l r tm
 
-instance Bitraversable tm => Bitraversable (NoteTerm tm) where
+instance Bitraversable (tm nTy) => Bitraversable (NoteTerm tm nTy) where
   bitraverse l r (TmNote n tm) = TmNote <$> l n <*> bitraverse l r tm
 
-instance Bound2 NoteTerm where
-  TmNote n tm >>>>= f = TmNote n (tm >>= f)
+instance Bound3 NoteTerm where
+  TmNote n tm >>>>>= f = TmNote n (tm >>= f)
 
 instance (AsNoteTerm tm tm, StripNoteTerm tm tm) => StripNoteTerm (NoteTerm tm) tm where
 

@@ -25,44 +25,44 @@ import Control.Lens.TH (makeClassy)
 import Component.Term.Note.Strip (StripNoteTerm(..))
 
 -- |
-data BigStepRule tm n a =
-    BigStepBase (tm n a -> Maybe (tm n a))                        -- ^
-  | BigStepRecurse ((tm n a -> Maybe (tm n a)) -> tm n a -> Maybe (tm n a)) -- ^
+data BigStepRule tm nTy nTm a =
+    BigStepBase (tm nTy nTm a -> Maybe (tm nTy nTm a))                        -- ^
+  | BigStepRecurse ((tm nTy nTm a -> Maybe (tm nTy nTm a)) -> tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
 
 -- |
-fixBigStepRule :: (tm n a -> Maybe (tm n a))
-             -> BigStepRule tm n a
-             -> tm n a
-             -> Maybe (tm n a)
+fixBigStepRule :: (tm nTy nTm a -> Maybe (tm nTy nTm a))
+             -> BigStepRule tm nTy nTm a
+             -> tm nTy nTm a
+             -> Maybe (tm nTy nTm a)
 fixBigStepRule _ (BigStepBase f) x =
   f x
 fixBigStepRule step (BigStepRecurse f) x =
   f step x
 
 -- |
-data BigStepInput tm n a =
-  BigStepInput [BigStepRule tm n a] -- ^
+data BigStepInput tm nTy nTm a =
+  BigStepInput [BigStepRule tm nTy nTm a] -- ^
 
-instance Monoid (BigStepInput tm n a) where
+instance Monoid (BigStepInput tm nTy nTm a) where
   mempty =
     BigStepInput mempty
   mappend (BigStepInput v1) (BigStepInput v2) =
     BigStepInput (mappend v1 v2)
 
 -- |
-data BigStepOutput tm n a =
+data BigStepOutput tm nTy nTm a =
   BigStepOutput {
-    _bigStep      :: tm n a -> Maybe (tm n a)   -- ^
-  , _bigStepRules :: [tm n a -> Maybe (tm n a)] -- ^
-  , _bigStepEval  :: tm n a -> tm n a        -- ^
+    _bigStep      :: tm nTy nTm a -> Maybe (tm nTy nTm a)   -- ^
+  , _bigStepRules :: [tm nTy nTm a -> Maybe (tm nTy nTm a)] -- ^
+  , _bigStepEval  :: tm nTy nTm a -> tm nTy nTm a        -- ^
   }
 
 makeClassy ''BigStepOutput
 
 -- |
 mkBigStep :: StripNoteTerm tm tm
-          => BigStepInput tm n a -- ^
-          -> BigStepOutput tm n a-- ^
+          => BigStepInput tm nTy nTm a -- ^
+          -> BigStepOutput tm nTy nTm a-- ^
 mkBigStep (BigStepInput i) =
   let
     bigStepRules' =

@@ -16,23 +16,23 @@ import Component.Term.Eval.Value (ValueRule(..), ValueInput(..))
 import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
 valueTmZero :: WithNatTerm tm
-            => tm n a
-            -> Maybe (tm n a)
+            => tm nTy nTm a
+            -> Maybe (tm nTy nTm a)
 valueTmZero =
   fmap (review _TmZero) .
   preview _TmZero
 
 valueTmSucc :: WithNatTerm tm
-            => (tm n a -> Maybe (tm n a))
-            -> tm n a
-            -> Maybe (tm n a)
+            => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+            -> tm nTy nTm a
+            -> Maybe (tm nTy nTm a)
 valueTmSucc value tm = do
   tm1 <- preview _TmSucc tm
   tm1' <- value tm1
   return $ review _TmSucc tm1'
 
 valueInput :: WithNatTerm tm
-           => ValueInput tm n a
+           => ValueInput tm nTy nTm a
 valueInput =
   ValueInput
     [ ValueBase valueTmZero

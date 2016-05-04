@@ -21,7 +21,7 @@ import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 -- |
 parseTmZero :: WithNatTerm tm
             => ParserHelperOutput
-            -> Parser (tm n a)           -- ^
+            -> Parser (tm nTy nTm a)           -- ^
 parseTmZero h =
   let
     rc = view reservedConstructor h
@@ -31,8 +31,8 @@ parseTmZero h =
 -- |
 parseTmSucc :: WithNatTerm tm
             => ParserHelperOutput
-            -> Parser (tm n a)           -- ^
-            -> Parser (tm n a)           -- ^
+            -> Parser (tm nTy nTm a)           -- ^
+            -> Parser (tm nTy nTm a)           -- ^
 parseTmSucc h parseTerm =
   let
     ri = view reservedIdentifier h
@@ -44,8 +44,8 @@ parseTmSucc h parseTerm =
 -- |
 parseTmPred :: WithNatTerm tm
             => ParserHelperOutput
-            -> Parser (tm n a)           -- ^
-            -> Parser (tm n a)           -- ^
+            -> Parser (tm nTy nTm a)           -- ^
+            -> Parser (tm nTy nTm a)           -- ^
 parseTmPred h parseTerm =
   let
     ri = view reservedIdentifier h
@@ -55,7 +55,7 @@ parseTmPred h parseTerm =
       <?> "Pred"
 
 parseTermInput :: WithNatTerm tm
-               => ParseTermInput ty nTy tm nTm a
+               => ParseTermInput ty tm
 parseTermInput =
   ParseTermInput
     [ ParseTermBase (reserveConstructors ["O"]) parseTmZero

@@ -11,6 +11,7 @@ Portability : non-portable
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 module Component.Term.Parse (
     ParseTermRule(..)
   , ParseTermInput(..)
@@ -38,21 +39,21 @@ import Component.Type.Parse (ParseTypeOutput(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
 -- |
-data ParseTermRule ty nTy tm nTm a =
+data ParseTermRule ty tm =
     ParseTermBase
-      ReservedWords (ParserHelperOutput -> Parser (tm nTm a))              -- ^
+      ReservedWords (forall nTy nTm. ParserHelperOutput -> Parser (tm nTy nTm String))              -- ^
   | ParseTermRecurse
       ReservedWords
-      (ParserHelperOutput -> Parser (tm nTm a) -> Parser (tm nTm a)) -- ^
+      (forall nTy nTm. ParserHelperOutput -> Parser (tm nTy nTm String) -> Parser (tm nTy nTm String)) -- ^
   | ParseTermExpression
       ReservedWords
       ExpressionInfo
-      (ParserHelperOutput -> Parser (tm nTm a -> tm nTm a -> tm nTm a)) -- ^
+      (forall nTy nTm. ParserHelperOutput -> Parser (tm nTy nTm String -> tm nTy nTm String -> tm nTy nTm String)) -- ^
   | ParseTermWithType
       ReservedWords
-      (ParserHelperOutput -> Parser (ty nTy) -> Parser (tm nTm a) -> Parser (tm nTm a)) -- ^
+      (forall nTy nTm. ParserHelperOutput -> Parser (ty nTy) -> Parser (tm nTy nTm String) -> Parser (tm nTy nTm String)) -- ^
 
-instance GetReservedWords (ParseTermRule ty nTy tm nTm a) where
+instance GetReservedWords (ParseTermRule ty tm) where
   reservedWords (ParseTermBase r _) = r
   reservedWords (ParseTermRecurse r _) = r
   reservedWords (ParseTermExpression r _ _) = r
@@ -61,9 +62,9 @@ instance GetReservedWords (ParseTermRule ty nTy tm nTm a) where
 -- |
 fixParseTermRule :: ParserHelperOutput
                  -> Parser (ty nTy)
-                 -> Parser (tm nTm a)
-                 -> ParseTermRule ty nTy tm nTm a
-                 -> Parser (tm nTm a)
+                 -> Parser (tm nTy nTm String)
+                 -> ParseTermRule ty tm
+                 -> Parser (tm nTy nTm String)
 fixParseTermRule h _ _ (ParseTermBase _ f) =
   f h
 fixParseTermRule h _ parseTerm (ParseTermRecurse _ f) =
@@ -75,31 +76,31 @@ fixParseTermRule h parseType parseTerm (ParseTermWithType _ f) =
 
 -- |
 fixParseExprRule :: ParserHelperOutput
-                 -> ParseTermRule ty nTy tm nTm a
-                 -> OperatorTable Parser (tm nTm a)
+                 -> ParseTermRule ty tm
+                 -> OperatorTable Parser (tm nTy nTm String)
 fixParseExprRule h (ParseTermExpression _ (ExpressionInfo a p) f) =
   [Infix (f h) a] : replicate p []
 fixParseExprRule _ _ =
   []
 
 -- |
-data ParseTermInput ty nTy tm nTm a =
-  ParseTermInput [ParseTermRule ty nTy tm nTm a] -- ^
+data ParseTermInput ty tm =
+  ParseTermInput [ParseTermRule ty tm] -- ^
 
-instance GetReservedWords (ParseTermInput ty nTy tm nTm a) where
+instance GetReservedWords (ParseTermInput ty tm) where
   reservedWords (ParseTermInput i) =
     foldMap reservedWords i
 
-instance Monoid (ParseTermInput ty nTy tm nTm a) where
+instance Monoid (ParseTermInput ty tm) where
   mempty =
     ParseTermInput mempty
   mappend (ParseTermInput v1) (ParseTermInput v2) =
     ParseTermInput (mappend v1 v2)
 
 -- |
-data ParseTermOutput tm n a =
+data ParseTermOutput tm =
   ParseTermOutput {
-    _parseTerm      :: (Parser (tm n a) -> Parser (tm n a)) -> Parser (tm n a)        -- ^
+    _parseTerm      :: Parser (tm Span Span String)        -- ^
   , _termReservedWords :: ReservedWords -- ^
   }
 
@@ -109,8 +110,8 @@ makeClassy ''ParseTermOutput
 withParens :: ( MonadPlus m
               , TokenParsing m
               )
-           => m (tm n a)         -- ^
-           -> m (tm n a)         -- ^
+           => m (tm nTy nTm a)         -- ^
+           -> m (tm nTy nTm a)         -- ^
 withParens p =
   parens p <|>
   p
@@ -119,32 +120,33 @@ withSpan :: ( Monad m
             , DeltaParsing m
             , WithNoteTerm tm
             )
-         => m (tm Span a)
-         -> m (tm Span a)
+         => m (tm nTy Span a)
+         -> m (tm nTy Span a)
 withSpan p = do
   (tm :~ s) <- spanned p
   return $ review _TmNote (s, tm)
 
 -- |
-mkParseTerm :: ParserHelperOutput -- ^
-            -> ParseTypeOutput ty nTy
-            -> ParseTermInput ty nTy tm nTm a -- ^
-            -> ParseTermOutput tm nTm a -- ^
+mkParseTerm :: WithNoteTerm tm
+            => ParserHelperOutput -- ^
+            -> ParseTypeOutput ty
+            -> ParseTermInput ty tm -- ^
+            -> ParseTermOutput tm -- ^
 mkParseTerm h (ParseTypeOutput parseType _) p@(ParseTermInput i) =
   let
-    parseTerm' pt =
-      pt $
-      withParens .
+    parseTerm' =
+      withSpan $
+      (<|> parens parseExpr') .
       asum .
-      fmap (fixParseTermRule h (parseType id) (parseTerm' pt)) $
+      fmap (fixParseTermRule h parseType parseTerm') $
       i
     tables =
       combineTables .
       fmap (fixParseExprRule h) $
       i
-    parseExpr' pt =
-      pt $
-      buildExpressionParser tables (parseTerm' pt)
+    parseExpr' =
+      withSpan $
+      buildExpressionParser tables parseTerm'
   in
     ParseTermOutput
       parseExpr'

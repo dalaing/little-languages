@@ -20,7 +20,7 @@ import           Component.Term.Int         (AsIntTerm (..), WithIntTerm)
 
 -- |
 prettyTmInt :: WithIntTerm tm
-            => tm n a       -- ^
+            => tm nTy nTm a       -- ^
             -> Maybe Doc -- ^
 prettyTmInt =
   fmap int .

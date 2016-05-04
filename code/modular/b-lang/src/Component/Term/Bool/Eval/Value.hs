@@ -16,21 +16,21 @@ import Component.Term.Eval.Value (ValueRule(..), ValueInput(..))
 import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 
 valueTmFalse :: WithBoolTerm tm
-             => tm n a
-             -> Maybe (tm n a)
+             => tm nTy nTm a
+             -> Maybe (tm nTy nTm a)
 valueTmFalse =
   fmap (review _TmFalse) .
   preview _TmFalse
 
 valueTmTrue :: WithBoolTerm tm
-            => tm n a
-            -> Maybe (tm n a)
+            => tm nTy nTm a
+            -> Maybe (tm nTy nTm a)
 valueTmTrue =
   fmap (review _TmTrue) .
   preview _TmTrue
 
 valueInput :: WithBoolTerm tm
-           => ValueInput tm n a
+           => ValueInput tm nTy nTm a
 valueInput =
   ValueInput
     [ ValueBase valueTmFalse

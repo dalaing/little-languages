@@ -24,8 +24,8 @@ import           Component.Term.Eval.Value     (HasValueOutput (..))
 import           Component.Term.Gen            (forAllWellTypedTerm)
 import           Component.Term.SubTerm        (HasSubTermOutput (..))
 
-mkEvalTests :: ( Eq (tm nTm a)
-               , Show (tm nTm a)
+mkEvalTests :: ( Eq (tm nTy nTm a)
+               , Show (tm nTy nTm a)
                )
             => ComponentOutput r e ty nTy tm nTm a
             -> TestTree
@@ -40,7 +40,7 @@ mkEvalTests c =
     , testProperty "small step and big step agree" $ propSmallBig c
     ]
 
-propValueNormal :: Show (tm nTm a)
+propValueNormal :: Show (tm nTy nTm a)
                 => ComponentOutput r e ty nTy tm nTm a
                 -> Property
 propValueNormal c =
@@ -51,8 +51,8 @@ propValueNormal c =
     forAllWellTypedTerm c $ \tm ->
       isValue' tm ==> isNormalForm' tm
 
-propNormalValue :: Show (tm nTm a)
-                => ComponentOutput r e ty nty tm nTm a
+propNormalValue :: Show (tm nTy nTm a)
+                => ComponentOutput r e ty nTy tm nTm a
                 -> Property
 propNormalValue c =
   let
@@ -63,8 +63,8 @@ propNormalValue c =
       isNormalForm' tm ==> isValue' tm
 
     -- - either isValue, or there are 1 or more steps we can take that have the same result
-propSmallDeterminate :: ( Eq (tm nTm a)
-                        , Show (tm nTm a)
+propSmallDeterminate :: ( Eq (tm nTy nTm a)
+                        , Show (tm nTy nTm a)
                         )
                      => ComponentOutput r e ty nTy tm nTm a
                      -> Property
@@ -84,7 +84,7 @@ propSmallDeterminate c =
         in
           distinctResults === 1
 
-propSmallShrinks :: Show (tm nTm a)
+propSmallShrinks :: Show (tm nTy nTm a)
                  => ComponentOutput r e ty nTy tm nTm a
                  -> Property
 propSmallShrinks c =
@@ -97,7 +97,7 @@ propSmallShrinks c =
         Nothing -> True
         Just tm' -> termSize' tm' < termSize' tm
 
-propSmallUnique :: Show (tm nTm a)
+propSmallUnique :: Show (tm nTy nTm a)
                 => ComponentOutput r e ty nTy tm nTm a
                 -> Property
 propSmallUnique c =
@@ -114,7 +114,7 @@ propSmallUnique c =
       in
         matches === 1
 
-propBigUnique :: Show (tm nTm a)
+propBigUnique :: Show (tm nTy nTm a)
               => ComponentOutput r e ty nTy tm nTm a
               -> Property
 propBigUnique c =
@@ -130,8 +130,8 @@ propBigUnique c =
       in
         matches === 1
 
-propSmallBig :: ( Eq (tm nTm a)
-                , Show (tm nTm a)
+propSmallBig :: ( Eq (tm nTy nTm a)
+                , Show (tm nTy nTm a)
                 )
              => ComponentOutput r e ty nTy tm nTm a
              -> Property

@@ -19,30 +19,30 @@ import           Component.Term.Nat (AsNatTerm (..), WithNatTerm)
 
 -- |
 genTmZero :: WithNatTerm tm
-          => Gen (tm n a)
+          => Gen (tm nTy nTm a)
 genTmZero =
   pure $ review _TmZero ()
 
 -- |
 shrinkTmZero :: WithNatTerm tm
-             => tm n a        -- ^
-             -> Maybe [tm n a] -- ^
+             => tm nTy nTm a        -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmZero =
   fmap (const []) .
   preview _TmZero
 
 -- |
 genTmSucc :: WithNatTerm tm
-          => Gen (tm n a)
-          -> Gen (tm n a)
+          => Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
 genTmSucc g =
   review _TmSucc <$> g
 
 -- |
 shrinkTmSucc :: WithNatTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a        -- ^
-             -> Maybe [tm n a] -- ^
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a        -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmSucc s =
     fmap shrinkTmSucc' .
     preview _TmSucc
@@ -53,16 +53,16 @@ shrinkTmSucc s =
 
 -- |
 genTmPred :: WithNatTerm tm
-          => Gen (tm n a)
-          -> Gen (tm n a)
+          => Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
 genTmPred g =
   review _TmPred <$> g
 
 -- |
 shrinkTmPred :: WithNatTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a         -- ^
-             -> Maybe [tm n a] -- ^
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a         -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmPred s =
     fmap shrinkTmPred' .
     preview _TmPred
@@ -74,9 +74,9 @@ shrinkTmPred s =
 genContainingTmZero :: ( WithNatType ty
                        , WithNatTerm tm
                        )
-                    => tm nTm a
+                    => tm nTy nTm a
                     -> ty nTy
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmZero tm ty = do
   _ <- preview _TmZero tm
   _ <- preview _TyNat ty
@@ -85,12 +85,12 @@ genContainingTmZero tm ty = do
 genContainingTmSucc :: ( WithNatType ty
                        , WithNatTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmSucc _ genContaining tm ty s =
     fmap genContainingTmSucc' .
     preview _TyNat $
@@ -104,12 +104,12 @@ genContainingTmSucc _ genContaining tm ty s =
 genContainingTmPred :: ( WithNatType ty
                        , WithNatTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmPred _ genContaining tm ty s =
     fmap genContainingTmPred' .
     preview _TyNat $
@@ -124,7 +124,7 @@ genWellTypedTmZero :: ( WithNatType ty
                       , WithNatTerm tm
                       )
                    => ty nTy
-                   -> Maybe (Gen (tm nTm a))
+                   -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmZero ty = do
   _ <- preview _TyNat ty
   return . pure $ review _TmZero ()
@@ -132,10 +132,10 @@ genWellTypedTmZero ty = do
 genWellTypedTmSucc :: ( WithNatType ty
                       , WithNatTerm tm
                       )
-                   => (ty nTy -> Int -> Gen (tm nTm a))
+                   => (ty nTy -> Int -> Gen (tm nTy nTm a))
                    -> ty nTy
                    -> Int
-                   -> Maybe (Gen (tm nTm a))
+                   -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmSucc genWellTyped ty s = do
   _ <- preview _TyNat ty
   let s' = s `div` 2
@@ -146,10 +146,10 @@ genWellTypedTmSucc genWellTyped ty s = do
 genWellTypedTmPred :: ( WithNatType ty
                       , WithNatTerm tm
                       )
-                   => (ty nTy -> Int -> Gen (tm nTm a))
+                   => (ty nTy -> Int -> Gen (tm nTy nTm a))
                    -> ty nTy
                    -> Int
-                   -> Maybe (Gen (tm nTm a))
+                   -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmPred genWellTyped ty s = do
   _ <- preview _TyNat ty
   let s' = s `div` 2
@@ -161,10 +161,10 @@ genIllTypedTmSucc :: ( WithNatType ty
                      , WithNatTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmSucc genNotType genWellTyped ty s = do
   _ <- preview _TyNat ty
   let s' = s `div` 2
@@ -177,10 +177,10 @@ genIllTypedTmPred :: ( WithNatType ty
                      , WithNatTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmPred genNotType genWellTyped ty s = do
   _ <- preview _TyNat ty
   let s' = s `div` 2

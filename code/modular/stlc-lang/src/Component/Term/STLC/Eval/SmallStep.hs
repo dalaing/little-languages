@@ -10,46 +10,46 @@ module Component.Term.STLC.Eval.SmallStep (
   ) where
 
 import Control.Lens (preview, review)
-import Bound (instantiate1)
+import Data.Constraint.Forall (ForallT)
 
 import Component.Term.Eval.SmallStep (SmallStepRule(..), SmallStepInput(..))
 
-import Component.Term.STLC (AsSTLCTerm(..), WithSTLCTerm)
+import Component.Term.STLC (AsSTLCTerm(..), WithSTLCTerm, app_)
 
-eApp1 :: WithSTLCTerm tm ty nTy
-      => (tm nTm a -> Maybe (tm nTm a))
-      -> tm nTm a
-      -> Maybe (tm nTm a)
+eApp1 :: WithSTLCTerm tm ty
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a
+      -> Maybe (tm nTy nTm a)
 eApp1 smallStep tm = do
   (tm1, tm2) <- preview _TmApp tm
   tm1' <- smallStep tm1
   return $ review _TmApp (tm1', tm2)
 
-eApp2 :: WithSTLCTerm tm ty nTy
-      => (tm nTm a -> Maybe (tm nTm a))
-      -> (tm nTm a -> Maybe (tm nTm a))
-      -> tm nTm a
-      -> Maybe (tm nTm a)
+eApp2 :: WithSTLCTerm tm ty
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a
+      -> Maybe (tm nTy nTm a)
 eApp2 value smallStep tm = do
   (tm1, tm2) <- preview _TmApp tm
   _ <- value tm1
   tm2' <- smallStep tm2
   return $ review _TmApp (tm1, tm2')
 
-eAppLam :: ( WithSTLCTerm tm ty nTy
-           , Monad (tm nTm)
+eAppLam :: ( WithSTLCTerm tm ty
+           , ForallT Monad tm
            )
-        => tm nTm a
-        -> Maybe (tm nTm a)
+        => tm nTy nTm String
+        -> Maybe (tm nTy nTm String)
 eAppLam tm = do
   (tm1, tm2) <- preview _TmApp tm
   (_, _, s) <- preview _TmLam tm1
-  return $ instantiate1 tm2 s
+  return $ app_ tm2 s
 
-smallStepInput :: ( WithSTLCTerm tm ty nTy
-                  , Monad (tm nTm)
+smallStepInput :: ( WithSTLCTerm tm ty
+                  , ForallT Monad tm
                   )
-               => SmallStepInput tm nTm a
+               => SmallStepInput tm nTy nTm String
 smallStepInput =
   SmallStepInput
    [ SmallStepBase eAppLam

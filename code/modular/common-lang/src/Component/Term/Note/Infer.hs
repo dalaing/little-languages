@@ -23,8 +23,8 @@ inferTmNote :: ( WithNoteType ty
                , Monad m
                )
              => (ty nTy -> ty nTy)
-             -> (tm nTm a -> m (ty nTy))
-             -> tm nTm a
+             -> (tm nTy nTm a -> m (ty nTy))
+             -> tm nTy nTm a
              -> Maybe (m (ty nTy))
 inferTmNote _ infer =
     fmap inferTmNote' .

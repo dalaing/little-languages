@@ -28,16 +28,16 @@ import Component.Type.Pretty (PrettyTypeOutput(..))
 
 -- |
 data PrettyTermRule ty nTy tm nTm a =
-    PrettyTermBase (tm nTm a -> Maybe Doc)                        -- ^
-  | PrettyTermRecurse ((tm nTm a -> Doc) -> tm nTm a -> Maybe Doc) -- ^
-  | PrettyTermExpression ExpressionInfo (tm nTm a -> Maybe (tm nTm a, tm nTm a)) (Doc -> Doc -> Doc)
-  | PrettyTermWithType ((ty nTy -> Doc) -> (tm nTm a -> Doc) -> tm nTm a -> Maybe Doc) -- ^
+    PrettyTermBase (tm nTy nTm a -> Maybe Doc)                        -- ^
+  | PrettyTermRecurse ((tm nTy nTm a -> Doc) -> tm nTy nTm a -> Maybe Doc) -- ^
+  | PrettyTermExpression ExpressionInfo (tm nTy nTm a -> Maybe (tm nTy nTm a, tm nTy nTm a)) (Doc -> Doc -> Doc)
+  | PrettyTermWithType ((ty nTy -> Doc) -> (tm nTy nTm a -> Doc) -> tm nTy nTm a -> Maybe Doc) -- ^
 
 -- |
 fixPrettyTermRule :: (ty nTy -> Doc)
-                  -> (tm nTm a -> Doc)
+                  -> (tm nTy nTm a -> Doc)
                   -> PrettyTermRule ty nTy tm nTm a
-                  -> tm nTm a
+                  -> tm nTy nTm a
                   -> Maybe Doc
 fixPrettyTermRule _ _ (PrettyTermBase f) x =
   f x
@@ -60,10 +60,10 @@ instance Monoid (PrettyTermInput ty nTy tm nTm a) where
     PrettyTermInput (mappend v1 v2)
 
 -- |
-data PrettyTermOutput tm nTm a =
+data PrettyTermOutput tm nTy nTm a =
   PrettyTermOutput {
-    _prettyTerm      :: tm nTm a -> Doc         -- ^
-  , _prettyTermRules :: [tm nTm a -> Maybe Doc] -- ^
+    _prettyTerm      :: tm nTy nTm a -> Doc         -- ^
+  , _prettyTermRules :: [tm nTy nTm a -> Maybe Doc] -- ^
   }
 
 makeClassy ''PrettyTermOutput
@@ -71,7 +71,7 @@ makeClassy ''PrettyTermOutput
 -- |
 mkPrettyTerm :: PrettyTypeOutput ty
              -> PrettyTermInput ty nTy tm nTm a  -- ^
-             -> PrettyTermOutput tm nTm a -- ^
+             -> PrettyTermOutput tm nTy nTm a -- ^
 mkPrettyTerm (PrettyTypeOutput prettyType _) (PrettyTermInput i) =
   let
     prettyTermRules' =

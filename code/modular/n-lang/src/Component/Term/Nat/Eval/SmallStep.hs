@@ -17,8 +17,8 @@ import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
 -- |
 ePredZero :: WithNatTerm tm
-          => tm n a             -- ^
-          -> Maybe (tm n a)        -- ^
+          => tm nTy nTm a             -- ^
+          -> Maybe (tm nTy nTm a)        -- ^
 ePredZero tm = do
   tm1 <- preview _TmPred tm
   _ <- preview _TmZero tm1
@@ -26,9 +26,9 @@ ePredZero tm = do
 
 -- |
 ePredSucc :: WithNatTerm tm
-          => (tm n a -> Maybe (tm n a)) -- ^
-          -> tm n a              -- ^
-          -> Maybe (tm n a)         -- ^
+          => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+          -> tm nTy nTm a              -- ^
+          -> Maybe (tm nTy nTm a)         -- ^
 ePredSucc nv tm = do
   tm1 <- preview _TmPred tm
   tm1' <- preview _TmSucc tm1
@@ -36,9 +36,9 @@ ePredSucc nv tm = do
 
 -- |
 eSucc :: WithNatTerm tm
-      => (tm n a -> Maybe (tm n a)) -- ^
-      -> tm n a              -- ^
-      -> Maybe (tm n a)         -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> tm nTy nTm a              -- ^
+      -> Maybe (tm nTy nTm a)         -- ^
 eSucc step tm = do
   tm1 <- preview _TmSucc tm
   tm1' <- step tm1
@@ -46,9 +46,9 @@ eSucc step tm = do
 
 -- |
 ePred :: WithNatTerm tm
-      => (tm n a -> Maybe (tm n a)) -- ^
-      -> tm n a              -- ^
-      -> Maybe (tm n a)         -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> tm nTy nTm a              -- ^
+      -> Maybe (tm nTy nTm a)         -- ^
 ePred step tm = do
   tm1 <- preview _TmPred tm
   tm1' <- step tm1
@@ -56,7 +56,7 @@ ePred step tm = do
 
 -- |
 smallStepInput :: WithNatTerm tm
-               => SmallStepInput tm n a
+               => SmallStepInput tm nTy nTm a
 smallStepInput =
   SmallStepInput
     [ SmallStepBase ePredZero

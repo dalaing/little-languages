@@ -29,7 +29,7 @@ parseTyInt h =
     review _TyInt () <$ rc "Int" <?> "Int"
 
 parseTypeInput :: WithIntType ty
-               => ParseTypeInput ty n
+               => ParseTypeInput ty
 parseTypeInput =
   ParseTypeInput
     [ParseTypeBase (reserveConstructors ["Int"]) parseTyInt]

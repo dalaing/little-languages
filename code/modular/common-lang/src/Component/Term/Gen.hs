@@ -32,15 +32,15 @@ import Test.QuickCheck (Gen, oneof, sized, forAllShrink, Property, Testable)
 import Component.Type.Gen (GenTypeOutput(..), HasGenTypeOutput(..))
 
 -- |
-data GenAnyTermRule tm n a =
-    GenAnyTermBase (Gen (tm n a)) -- ^
-  | GenAnyTermRecurse ((Int -> Gen (tm n a)) -> Int -> Gen (tm n a)) -- ^
+data GenAnyTermRule tm nTy nTm a =
+    GenAnyTermBase (Gen (tm nTy nTm a)) -- ^
+  | GenAnyTermRecurse ((Int -> Gen (tm nTy nTm a)) -> Int -> Gen (tm nTy nTm a)) -- ^
 
 -- |
-fixGenAnyTermRule :: (Int -> Gen (tm n a))
+fixGenAnyTermRule :: (Int -> Gen (tm nTy nTm a))
                   -> Int
-                  -> GenAnyTermRule tm n a
-                  -> Maybe (Gen (tm n a))
+                  -> GenAnyTermRule tm nTy nTm a
+                  -> Maybe (Gen (tm nTy nTm a))
 fixGenAnyTermRule _ _ (GenAnyTermBase f) =
   Just f
 fixGenAnyTermRule _ 0 _ =
@@ -49,15 +49,15 @@ fixGenAnyTermRule step s (GenAnyTermRecurse f) =
   Just $ f step s
 
 -- |
-data ShrAnyTermRule tm n a =
-    ShrAnyTermBase (tm n a -> Maybe [tm n a]) -- ^
-  | ShrAnyTermRecurse ((tm n a -> [tm n a]) -> tm n a -> Maybe [tm n a]) -- ^
+data ShrAnyTermRule tm nTy nTm a =
+    ShrAnyTermBase (tm nTy nTm a -> Maybe [tm nTy nTm a]) -- ^
+  | ShrAnyTermRecurse ((tm nTy nTm a -> [tm nTy nTm a]) -> tm nTy nTm a -> Maybe [tm nTy nTm a]) -- ^
 
 -- |
-fixShrAnyTermRule :: (tm n a -> [tm n a])
-                  -> ShrAnyTermRule tm n a
-                  -> tm n a
-                  -> Maybe [tm n a]
+fixShrAnyTermRule :: (tm nTy nTm a -> [tm nTy nTm a])
+                  -> ShrAnyTermRule tm nTy nTm a
+                  -> tm nTy nTm a
+                  -> Maybe [tm nTy nTm a]
 fixShrAnyTermRule _ (ShrAnyTermBase f) x =
   f x
 fixShrAnyTermRule step (ShrAnyTermRecurse f) x =
@@ -65,26 +65,26 @@ fixShrAnyTermRule step (ShrAnyTermRecurse f) x =
 
 data GenContainingTermRule ty nTy tm nTm a =
     GenContainingTermBase (
-         tm nTm a
+         tm nTy nTm a
       -> ty nTy
-      -> Maybe (Gen (tm nTm a))
+      -> Maybe (Gen (tm nTy nTm a))
       )
   | GenContainingTermRecurse (
-         (ty nTy -> Int -> Gen (tm nTm a))
-      -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-      -> tm nTm a
+         (ty nTy -> Int -> Gen (tm nTy nTm a))
+      -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+      -> tm nTy nTm a
       -> ty nTy
       -> Int
-      -> Maybe (Gen (tm nTm a))
+      -> Maybe (Gen (tm nTy nTm a))
       ) -- ^
 
-fixGenContainingTermRule :: (ty nTy -> Int -> Gen (tm nTm a))
-                         -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                         -> tm nTm a
+fixGenContainingTermRule :: (ty nTy -> Int -> Gen (tm nTy nTm a))
+                         -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                         -> tm nTy nTm a
                          -> ty nTy
                          -> Int
                          -> GenContainingTermRule ty nTy tm nTm a
-                         -> Maybe (Gen (tm nTm a))
+                         -> Maybe (Gen (tm nTy nTm a))
 fixGenContainingTermRule _ _ tm ty _ (GenContainingTermBase f) =
   f tm ty
 fixGenContainingTermRule _ _ tm _ 0 _ =
@@ -93,20 +93,20 @@ fixGenContainingTermRule wellTyped containing tm ty s (GenContainingTermRecurse 
   f wellTyped containing tm ty s
 
 data GenWellTypedTermRule ty nTy tm nTm a =
-    GenWellTypedTermBase (ty nTy -> Maybe (Gen (tm nTm a))) -- ^
+    GenWellTypedTermBase (ty nTy -> Maybe (Gen (tm nTy nTm a))) -- ^
   | GenWellTypedTermRecurse (
-         (ty nTy -> Int -> Gen (tm nTm a))
+         (ty nTy -> Int -> Gen (tm nTy nTm a))
       -> ty nTy
       -> Int
-      -> Maybe (Gen (tm nTm a))
+      -> Maybe (Gen (tm nTy nTm a))
     ) -- ^
 
 -- |
-fixGenWellTypedTermRule :: (ty nTy -> Int -> Gen (tm nTm a))
+fixGenWellTypedTermRule :: (ty nTy -> Int -> Gen (tm nTy nTm a))
                         -> ty nTy
                         -> Int
                         -> GenWellTypedTermRule ty nTy tm nTm a
-                        -> Maybe (Gen (tm nTm a))
+                        -> Maybe (Gen (tm nTy nTm a))
 fixGenWellTypedTermRule _ ty _ (GenWellTypedTermBase f) =
   f ty
 fixGenWellTypedTermRule _ _ 0 _ =
@@ -117,27 +117,27 @@ fixGenWellTypedTermRule step ty s (GenWellTypedTermRecurse f) =
 data GenIllTypedTermRule ty nTy tm nTm a =
    GenIllTypedTermRecurse (
          (ty nTy -> Gen (ty nTy))
-      -> (ty nTy -> Int -> Gen (tm nTm a))
+      -> (ty nTy -> Int -> Gen (tm nTy nTm a))
       -> ty nTy
       -> Int
-      -> Maybe (Gen (tm nTm a))
+      -> Maybe (Gen (tm nTy nTm a))
       ) -- ^
 
 -- |
 fixGenIllTypedTermRule :: (ty nTy -> Gen (ty nTy))
-                       -> (ty nTy -> Int -> Gen (tm nTm a))
+                       -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                        -> ty nTy
                        -> Int
                        -> GenIllTypedTermRule ty nTy tm nTm a
-                       -> Maybe (Gen (tm nTm a))
+                       -> Maybe (Gen (tm nTy nTm a))
 fixGenIllTypedTermRule notType wellTyped ty s (GenIllTypedTermRecurse f) =
   f notType wellTyped ty s
 
 -- |
 data GenTermInput ty nTy tm nTm a =
   GenTermInput
-    [GenAnyTermRule tm nTm a]
-    [ShrAnyTermRule tm nTm a]
+    [GenAnyTermRule tm nTy nTm a]
+    [ShrAnyTermRule tm nTy nTm a]
     [GenContainingTermRule ty nTy tm nTm a]
     [GenWellTypedTermRule ty nTy tm nTm a]
     [GenIllTypedTermRule ty nTy tm nTm a]
@@ -164,25 +164,25 @@ instance Monoid (GenTermInput ty nTy tm nTm a) where
 -- |
 data GenTermOutput ty nTy tm nTm a =
   GenTermOutput {
-    _genAnyTerm        :: Gen (tm nTm a)             -- ^
-  , _shrAnyTerm        :: tm nTm a -> [tm nTm a]         -- ^
-  , _genContainingTerm :: tm nTm a -> ty nTy -> Gen (tm nTm a)       -- ^
-  , _shrContainingTerm :: tm nTm a -> [tm nTm a]         -- ^
-  , _genWellTypedTerm  :: ty nTy -> Gen (tm nTm a) -- ^
-  , _shrWellTypedTerm  :: tm nTm a -> [tm nTm a]         -- ^
-  , _genIllTypedTerm   :: ty nTy -> Gen (tm nTm a) -- ^
-  , _shrIllTypedTerm   :: tm nTm a -> [tm nTm a]         -- ^
+    _genAnyTerm        :: Gen (tm nTy nTm a)             -- ^
+  , _shrAnyTerm        :: tm nTy nTm a -> [tm nTy nTm a]         -- ^
+  , _genContainingTerm :: tm nTy nTm a -> ty nTy -> Gen (tm nTy nTm a)       -- ^
+  , _shrContainingTerm :: tm nTy nTm a -> [tm nTy nTm a]         -- ^
+  , _genWellTypedTerm  :: ty nTy -> Gen (tm nTy nTm a) -- ^
+  , _shrWellTypedTerm  :: tm nTy nTm a -> [tm nTy nTm a]         -- ^
+  , _genIllTypedTerm   :: ty nTy -> Gen (tm nTy nTm a) -- ^
+  , _shrIllTypedTerm   :: tm nTy nTm a -> [tm nTy nTm a]         -- ^
   }
 
 makeClassy ''GenTermOutput
 
 forAllWellTypedTerm :: ( HasGenTermOutput gto ty nTy tm nTm a
                        , HasGenTypeOutput gto ty nTy
-                       , Show (tm nTm a)
+                       , Show (tm nTy nTm a)
                        , Testable prop
                        )
                     => gto
-                    -> (tm nTm a -> prop)
+                    -> (tm nTy nTm a -> prop)
                     -> Property
 forAllWellTypedTerm gto =
     forAllShrink gen shr

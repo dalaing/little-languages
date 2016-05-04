@@ -34,8 +34,8 @@ import           Component.Term.Gen                     (GenTermInput (..),
                                                          mkGenTerm)
 import           Component.Term.Infer                   (InferInput (..),
                                                          InferOutput, mkInfer)
+import           Component.Term.Note                    (WithNoteTerm)
 import           Component.Term.Note.Strip              (StripNoteTerm)
-import           Component.Type.Note.Strip              (StripNoteType)
 import           Component.Term.Parse                   (ParseTermInput (..),
                                                          ParseTermOutput,
                                                          mkParseTerm)
@@ -47,17 +47,18 @@ import           Component.Term.SubTerm                 (SubTermInput (..),
                                                          mkSubTerm)
 import           Component.Type                         (TypeOutput (..))
 import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
+import           Component.Type.Note.Strip              (StripNoteType)
 
 data TermInput r e ty nTy tm nTm a =
   TermInput {
-    _subTermInput    :: SubTermInput tm nTm a
+    _subTermInput    :: SubTermInput tm nTy nTm a
   , _genTermInput    :: GenTermInput ty nTy tm nTm a
-  , _parseTermInput  :: ParseTermInput ty nTy tm nTm a
+  , _parseTermInput  :: ParseTermInput ty tm
   , _prettyTermInput :: PrettyTermInput ty nTy tm nTm a
   , _inferInput      :: InferInput r e ty nTy tm nTm a
-  , _valueInput      :: ValueInput tm nTm a
-  , _smallStepInput  :: SmallStepInput tm nTm a
-  , _bigStepInput    :: BigStepInput tm nTm a
+  , _valueInput      :: ValueInput tm nTy nTm a
+  , _smallStepInput  :: SmallStepInput tm nTy nTm a
+  , _bigStepInput    :: BigStepInput tm nTy nTm a
   }
 
 instance GetReservedWords (TermInput r e ty nTy tm nTm a) where
@@ -87,20 +88,21 @@ instance Monoid (TermInput r e ty nTy tm nTm a) where
 
 data TermOutput r e ty nTy tm nTm a =
   TermOutput {
-    _toSubTermOutput    :: SubTermOutput tm nTm a
+    _toSubTermOutput    :: SubTermOutput tm nTy nTm a
   , _toGenTermOutput    :: GenTermOutput ty nTy tm nTm a
-  , _toParseTermOutput  :: ParseTermOutput tm nTm a
-  , _toPrettyTermOutput :: PrettyTermOutput tm nTm a
+  , _toParseTermOutput  :: ParseTermOutput tm
+  , _toPrettyTermOutput :: PrettyTermOutput tm nTy nTm a
   , _toInferOutput      :: InferOutput r e ty nTy tm nTm a
-  , _toValueOutput      :: ValueOutput tm nTm a
-  , _toSmallStepOutput  :: SmallStepOutput tm nTm a
-  , _toBigStepOutput    :: BigStepOutput tm nTm a
+  , _toValueOutput      :: ValueOutput tm nTy nTm a
+  , _toSmallStepOutput  :: SmallStepOutput tm nTy nTm a
+  , _toBigStepOutput    :: BigStepOutput tm nTy nTm a
   }
 
 makeClassy ''TermOutput
 
 mkTerm :: ( AsUnknownType e
-          , Eq (tm nTm a)
+          , Eq (tm nTy nTm a)
+          , WithNoteTerm tm
           , StripNoteTerm tm tm
           , StripNoteType ty ty
           )

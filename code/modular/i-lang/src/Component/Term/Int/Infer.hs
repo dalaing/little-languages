@@ -23,7 +23,7 @@ inferTmInt :: ( Monad m
                , WithIntTerm tm
                , WithIntType ty
                )
-            => tm nTm a          -- ^
+            => tm nTy nTm a          -- ^
             -> Maybe (m (ty nTy)) -- ^
 inferTmInt =
   fmap (const . return $ review _TyInt ()) .
@@ -37,8 +37,8 @@ inferTmAdd :: ( Eq (ty nTy)
               , WithIntType ty
               )
            => (ty nTy -> ty nTy)
-           -> (tm nTm a -> m (ty nTy))       -- ^
-           -> tm nTm a                -- ^
+           -> (tm nTy nTm a -> m (ty nTy))       -- ^
+           -> tm nTy nTm a                -- ^
            -> Maybe (m (ty nTy))       -- ^
 inferTmAdd stripNote infer =
     fmap inferTmAdd' .
@@ -60,8 +60,8 @@ inferTmSub :: ( Eq (ty nTy)
               , WithIntType ty
               )
            => (ty nTy -> ty nTy)
-           -> (tm nTm a -> m (ty nTy))       -- ^
-           -> tm nTm a                -- ^
+           -> (tm nTy nTm a -> m (ty nTy))       -- ^
+           -> tm nTy nTm a                -- ^
            -> Maybe (m (ty nTy))       -- ^
 inferTmSub stripNote infer =
     fmap inferTmSub' .
@@ -83,8 +83,8 @@ inferTmMul :: ( Eq (ty nTy)
               , WithIntType ty
               )
            => (ty nTy -> ty nTy)
-           -> (tm nTm a -> m (ty nTy))       -- ^
-           -> tm nTm a                -- ^
+           -> (tm nTy nTm a -> m (ty nTy))       -- ^
+           -> tm nTy nTm a                -- ^
            -> Maybe (m (ty nTy))       -- ^
 inferTmMul stripNote infer =
     fmap inferTmMul' .
@@ -106,8 +106,8 @@ inferTmExp :: ( Eq (ty nTy)
               , WithIntType ty
               )
            => (ty nTy -> ty nTy)
-           -> (tm nTm a -> m (ty nTy))       -- ^
-           -> tm nTm a                -- ^
+           -> (tm nTy nTm a -> m (ty nTy))       -- ^
+           -> tm nTy nTm a                -- ^
            -> Maybe (m (ty nTy))       -- ^
 inferTmExp stripNote infer =
     fmap inferTmExp' .

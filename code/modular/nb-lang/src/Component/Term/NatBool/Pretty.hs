@@ -19,8 +19,8 @@ import           Component.Term.NatBool         (AsNatBoolTerm (..), WithNatBool
 
 -- |
 prettyTmIsZero :: WithNatBoolTerm tm
-               => (tm n a -> Doc) -- ^
-               -> tm n a         -- ^
+               => (tm nTy nTm a -> Doc) -- ^
+               -> tm nTy nTm a         -- ^
                -> Maybe Doc   -- ^
 prettyTmIsZero prettyTerm =
     fmap prettyTmIsZero' .

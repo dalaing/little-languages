@@ -16,16 +16,16 @@ import Component.Term.SubTerm (SubTermInput(..), SubTermRule(..))
 import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 
 subTermTmIsZero :: WithNatBoolTerm tm
-                => (tm n a -> [tm n a])
-                -> tm n a
-                -> Maybe [tm n a]
+                => (tm nTy nTm a -> [tm nTy nTm a])
+                -> tm nTy nTm a
+                -> Maybe [tm nTy nTm a]
 subTermTmIsZero subTerms tm =
   fmap ((tm :) . subTerms) .
   preview _TmIsZero $
   tm
 
 subTermInput :: WithNatBoolTerm tm
-             => SubTermInput tm n a
+             => SubTermInput tm nTy nTm a
 subTermInput =
   SubTermInput
     [SubTermRecurse subTermTmIsZero]

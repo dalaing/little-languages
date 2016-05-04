@@ -19,9 +19,9 @@ import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 
 -- |
 eIsZeroZero :: WithNatBoolTerm tm
-            => (tm n a -> Maybe (tm n a))
-            -> tm n a
-            -> Maybe (tm n a)
+            => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+            -> tm nTy nTm a
+            -> Maybe (tm nTy nTm a)
 eIsZeroZero step tm = do
   t <- preview _TmIsZero tm
   t' <- step t
@@ -30,9 +30,9 @@ eIsZeroZero step tm = do
 
 -- |
 eIsZeroSucc :: WithNatBoolTerm tm
-            => (tm n a -> Maybe (tm n a))
-            -> tm n a
-            -> Maybe (tm n a)
+            => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+            -> tm nTy nTm a
+            -> Maybe (tm nTy nTm a)
 eIsZeroSucc step tm = do
   t <- preview _TmIsZero tm
   t' <- step t
@@ -41,7 +41,7 @@ eIsZeroSucc step tm = do
 
 -- |
 bigStepInput :: WithNatBoolTerm tm
-             => BigStepInput tm n a
+             => BigStepInput tm nTy nTm a
 bigStepInput =
   BigStepInput
     [ BigStepRecurse eIsZeroZero

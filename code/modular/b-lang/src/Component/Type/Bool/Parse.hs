@@ -30,7 +30,7 @@ parseTyBool h =
     review _TyBool () <$ rc "Bool" <?> "Bool"
 
 parseTypeInput :: WithBoolType ty
-               => ParseTypeInput ty n
+               => ParseTypeInput ty
 parseTypeInput =
   ParseTypeInput
     [ParseTypeBase (reserveConstructors ["Bool"]) parseTyBool]

@@ -23,7 +23,7 @@ inferTmZero :: ( Monad m
                , WithNatTerm tm
                , WithNatType ty
                )
-            => tm nTm a          -- ^
+            => tm nTy nTm a          -- ^
             -> Maybe (m (ty nTy)) -- ^
 inferTmZero =
   fmap (const . return $ review _TyNat ()) .
@@ -37,8 +37,8 @@ inferTmSucc :: ( Eq (ty nTy)
                , WithNatType ty
                )
             => (ty nTy -> ty nTy)
-            -> (tm nTm a -> m (ty nTy))       -- ^
-            -> tm nTm a                -- ^
+            -> (tm nTy nTm a -> m (ty nTy))       -- ^
+            -> tm nTy nTm a                -- ^
             -> Maybe (m (ty nTy))       -- ^
 inferTmSucc stripNote infer =
     fmap inferTmSucc' .
@@ -58,8 +58,8 @@ inferTmPred :: ( Eq (ty nTy)
                , WithNatType ty
                )
             => (ty nTy -> ty nTy)
-            -> (tm nTm a -> m (ty nTy))       -- ^
-            -> tm nTm a                -- ^
+            -> (tm nTy nTm a -> m (ty nTy))       -- ^
+            -> tm nTy nTm a                -- ^
             -> Maybe (m (ty nTy))       -- ^
 inferTmPred stripNote infer =
     fmap inferTmPred' .

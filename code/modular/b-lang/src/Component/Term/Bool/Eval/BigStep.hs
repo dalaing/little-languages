@@ -17,25 +17,25 @@ import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 
 -- |
 eTrue :: WithBoolTerm tm
-      => tm n a              -- ^
-      -> Maybe (tm n a)        -- ^
+      => tm nTy nTm a              -- ^
+      -> Maybe (tm nTy nTm a)        -- ^
 eTrue =
   fmap (review _TmTrue) .
   preview _TmTrue
 
 -- |
 eFalse :: WithBoolTerm tm
-       => tm n a              -- ^
-       -> Maybe (tm n a)        -- ^
+       => tm nTy nTm a              -- ^
+       -> Maybe (tm nTy nTm a)        -- ^
 eFalse =
   fmap (review _TmFalse) .
   preview _TmFalse
 
 -- |
 eIfTrue :: WithBoolTerm tm
-        => (tm n a -> Maybe (tm n a)) -- ^
-        -> tm n a              -- ^
-        -> Maybe (tm n a)         -- ^
+        => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+        -> tm nTy nTm a              -- ^
+        -> Maybe (tm nTy nTm a)         -- ^
 eIfTrue step tm = do
   (tm1, tm2, _) <- preview _TmIf tm
   tm1' <- step tm1
@@ -44,9 +44,9 @@ eIfTrue step tm = do
 
 -- |
 eIfFalse :: WithBoolTerm tm
-         => (tm n a -> Maybe (tm n a)) -- ^
-         -> tm n a              -- ^
-         -> Maybe (tm n a)         -- ^
+         => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+         -> tm nTy nTm a              -- ^
+         -> Maybe (tm nTy nTm a)         -- ^
 eIfFalse step tm = do
   (tm1, _, tm3) <- preview _TmIf tm
   tm1' <- step tm1
@@ -55,7 +55,7 @@ eIfFalse step tm = do
 
 -- |
 bigStepInput :: WithBoolTerm tm
-             => BigStepInput tm n a
+             => BigStepInput tm nTy nTm a
 bigStepInput =
   BigStepInput
     [ BigStepBase eFalse

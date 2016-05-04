@@ -15,15 +15,15 @@ import Component.Term.Eval.Value (ValueRule(..), ValueInput(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
 valueTmNote :: WithNoteTerm tm
-            => (tm n a -> Maybe (tm n a))
-            -> tm n a
-            -> Maybe (tm n a)
+            => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+            -> tm nTy nTm a
+            -> Maybe (tm nTy nTm a)
 valueTmNote value tm = do
   (_, tm1) <- preview _TmNote tm
   value tm1
 
 valueInput :: WithNoteTerm tm
-           => ValueInput tm n a
+           => ValueInput tm nTy nTm a
 valueInput =
   ValueInput
     [ValueRecurse valueTmNote]

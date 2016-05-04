@@ -22,7 +22,7 @@ import           Component.Term.Note.Gen            (genTermInput)
 import           Component.Term.Note.Infer          (inferInput)
 import           Component.Term.Note.Parse          (parseTermInput)
 import           Component.Term.Note.Pretty         (prettyTermInput)
-import           Component.Term.Note.Size           (termSizeInput)
+import           Component.Term.Note.SubTerm        (subTermInput)
 import           Component.Type.Note                (WithNoteType)
 import           Component.Type.Note.Gen            (genTypeInput)
 import           Component.Type.Note.Parse          (parseTypeInput)
@@ -44,7 +44,7 @@ noteRules =
         prettyTypeInput
     tmI =
       TermInput
-        termSizeInput
+        subTermInput
         genTermInput
         parseTermInput
         prettyTermInput

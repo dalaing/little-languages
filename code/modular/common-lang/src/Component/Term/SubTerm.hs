@@ -22,44 +22,44 @@ import           Data.Foldable   (asum)
 import           Data.Maybe      (fromMaybe)
 
 -- |
-data SubTermRule tm n a =
-    SubTermBase (tm n a -> Maybe [tm n a])                   -- ^
-  | SubTermRecurse ((tm n a -> [tm n a]) -> tm n a -> Maybe [tm n a]) -- ^
+data SubTermRule tm nTy nTm a =
+    SubTermBase (tm nTy nTm a -> Maybe [tm nTy nTm a])                   -- ^
+  | SubTermRecurse ((tm nTy nTm a -> [tm nTy nTm a]) -> tm nTy nTm a -> Maybe [tm nTy nTm a]) -- ^
 
 -- |
-fixSubTermRule :: (tm n a -> [tm n a])
-                  -> SubTermRule tm n a
-                  -> tm n a
-                  -> Maybe [tm n a]
+fixSubTermRule :: (tm nTy nTm a -> [tm nTy nTm a])
+                  -> SubTermRule tm nTy nTm a
+                  -> tm nTy nTm a
+                  -> Maybe [tm nTy nTm a]
 fixSubTermRule _ (SubTermBase f) x =
   f x
 fixSubTermRule step (SubTermRecurse f) x =
   f step x
 
 -- |
-data SubTermInput tm n a =
-  SubTermInput [SubTermRule tm n a] -- ^
+data SubTermInput tm nTy nTm a =
+  SubTermInput [SubTermRule tm nTy nTm a] -- ^
 
-instance Monoid (SubTermInput tm n a) where
+instance Monoid (SubTermInput tm nTy nTm a) where
   mempty =
     SubTermInput mempty
   mappend (SubTermInput v1) (SubTermInput v2) =
     SubTermInput (mappend v1 v2)
 
 -- |
-data SubTermOutput tm n a =
+data SubTermOutput tm nTy nTm a =
   SubTermOutput {
-    _subTerms :: tm n a -> [tm n a]
-  , _containsTerm :: tm n a -> tm n a -> Bool
-  , _termSize :: tm n a -> Int -- ^
+    _subTerms :: tm nTy nTm a -> [tm nTy nTm a]
+  , _containsTerm :: tm nTy nTm a -> tm nTy nTm a -> Bool
+  , _termSize :: tm nTy nTm a -> Int -- ^
   }
 
 makeClassy ''SubTermOutput
 
 -- |
-mkSubTerm :: Eq (tm n a)
-          => SubTermInput tm n a  -- ^
-          -> SubTermOutput tm n a -- ^
+mkSubTerm :: Eq (tm nTy nTm a)
+          => SubTermInput tm nTy nTm a  -- ^
+          -> SubTermOutput tm nTy nTm a -- ^
 mkSubTerm (SubTermInput i) =
   let
     subTermRules' =

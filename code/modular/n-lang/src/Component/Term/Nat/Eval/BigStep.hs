@@ -17,17 +17,17 @@ import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 
 -- |
 eZero :: WithNatTerm tm
-      => tm n a             -- ^
-      -> Maybe (tm n a)        -- ^
+      => tm nTy nTm a             -- ^
+      -> Maybe (tm nTy nTm a)        -- ^
 eZero =
   fmap (review _TmZero) .
   preview _TmZero
 
 -- |
 eSucc :: WithNatTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a
-      -> Maybe (tm n a)
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a
+      -> Maybe (tm nTy nTm a)
 eSucc step tm = do
   t <- preview _TmSucc tm
   t' <- step t
@@ -35,9 +35,9 @@ eSucc step tm = do
 
 -- |
 ePredZero :: WithNatTerm tm
-          => (tm n a -> Maybe (tm n a))
-          -> tm n a
-          -> Maybe (tm n a)
+          => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+          -> tm nTy nTm a
+          -> Maybe (tm nTy nTm a)
 ePredZero step tm = do
   t <- preview _TmPred tm
   t' <- step t
@@ -46,9 +46,9 @@ ePredZero step tm = do
 
 -- |
 ePredSucc :: WithNatTerm tm
-          => (tm n a -> Maybe (tm n a))
-          -> tm n a
-          -> Maybe (tm n a)
+          => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+          -> tm nTy nTm a
+          -> Maybe (tm nTy nTm a)
 ePredSucc step tm = do
   t <- preview _TmPred tm
   t' <- step t
@@ -56,7 +56,7 @@ ePredSucc step tm = do
 
 -- |
 bigStepInput :: WithNatTerm tm
-             => BigStepInput tm n a
+             => BigStepInput tm nTy nTm a
 bigStepInput =
   BigStepInput
     [ BigStepBase eZero

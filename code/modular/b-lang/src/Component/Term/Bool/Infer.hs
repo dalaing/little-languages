@@ -24,7 +24,7 @@ inferTmFalse :: ( Monad m
                 , WithBoolTerm tm
                 , WithBoolType ty
                 )
-             => tm nTm a          -- ^
+             => tm nTy nTm a          -- ^
              -> Maybe (m (ty nTy)) -- ^
 inferTmFalse =
   fmap (const . return $ review _TyBool ()) .
@@ -35,7 +35,7 @@ inferTmTrue :: ( Monad m
                , WithBoolTerm tm
                , WithBoolType ty
                )
-            => tm nTm a          -- ^
+            => tm nTy nTm a          -- ^
             -> Maybe (m (ty nTy)) -- ^
 inferTmTrue =
   fmap (const . return $ review _TyBool ()) .
@@ -50,8 +50,8 @@ inferTmIf :: ( Eq (ty nTy)
              , WithBoolType ty
              )
           => (ty nTy -> ty nTy)
-          -> (tm nTm a -> m (ty nTy))       -- ^
-          -> tm nTm a                -- ^
+          -> (tm nTy nTm a -> m (ty nTy))       -- ^
+          -> tm nTy nTm a                -- ^
           -> Maybe (m (ty nTy))         -- ^
 inferTmIf stripNote infer =
     fmap inferTmIf' .

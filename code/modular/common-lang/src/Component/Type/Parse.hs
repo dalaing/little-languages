@@ -11,6 +11,7 @@ Portability : non-portable
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
 module Component.Type.Parse (
     ParseTypeRule(..)
   , ParseTypeInput(..)
@@ -37,18 +38,18 @@ import Common.Parse (ReservedWords, GetReservedWords(..), ParserHelperOutput)
 import Component.Type.Note (AsNoteType(..), WithNoteType)
 
 -- |
-data ParseTypeRule ty n =
+data ParseTypeRule ty =
     ParseTypeBase
-      ReservedWords (ParserHelperOutput -> Parser (ty n))              -- ^
+      ReservedWords (forall n. ParserHelperOutput -> Parser (ty n))              -- ^
   | ParseTypeRecurse
       ReservedWords
-      (ParserHelperOutput -> Parser (ty n) -> Parser (ty n)) -- ^
+      (forall n. ParserHelperOutput -> Parser (ty n) -> Parser (ty n)) -- ^
   | ParseTypeExpression
       ReservedWords
       ExpressionInfo
-      (ParserHelperOutput -> Parser (ty n -> ty n -> ty n)) -- ^
+      (forall n. ParserHelperOutput -> Parser (ty n -> ty n -> ty n)) -- ^
 
-instance GetReservedWords (ParseTypeRule ty n) where
+instance GetReservedWords (ParseTypeRule ty) where
   reservedWords (ParseTypeBase r _) = r
   reservedWords (ParseTypeRecurse r _) = r
   reservedWords (ParseTypeExpression r _ _) = r
@@ -56,7 +57,7 @@ instance GetReservedWords (ParseTypeRule ty n) where
 -- |
 fixParseTypeRule :: ParserHelperOutput
                  -> Parser (ty n)
-                 -> ParseTypeRule ty n
+                 -> ParseTypeRule ty
                  -> Parser (ty n)
 fixParseTypeRule h _ (ParseTypeBase _ x) =
   x h
@@ -67,7 +68,7 @@ fixParseTypeRule _ _ ParseTypeExpression{} =
 
 -- |
 fixParseExprRule :: ParserHelperOutput
-                 -> ParseTypeRule ty n
+                 -> ParseTypeRule ty 
                  -> OperatorTable Parser (ty n)
 fixParseExprRule h (ParseTypeExpression _ (ExpressionInfo a p) f) =
   [Infix (f h) a] : replicate p []
@@ -75,23 +76,23 @@ fixParseExprRule _ _ =
   []
 
 -- |
-data ParseTypeInput ty n =
-  ParseTypeInput [ParseTypeRule ty n] -- ^
+data ParseTypeInput ty =
+  ParseTypeInput [ParseTypeRule ty] -- ^
 
-instance GetReservedWords (ParseTypeInput ty n) where
+instance GetReservedWords (ParseTypeInput ty) where
   reservedWords (ParseTypeInput i) =
     foldMap reservedWords i
 
-instance Monoid (ParseTypeInput ty n) where
+instance Monoid (ParseTypeInput ty) where
   mempty =
     ParseTypeInput mempty
   mappend (ParseTypeInput v1) (ParseTypeInput v2) =
     ParseTypeInput (mappend v1 v2)
 
 -- |
-data ParseTypeOutput ty n =
+data ParseTypeOutput ty =
   ParseTypeOutput {
-    _parseType      :: (Parser (ty n) -> Parser (ty n)) -> Parser (ty n)        -- ^
+    _parseType      :: Parser (ty Span)        -- ^
   , _typeReservedWords :: ReservedWords -- ^
   }
 
@@ -109,7 +110,7 @@ withParens p =
 
 withSpan :: ( Monad m
             , DeltaParsing m
-            , WithNoteType ty 
+            , WithNoteType ty
             )
          => m (ty Span)
          -> m (ty Span)
@@ -118,24 +119,25 @@ withSpan p = do
   return $ review _TyNote (s, ty)
 
 -- |
-mkParseType :: ParserHelperOutput -- ^
-            -> ParseTypeInput ty n -- ^
-            -> ParseTypeOutput ty n -- ^
+mkParseType :: WithNoteType ty
+            => ParserHelperOutput -- ^
+            -> ParseTypeInput ty -- ^
+            -> ParseTypeOutput ty -- ^
 mkParseType h p@(ParseTypeInput i) =
   let
-    parseType' pt =
-      pt $
-      withParens .
+    parseType' =
+      withSpan $
+      (<|> parens parseExpr') .
       asum .
-      fmap (fixParseTypeRule h (parseType' pt)) $
+      fmap (fixParseTypeRule h parseType') $
       i
     tables =
       combineTables .
       fmap (fixParseExprRule h) $
       i
-    parseExpr' pt =
-      pt $
-      buildExpressionParser tables (parseType' pt)
+    parseExpr' =
+      withSpan $
+      buildExpressionParser tables parseType'
   in
     ParseTypeOutput
       parseExpr'

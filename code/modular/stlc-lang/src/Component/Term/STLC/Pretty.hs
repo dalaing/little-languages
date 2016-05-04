@@ -6,34 +6,34 @@ Stability   : experimental
 Portability : non-portable
 -}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
 module Component.Term.STLC.Pretty (
     prettyTermInput
   ) where
 
 import           Control.Lens                 (preview, review)
 import           Text.PrettyPrint.ANSI.Leijen (Doc, (<+>))
-import Bound (instantiate1)
+import Data.Constraint.Forall (ForallT)
 
 import           Common.Text (Assoc(..), ExpressionInfo(..))
 import           Common.Pretty                (identifier, reservedOperator, reservedIdentifier)
 import           Component.Term.Pretty        (PrettyTermInput(..), PrettyTermRule (..))
-import           Component.Type.Pretty        (PrettyTypeOutput(..))
 
-import           Component.Term.STLC         (AsSTLCTerm (..), AsSTLCVar(..), WithSTLCTerm)
+import           Component.Term.STLC         (AsSTLCTerm (..), AsSTLCVar(..), WithSTLCTerm, app_)
 
-prettyTmVar :: WithSTLCTerm tm ty nTy
-            => tm nTm String
+prettyTmVar :: WithSTLCTerm tm ty
+            => tm nTy nTm String
             -> Maybe Doc
 prettyTmVar tm = do
   v <- preview _TmVar tm
   return $ identifier v
 
-prettyTmLam :: ( WithSTLCTerm tm ty nTy
-               , Monad (tm nTm)
+prettyTmLam :: ( WithSTLCTerm tm ty
+               , ForallT Monad tm
                )
             => (ty nTy -> Doc)
-            -> (tm nTm String -> Doc)
-            -> tm nTm String
+            -> (tm nTy nTm String -> Doc)
+            -> tm nTy nTm String
             -> Maybe Doc
 prettyTmLam prettyType prettyTerm tm = do
   let ri = reservedIdentifier
@@ -44,7 +44,7 @@ prettyTmLam prettyType prettyTerm tm = do
     ri ":" <+>
     prettyType ty <+>
     ri "." <+>
-    prettyTerm (instantiate1 (review _TmVar v) s)
+    prettyTerm (app_ (review _TmVar v) s)
 
 
 prettyTmApp :: Doc
@@ -55,8 +55,8 @@ prettyTmApp tm1 tm2 =
   reservedOperator "@" <+>
   tm2
 
-prettyTermInput :: ( WithSTLCTerm tm ty nTy
-                   , Monad (tm nTm)
+prettyTermInput :: ( WithSTLCTerm tm ty
+                   , ForallT Monad tm
                    )
                 => PrettyTermInput ty nTy tm nTm String
 prettyTermInput =

@@ -28,8 +28,8 @@ inferTmIsZero :: ( Eq (ty nTy)
                  , WithBoolType ty
                  )
               => (ty nTy -> ty nTy)
-              -> (tm nTm a -> m (ty nTy))       -- ^
-              -> tm nTm a                -- ^
+              -> (tm nTy nTm a -> m (ty nTy))       -- ^
+              -> tm nTy nTm a                -- ^
               -> Maybe (m (ty nTy))       -- ^
 inferTmIsZero stripNote infer =
     fmap inferTmIsZero' .

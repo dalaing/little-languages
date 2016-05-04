@@ -45,14 +45,14 @@ runInfer r =
 
 -- |
 data InferRule r e ty nTy tm nTm a =
-    InferBase (tm nTm a -> Maybe (InferStack r e (ty nTy)))                           -- ^
-  | InferRecurse ((ty nTy -> ty nTy) -> (tm nTm a -> InferStack r e (ty nTy)) -> tm nTm a -> Maybe (InferStack r e (ty nTy))) -- ^
+    InferBase (tm nTy nTm a -> Maybe (InferStack r e (ty nTy)))                           -- ^
+  | InferRecurse ((ty nTy -> ty nTy) -> (tm nTy nTm a -> InferStack r e (ty nTy)) -> tm nTy nTm a -> Maybe (InferStack r e (ty nTy))) -- ^
 
 -- |
 fixInferRule :: (ty nTy -> ty nTy)
-             -> (tm nTm a -> InferStack r e (ty nTy))
+             -> (tm nTy nTm a -> InferStack r e (ty nTy))
              -> InferRule r e ty nTy tm nTm a
-             -> tm nTm a
+             -> tm nTy nTm a
              -> Maybe (InferStack r e (ty nTy))
 fixInferRule _ _ (InferBase f) x =
   f x
@@ -72,8 +72,8 @@ instance Monoid (InferInput r e ty nTy tm nTm a) where
 -- |
 data InferOutput r e ty nTy tm nTm a =
   InferOutput {
-    _infer      :: tm nTm a -> InferStack r e (ty nTy)           -- ^
-  , _inferRules :: [tm nTm a -> Maybe (InferStack r e (ty nTy))] -- ^
+    _infer      :: tm nTy nTm a -> InferStack r e (ty nTy)           -- ^
+  , _inferRules :: [tm nTy nTm a -> Maybe (InferStack r e (ty nTy))] -- ^
   }
 
 makeClassy ''InferOutput

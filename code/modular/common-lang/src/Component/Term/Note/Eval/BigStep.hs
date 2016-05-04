@@ -15,16 +15,16 @@ import Component.Term.Eval.BigStep (BigStepRule(..), BigStepInput(..))
 import Component.Term.Note (AsNoteTerm(..), WithNoteTerm)
 
 bigStepTmNote :: WithNoteTerm tm
-                => (tm n a -> Maybe (tm n a))
-                -> tm n a
-                -> Maybe (tm n a)
+                => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+                -> tm nTy nTm a
+                -> Maybe (tm nTy nTm a)
 bigStepTmNote bigStep tm = do
   (n, tm1) <- preview _TmNote tm
   tm1' <- bigStep tm1
   return $ review _TmNote (n, tm1')
 
 bigStepInput :: WithNoteTerm tm
-           => BigStepInput tm n a
+           => BigStepInput tm nTy nTm a
 bigStepInput =
   BigStepInput
     [BigStepRecurse bigStepTmNote]

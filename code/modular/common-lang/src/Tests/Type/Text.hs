@@ -9,24 +9,26 @@ module Tests.Type.Text (
     mkTextTests
   ) where
 
-import           Control.Lens          (view)
-import           Data.List             (group, intercalate, sort)
-import           Test.QuickCheck       (Property, forAllShrink, property, (===))
-import           Test.Tasty            (TestTree, testGroup)
-import           Test.Tasty.HUnit      (Assertion, assertBool, testCase)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Control.Lens            (view)
+import           Data.List               (group, intercalate, sort)
+import           Test.QuickCheck         (Property, forAllShrink, property,
+                                          (===))
+import           Test.Tasty              (TestTree, testGroup)
+import           Test.Tasty.HUnit        (Assertion, assertBool, testCase)
+import           Test.Tasty.QuickCheck   (testProperty)
+import           Text.Trifecta.Rendering (Span)
 
-import           Common.Parse          (parseFromString, ReservedWords(..))
-import           Common.Pretty         (prettyToString)
-import           Component             (ComponentOutput (..))
-import           Component.Type.Gen    (HasGenTypeOutput (..))
-import           Component.Type.Parse  (HasParseTypeOutput (..))
-import           Component.Type.Pretty (HasPrettyTypeOutput (..))
+import           Common.Parse            (ReservedWords (..), parseFromString)
+import           Common.Pretty           (prettyToString)
+import           Component               (ComponentOutput (..))
+import           Component.Type.Gen      (HasGenTypeOutput (..))
+import           Component.Type.Parse    (HasParseTypeOutput (..))
+import           Component.Type.Pretty   (HasPrettyTypeOutput (..))
 
-mkTextTests :: ( Eq (ty nTy)
-               , Show (ty nTy)
+mkTextTests :: ( Eq (ty Span)
+               , Show (ty Span)
                )
-            => ComponentOutput r e ty nTy tm nTm a
+            => ComponentOutput r e ty Span tm nTm a
             -> TestTree
 mkTextTests c =
   testGroup "text"
@@ -59,10 +61,10 @@ assertUniqueReserved c =
   in
     assertBool msg unique
 
-propPrettyParse :: ( Eq (ty nTy)
-                   , Show (ty nTy)
+propPrettyParse :: ( Eq (ty Span)
+                   , Show (ty Span)
                    )
-                => ComponentOutput r e ty nTy tm nTm a
+                => ComponentOutput r e ty Span tm nTm a
                 -> Property
 propPrettyParse c =
   let
@@ -71,7 +73,7 @@ propPrettyParse c =
     prettyType' = view prettyType c
     parseType' = view parseType c
     roundTrip =
-      parseFromString (parseType' id) .
+      parseFromString parseType' .
       prettyToString .
       prettyType'
   in

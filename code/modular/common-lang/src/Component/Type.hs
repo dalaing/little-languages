@@ -5,10 +5,10 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE TemplateHaskell        #-}
 module Component.Type (
     TypeInput(..)
   , TypeOutput(..)
@@ -17,19 +17,24 @@ module Component.Type (
   ) where
 
 
-import           Control.Lens.TH           (makeClassy)
+import           Control.Lens.TH       (makeClassy)
 
-import           Common.Parse              (ParserHelperOutput, GetReservedWords(..))
+import           Common.Parse          (GetReservedWords (..),
+                                        ParserHelperOutput)
 -- import           Component.Type.Note.Strip (StripNoteTypeInput(..), StripNoteTypeOutput, mkStripNoteType)
-import           Component.Type.Gen (GenTypeInput(..), GenTypeOutput(..), mkGenType)
-import           Component.Type.Parse (ParseTypeInput(..), ParseTypeOutput(..), mkParseType)
-import           Component.Type.Pretty (PrettyTypeInput(..), PrettyTypeOutput(..), mkPrettyType)
+import           Component.Type.Gen    (GenTypeInput (..), GenTypeOutput (..),
+                                        mkGenType)
+import           Component.Type.Note   (WithNoteType)
+import           Component.Type.Parse  (ParseTypeInput (..),
+                                        ParseTypeOutput (..), mkParseType)
+import           Component.Type.Pretty (PrettyTypeInput (..),
+                                        PrettyTypeOutput (..), mkPrettyType)
 
 data TypeInput ty n =
   TypeInput {
-    _genTypeInput       :: GenTypeInput ty n
-  , _parseTypeInput     :: ParseTypeInput ty n
-  , _prettyTypeInput    :: PrettyTypeInput ty
+    _genTypeInput    :: GenTypeInput ty n
+  , _parseTypeInput  :: ParseTypeInput ty
+  , _prettyTypeInput :: PrettyTypeInput ty
   }
 
 instance GetReservedWords (TypeInput ty n) where
@@ -49,14 +54,15 @@ instance Monoid (TypeInput ty n) where
 
 data TypeOutput ty n =
   TypeOutput {
-    _toGenTypeOutput       :: GenTypeOutput ty n
-  , _toParseTypeOutput     :: ParseTypeOutput ty n
-  , _toPrettyTypeOutput    :: PrettyTypeOutput ty
+    _toGenTypeOutput    :: GenTypeOutput ty n
+  , _toParseTypeOutput  :: ParseTypeOutput ty
+  , _toPrettyTypeOutput :: PrettyTypeOutput ty
   }
 
 makeClassy ''TypeOutput
 
-mkType :: ParserHelperOutput
+mkType :: WithNoteType ty
+       => ParserHelperOutput
        -> TypeInput ty n
        -> TypeOutput ty n
 mkType h (TypeInput g pa pr) =

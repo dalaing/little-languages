@@ -9,24 +9,25 @@ module Tests.Term (
     mkTermTests
   ) where
 
-import           Test.Tasty                          (TestTree, testGroup)
+import           Test.Tasty                             (TestTree, testGroup)
+import           Text.Trifecta.Rendering                (Span)
 
+import           Component                              (ComponentOutput)
 import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
-import           Component                           (ComponentOutput)
-import           Tests.Term.Eval                     (mkEvalTests)
-import           Tests.Term.Infer                    (mkInferTests)
-import           Tests.Term.Text                     (mkTextTests)
+import           Tests.Term.Eval                        (mkEvalTests)
+import           Tests.Term.Infer                       (mkInferTests)
+import           Tests.Term.Text                        (mkTextTests)
 
 mkTermTests :: ( Eq e
                , Show e
-               , Eq (tm nTm a)
-               , Show (tm nTm a)
-               , Eq (ty nTy)
-               , Show (ty nTy)
+               , Eq (tm Span Span String)
+               , Show (tm Span Span String)
+               , Eq (ty Span)
+               , Show (ty Span)
                , AsUnknownType e
                , Monoid r
                )
-            => ComponentOutput r e ty nTy tm nTm a
+            => ComponentOutput r e ty Span tm Span String
             -> TestTree
 mkTermTests c =
   testGroup "term"

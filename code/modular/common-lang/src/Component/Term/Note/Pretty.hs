@@ -18,8 +18,8 @@ import           Component.Term.Pretty        (PrettyTermInput (..),
                                                PrettyTermRule (..))
 
 prettyTmNote :: WithNoteTerm tm
-             => (tm n a -> Doc)
-             -> tm n a
+             => (tm nTy nTm a -> Doc)
+             -> tm nTy nTm a
              -> Maybe Doc
 prettyTmNote prettyTerm =
   fmap (prettyTerm . snd) .

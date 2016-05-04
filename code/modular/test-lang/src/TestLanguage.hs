@@ -13,6 +13,7 @@ Portability : non-portable
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE RankNTypes           #-}
 module TestLanguage (
     Type(..)
   , TypeError(..)
@@ -32,8 +33,10 @@ import Prelude.Extras (Eq1(..), Ord1(..), Show1(..))
 import Data.Bifunctor (Bifunctor(..))
 import Data.Bifoldable (Bifoldable(..))
 import Data.Bitraversable (Bitraversable(..))
+import Data.Constraint (Dict(..))
 
-import Bound2 (Bound2(..))
+import Bound2 (Bound3(..))
+import Bifunctor2 (Bifunctor2(..))
 import Common.Note (TranslateNote)
 import           Component.Type.Error.ExpectedEq  (AsExpectedEq (..),
                                                 ExpectedEq (..),
@@ -121,12 +124,12 @@ instance AsNotArrow (TypeError n a) Type n where
   _NotArrow = _TeNotArrow . _NotArrow
 
 data Term nTy nTm a =
-    TmBool (BoolTerm (Term nTy) nTm a)
-  | TmNat (NatTerm (Term nTy) nTm a)
-  | TmNatBool (NatBoolTerm (Term nTy) nTm a)
-  | VarSTLC (STLCVar (Term nTy) nTm a)
-  | TmSTLC (STLCTerm Type nTy (Term nTy) nTm a)
-  | TmNoted (NoteTerm (Term nTy) nTm a)
+    TmBool (BoolTerm Term nTy nTm a)
+  | TmNat (NatTerm Term nTy nTm a)
+  | TmNatBool (NatBoolTerm Term nTy nTm a)
+  | VarSTLC (STLCVar Term nTy nTm a)
+  | TmSTLC (STLCTerm Type Term nTy nTm a)
+  | TmNoted (NoteTerm Term nTy nTm a)
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
 
 instance (Eq nTy, Eq nTm) => Eq1 (Term nTy nTm) where
@@ -146,33 +149,36 @@ instance Monad (Term nTy nTm) where
   return = review _TmVar
 
   VarSTLC (TmVar x) >>= f = f x
-  TmBool tm >>= f = TmBool (tm >>>>= f)
-  TmNat tm >>= f = TmNat (tm >>>>= f)
-  TmNatBool tm >>= f = TmNatBool (tm >>>>= f)
-  TmSTLC tm >>= f = TmSTLC (tm >>>>= f)
-  TmNoted tm >>= f = TmNoted (tm >>>>= f)
+  TmBool tm >>= f = TmBool (tm >>>>>= f)
+  TmNat tm >>= f = TmNat (tm >>>>>= f)
+  TmNatBool tm >>= f = TmNatBool (tm >>>>>= f)
+  TmSTLC tm >>= f = TmSTLC (tm >>>>>= f)
+  TmNoted tm >>= f = TmNoted (tm >>>>>= f)
+
+instance Bifunctor2 Term where
+  bifunctor2 _ = Dict
 
 makeClassyPrisms ''Term
 
-instance AsBoolTerm (Term nTy) (Term nTy) where
+instance AsBoolTerm Term Term where
   _BoolTerm = _TmBool
 
-instance AsNatTerm (Term nTy) (Term nTy) where
+instance AsNatTerm Term Term where
   _NatTerm = _TmNat
 
-instance AsNatBoolTerm (Term nTy) (Term nTy) where
+instance AsNatBoolTerm Term Term where
   _NatBoolTerm = _TmNatBool
 
-instance AsSTLCVar (Term nTy) (Term nTy) where
+instance AsSTLCVar Term Term where
   _STLCVar = _VarSTLC
 
-instance AsSTLCTerm (Term nTy) Type nTy (Term nTy) where
+instance AsSTLCTerm Term Type Term where
   _STLCTerm = _TmSTLC
 
-instance AsNoteTerm (Term nTy) (Term nTy) where
+instance AsNoteTerm Term Term where
   _NoteTerm = _TmNoted
 
-instance StripNoteTerm (Term nTy) (Term nTy) where
+instance StripNoteTerm Term Term where
   mapMaybeNoteTerm f (TmBool i) = mapMaybeNoteTerm f i
   mapMaybeNoteTerm f (TmNat i) = mapMaybeNoteTerm f i
   mapMaybeNoteTerm f (TmNatBool i) = mapMaybeNoteTerm f i
@@ -204,7 +210,7 @@ instance Bitraversable (Term nTy) where
   bitraverse l r (TmSTLC i) = TmSTLC <$> bitraverse l r i
   bitraverse l r (TmNoted i) = TmNoted <$> bitraverse l r i
 
-errorRules :: ComponentInput r (TypeError n String) Type n (Term n) n String
+errorRules :: ComponentInput r (TypeError n String) Type n Term n String
 errorRules =
   unknownTypeInput <>
   unexpectedInput <>
@@ -214,7 +220,7 @@ errorRules =
 errorRulesSrcLoc :: ( Show n
                     , Renderable n
                     )
-                 => ComponentInput r (TypeError n String) Type n (Term n) n String
+                 => ComponentInput r (TypeError n String) Type n Term n String
 errorRulesSrcLoc =
   unknownTypeInput <>
   unexpectedSrcLocInput <>
@@ -225,7 +231,7 @@ languageRules :: ( Eq n
                  , Show n
                  , TranslateNote n n
                  )
-              => ComponentInput (Context Type n String) (TypeError n String) Type n (Term n) n String
+              => ComponentInput (Context Type n String) (TypeError n String) Type n Term n String
 languageRules =
   boolRules <>
   natRules <>

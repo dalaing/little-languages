@@ -21,6 +21,7 @@ library
                        , trifecta >=1.5 && <1.6
                        , bifunctors >=5.2 && <5.3
                        , prelude-extras >= 0.4 && < 0.5
+                       , constraints >= 0.8 && < 0.9
                        , common-lang
                        , b-lang
                        , n-lang
@@ -36,6 +37,7 @@ test-suite test
   main-is:             Test.hs
   build-depends:         base               >= 4.8  && < 4.9
                        , tasty              >= 0.11 && < 0.12
+                       , trifecta >=1.5 && <1.6
                        , common-lang
                        , stlc-lang
                        , test-lang

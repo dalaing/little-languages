@@ -23,14 +23,14 @@ import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 -- |
 parseTmInt :: WithIntTerm tm
            => ParserHelperOutput
-           -> Parser (tm n a)           -- ^
+           -> Parser (tm nTy nTm a)           -- ^
 parseTmInt _ =
   (review _TmIntLit . fromInteger) <$> integer
 
 -- |
 parseTmAdd :: WithIntTerm tm
            => ParserHelperOutput
-           -> Parser (tm n a -> tm n a -> tm n a) -- ^
+           -> Parser (tm nTy nTm a -> tm nTy nTm a -> tm nTy nTm a) -- ^
 parseTmAdd h =
   let
     ro = view reservedOperator h
@@ -42,7 +42,7 @@ parseTmAdd h =
 -- |
 parseTmSub :: WithIntTerm tm
            => ParserHelperOutput
-           -> Parser (tm n a -> tm n a -> tm n a) -- ^
+           -> Parser (tm nTy nTm a -> tm nTy nTm a -> tm nTy nTm a) -- ^
 parseTmSub h =
   let
     ro = view reservedOperator h
@@ -54,7 +54,7 @@ parseTmSub h =
 -- |
 parseTmMul :: WithIntTerm tm
            => ParserHelperOutput
-           -> Parser (tm n a -> tm n a -> tm n a) -- ^
+           -> Parser (tm nTy nTm a -> tm nTy nTm a -> tm nTy nTm a) -- ^
 parseTmMul h =
   let
     ro = view reservedOperator h
@@ -66,7 +66,7 @@ parseTmMul h =
 -- |
 parseTmExp :: WithIntTerm tm
            => ParserHelperOutput
-           -> Parser (tm n a -> tm n a -> tm n a) -- ^
+           -> Parser (tm nTy nTm a -> tm nTy nTm a -> tm nTy nTm a) -- ^
 parseTmExp h =
   let
     ro = view reservedOperator h
@@ -76,7 +76,7 @@ parseTmExp h =
       <?> "^"
 
 parseTermInput :: WithIntTerm tm
-               => ParseTermInput ty nTy tm nTm a
+               => ParseTermInput ty tm
 parseTermInput =
   ParseTermInput
     [ ParseTermBase mempty parseTmInt

@@ -17,8 +17,8 @@ import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 -- |
 eAddIntInt :: WithIntTerm tm
-           => tm n a             -- ^
-           -> Maybe (tm n a)     -- ^
+           => tm nTy nTm a             -- ^
+           -> Maybe (tm nTy nTm a)     -- ^
 eAddIntInt tm = do
   (tm1, tm2) <- preview _TmAdd tm
   i1 <- preview _TmIntLit tm1
@@ -27,9 +27,9 @@ eAddIntInt tm = do
 
 -- |
 eAdd1 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a             -- ^
-      -> Maybe (tm n a)     -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a             -- ^
+      -> Maybe (tm nTy nTm a)     -- ^
 eAdd1 step tm = do
   (tm1, tm2) <- preview _TmAdd tm
   tm1' <- step tm1
@@ -37,10 +37,10 @@ eAdd1 step tm = do
 
 -- |
 eAdd2 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a)) -- ^
-      -> (tm n a -> Maybe (tm n a)) -- ^
-      -> tm n a                     -- ^
-      -> Maybe (tm n a)             -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> tm nTy nTm a                     -- ^
+      -> Maybe (tm nTy nTm a)             -- ^
 eAdd2 value step tm = do
   (tm1, tm2) <- preview _TmAdd tm
   _ <- value tm1
@@ -49,8 +49,8 @@ eAdd2 value step tm = do
 
 -- |
 eSubIntInt :: WithIntTerm tm
-           => tm n a             -- ^
-           -> Maybe (tm n a)     -- ^
+           => tm nTy nTm a             -- ^
+           -> Maybe (tm nTy nTm a)     -- ^
 eSubIntInt tm = do
   (tm1, tm2) <- preview _TmSub tm
   i1 <- preview _TmIntLit tm1
@@ -59,9 +59,9 @@ eSubIntInt tm = do
 
 -- |
 eSub1 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a             -- ^
-      -> Maybe (tm n a)     -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a             -- ^
+      -> Maybe (tm nTy nTm a)     -- ^
 eSub1 step tm = do
   (tm1, tm2) <- preview _TmSub tm
   tm1' <- step tm1
@@ -69,10 +69,10 @@ eSub1 step tm = do
 
 -- |
 eSub2 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a)) -- ^
-      -> (tm n a -> Maybe (tm n a)) -- ^
-      -> tm n a                     -- ^
-      -> Maybe (tm n a)             -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> tm nTy nTm a                     -- ^
+      -> Maybe (tm nTy nTm a)             -- ^
 eSub2 value step tm = do
   (tm1, tm2) <- preview _TmSub tm
   _ <- value tm1
@@ -81,8 +81,8 @@ eSub2 value step tm = do
 
 -- |
 eMulIntInt :: WithIntTerm tm
-           => tm n a             -- ^
-           -> Maybe (tm n a)     -- ^
+           => tm nTy nTm a             -- ^
+           -> Maybe (tm nTy nTm a)     -- ^
 eMulIntInt tm = do
   (tm1, tm2) <- preview _TmMul tm
   i1 <- preview _TmIntLit tm1
@@ -91,9 +91,9 @@ eMulIntInt tm = do
 
 -- |
 eMul1 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a             -- ^
-      -> Maybe (tm n a)     -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a             -- ^
+      -> Maybe (tm nTy nTm a)     -- ^
 eMul1 step tm = do
   (tm1, tm2) <- preview _TmMul tm
   tm1' <- step tm1
@@ -101,10 +101,10 @@ eMul1 step tm = do
 
 -- |
 eMul2 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a)) -- ^
-      -> (tm n a -> Maybe (tm n a)) -- ^
-      -> tm n a                     -- ^
-      -> Maybe (tm n a)             -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> tm nTy nTm a                     -- ^
+      -> Maybe (tm nTy nTm a)             -- ^
 eMul2 value step tm = do
   (tm1, tm2) <- preview _TmMul tm
   _ <- value tm1
@@ -113,8 +113,8 @@ eMul2 value step tm = do
 
 -- |
 eExpIntInt :: WithIntTerm tm
-           => tm n a             -- ^
-           -> Maybe (tm n a)     -- ^
+           => tm nTy nTm a             -- ^
+           -> Maybe (tm nTy nTm a)     -- ^
 eExpIntInt tm = do
   (tm1, tm2) <- preview _TmExp tm
   i1 <- preview _TmIntLit tm1
@@ -126,9 +126,9 @@ eExpIntInt tm = do
 
 -- |
 eExp1 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a))
-      -> tm n a             -- ^
-      -> Maybe (tm n a)     -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a))
+      -> tm nTy nTm a             -- ^
+      -> Maybe (tm nTy nTm a)     -- ^
 eExp1 step tm = do
   (tm1, tm2) <- preview _TmExp tm
   tm1' <- step tm1
@@ -136,10 +136,10 @@ eExp1 step tm = do
 
 -- |
 eExp2 :: WithIntTerm tm
-      => (tm n a -> Maybe (tm n a)) -- ^
-      -> (tm n a -> Maybe (tm n a)) -- ^
-      -> tm n a                     -- ^
-      -> Maybe (tm n a)             -- ^
+      => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+      -> tm nTy nTm a                     -- ^
+      -> Maybe (tm nTy nTm a)             -- ^
 eExp2 value step tm = do
   (tm1, tm2) <- preview _TmExp tm
   _ <- value tm1
@@ -148,7 +148,7 @@ eExp2 value step tm = do
 
 -- |
 smallStepInput :: WithIntTerm tm
-               => SmallStepInput tm n a
+               => SmallStepInput tm nTy nTm a
 smallStepInput =
   SmallStepInput
     [ SmallStepBase eAddIntInt

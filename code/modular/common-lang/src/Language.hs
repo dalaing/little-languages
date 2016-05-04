@@ -20,6 +20,8 @@ import           Component.Type.Error.UnknownType.Class (AsUnknownType)
 import           Component                           (ComponentInput (..),
                                                       ComponentOutput (..),
                                                       mkComponent)
+import Component.Term.Note (WithNoteTerm)
+import Component.Type.Note (WithNoteType)
 import Component.Term.Note.Strip (StripNoteTerm)
 import Component.Type.Note.Strip (StripNoteType)
 
@@ -35,8 +37,10 @@ mkLanguage :: ( AsUnknownType e
               , Show e
               , Eq (ty nTy)
               , Show (ty nTy)
-              , Eq (tm nTm a)
-              , Show (tm nTm a)
+              , Eq (tm nTy nTm a)
+              , Show (tm nTy nTm a)
+              , WithNoteTerm tm
+              , WithNoteType ty
               , StripNoteTerm tm tm
               , StripNoteType ty ty
               )
@@ -55,8 +59,10 @@ mkLanguageDefaultParser :: ( AsUnknownType e
                            , Show e
                            , Eq (ty nTy)
                            , Show (ty nTy)
-                           , Eq (tm nTm a)
-                           , Show (tm nTm a)
+                           , Eq (tm nTy nTm a)
+                           , Show (tm nTy nTm a)
+                           , WithNoteTerm tm
+                           , WithNoteType ty
                            , StripNoteTerm tm tm
                            , StripNoteType ty ty
                            )

@@ -21,7 +21,7 @@ import Text.Trifecta.Rendering (Span)
 import           Common.Parse                 (parseFromString)
 import           Component                    (ComponentOutput)
 import           Component.Term.Infer         (HasInferOutput (..), runInfer)
-import           Component.Term.Parse         (HasParseTermOutput (..), withSpan)
+import           Component.Term.Parse         (HasParseTermOutput (..))
 import           Component.Term.Pretty        (HasPrettyTermOutput (..))
 import           Component.Term.Eval.SmallStep (HasSmallStepOutput (..))
 import           Component.Type.Pretty        (HasPrettyTypeOutput (..))
@@ -31,7 +31,7 @@ import Component.Term.Note (WithNoteTerm)
 mkParseAndEval :: ( WithNoteTerm tm
                   , Monoid r
                   )
-               => ComponentOutput r e ty Span tm Span a
+               => ComponentOutput r e ty Span tm Span String
                -> String
                -> Doc
 mkParseAndEval c s =
@@ -43,7 +43,7 @@ mkParseAndEval c s =
     prettyTypeError' = view prettyTypeError c
     smallStepEval' = view smallStepEval c
   in
-    case parseFromString (parseTerm' withSpan) s of
+    case parseFromString parseTerm' s of
       Left d -> d
       Right tm -> case runInfer mempty . infer' $ tm of
         Left e ->

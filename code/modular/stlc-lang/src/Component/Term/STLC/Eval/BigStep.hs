@@ -11,31 +11,31 @@ module Component.Term.STLC.Eval.BigStep (
   ) where
 
 import Control.Lens (preview)
-import Bound (instantiate1)
+import Data.Constraint.Forall (ForallT)
 
 import Component.Term.Eval.BigStep (BigStepRule(..), BigStepInput(..))
 
-import Component.Term.STLC (AsSTLCTerm(..), WithSTLCTerm)
+import Component.Term.STLC (AsSTLCTerm(..), WithSTLCTerm, app_)
 
 -- |
-eLamApp :: ( WithSTLCTerm tm ty nTy
-           , Monad (tm nTm)
+eLamApp :: ( WithSTLCTerm tm ty
+           , ForallT Monad tm
            )
-        => (tm nTm a -> Maybe (tm nTm a))
-        -> tm nTm a
-        -> Maybe (tm nTm a)
+        => (tm nTy nTm String -> Maybe (tm nTy nTm String))
+        -> tm nTy nTm String
+        -> Maybe (tm nTy nTm String)
 eLamApp step tm = do
   (tm1, tm2) <- preview _TmApp tm
   tm1' <- step tm1
   tm2' <- step tm2
   (_, _, s) <- preview _TmLam tm1'
-  return $ instantiate1 tm2' s
+  return $ app_ tm2' s
 
 -- |
-bigStepInput :: ( WithSTLCTerm tm ty nTy
-                , Monad (tm nTm)
+bigStepInput :: ( WithSTLCTerm tm ty
+                , ForallT Monad tm
                 )
-             => BigStepInput tm nTm a
+             => BigStepInput tm nTy nTm String
 bigStepInput =
   BigStepInput
     [BigStepRecurse eLamApp]

@@ -19,14 +19,14 @@ import           Component.Type.Int (AsIntType (..), WithIntType)
 
 -- |
 genTmInt :: WithIntTerm tm
-         => Gen (tm n a)
+         => Gen (tm nTy nTm a)
 genTmInt =
    review _TmIntLit <$> arbitrary
 
 -- |
 shrinkTmInt :: WithIntTerm tm
-            => tm n a        -- ^
-            -> Maybe [tm n a] -- ^
+            => tm nTy nTm a        -- ^
+            -> Maybe [tm nTy nTm a] -- ^
 shrinkTmInt =
     fmap shrinkTmInt' .
     preview _TmIntLit
@@ -37,17 +37,17 @@ shrinkTmInt =
 
 -- |
 genTmAdd :: WithIntTerm tm
-          => Gen (tm n a)
-          -> Gen (tm n a)
-          -> Gen (tm n a)
+          => Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
 genTmAdd g1 g2 =
   curry (review _TmAdd) <$> g1 <*> g2
 
 -- |
 shrinkTmAdd :: WithIntTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a        -- ^
-             -> Maybe [tm n a] -- ^
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a        -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmAdd s =
     fmap shrinkTmAdd' .
     preview _TmAdd
@@ -60,17 +60,17 @@ shrinkTmAdd s =
 
 -- |
 genTmSub :: WithIntTerm tm
-          => Gen (tm n a)
-          -> Gen (tm n a)
-          -> Gen (tm n a)
+          => Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
 genTmSub g1 g2 =
   curry (review _TmSub) <$> g1 <*> g2
 
 -- |
 shrinkTmSub :: WithIntTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a        -- ^
-             -> Maybe [tm n a] -- ^
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a        -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmSub s =
     fmap shrinkTmSub' .
     preview _TmSub
@@ -83,17 +83,17 @@ shrinkTmSub s =
 
 -- |
 genTmMul :: WithIntTerm tm
-          => Gen (tm n a)
-          -> Gen (tm n a)
-          -> Gen (tm n a)
+          => Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
 genTmMul g1 g2 =
   curry (review _TmMul) <$> g1 <*> g2
 
 -- |
 shrinkTmMul :: WithIntTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a        -- ^
-             -> Maybe [tm n a] -- ^
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a        -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmMul s =
     fmap shrinkTmMul' .
     preview _TmMul
@@ -106,17 +106,17 @@ shrinkTmMul s =
 
 -- |
 genTmExp :: WithIntTerm tm
-          => Gen (tm n a)
-          -> Gen (tm n a)
-          -> Gen (tm n a)
+          => Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
+          -> Gen (tm nTy nTm a)
 genTmExp g1 g2 =
   curry (review _TmExp) <$> g1 <*> g2
 
 -- |
 shrinkTmExp :: WithIntTerm tm
-             => (tm n a -> [tm n a])
-             -> tm n a        -- ^
-             -> Maybe [tm n a] -- ^
+             => (tm nTy nTm a -> [tm nTy nTm a])
+             -> tm nTy nTm a        -- ^
+             -> Maybe [tm nTy nTm a] -- ^
 shrinkTmExp s =
     fmap shrinkTmExp' .
     preview _TmExp
@@ -130,9 +130,9 @@ shrinkTmExp s =
 genContainingTmInt :: ( WithIntType ty
                       , WithIntTerm tm
                       )
-                   => tm nTm a
+                   => tm nTy nTm a
                    -> ty nTy
-                   -> Maybe (Gen (tm nTm a))
+                   -> Maybe (Gen (tm nTy nTm a))
 genContainingTmInt tm ty = do
   i <- preview _TmIntLit tm
   _ <- preview _TyInt ty
@@ -141,12 +141,12 @@ genContainingTmInt tm ty = do
 genContainingTmAdd1 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmAdd1 genWellTyped genContaining tm ty s =
     fmap genContainingTmAdd1' .
     preview _TyInt $
@@ -161,12 +161,12 @@ genContainingTmAdd1 genWellTyped genContaining tm ty s =
 genContainingTmAdd2 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmAdd2 genWellTyped genContaining tm ty s =
     fmap genContainingTmAdd2' .
     preview _TyInt $
@@ -181,12 +181,12 @@ genContainingTmAdd2 genWellTyped genContaining tm ty s =
 genContainingTmSub1 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmSub1 genWellTyped genContaining tm ty s =
     fmap genContainingTmSub1' .
     preview _TyInt $
@@ -201,12 +201,12 @@ genContainingTmSub1 genWellTyped genContaining tm ty s =
 genContainingTmSub2 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmSub2 genWellTyped genContaining tm ty s =
     fmap genContainingTmSub2' .
     preview _TyInt $
@@ -221,12 +221,12 @@ genContainingTmSub2 genWellTyped genContaining tm ty s =
 genContainingTmMul1 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmMul1 genWellTyped genContaining tm ty s =
     fmap genContainingTmMul1' .
     preview _TyInt $
@@ -241,12 +241,12 @@ genContainingTmMul1 genWellTyped genContaining tm ty s =
 genContainingTmMul2 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmMul2 genWellTyped genContaining tm ty s =
     fmap genContainingTmMul2' .
     preview _TyInt $
@@ -261,12 +261,12 @@ genContainingTmMul2 genWellTyped genContaining tm ty s =
 genContainingTmExp1 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmExp1 genWellTyped genContaining tm ty s =
     fmap genContainingTmExp1' .
     preview _TyInt $
@@ -281,12 +281,12 @@ genContainingTmExp1 genWellTyped genContaining tm ty s =
 genContainingTmExp2 :: ( WithIntType ty
                        , WithIntTerm tm
                        )
-                    => (ty nTy -> Int -> Gen (tm nTm a))
-                    -> (tm nTm a -> ty nTy -> Int -> Gen (tm nTm a))
-                    -> tm nTm a
+                    => (ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> (tm nTy nTm a -> ty nTy -> Int -> Gen (tm nTy nTm a))
+                    -> tm nTy nTm a
                     -> ty nTy
                     -> Int
-                    -> Maybe (Gen (tm nTm a))
+                    -> Maybe (Gen (tm nTy nTm a))
 genContainingTmExp2 genWellTyped genContaining tm ty s =
     fmap genContainingTmExp2' .
     preview _TyInt $
@@ -302,7 +302,7 @@ genWellTypedTmInt :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => ty nTy
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmInt ty = do
   _ <- preview _TyInt ty
   return (review _TmIntLit <$> arbitrary)
@@ -310,10 +310,10 @@ genWellTypedTmInt ty = do
 genWellTypedTmAdd :: ( WithIntType ty
                      , WithIntTerm tm
                      )
-                  => (ty nTy -> Int -> Gen (tm nTm a))
+                  => (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmAdd genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -325,10 +325,10 @@ genWellTypedTmAdd genWellTyped ty s = do
 genWellTypedTmSub :: ( WithIntType ty
                      , WithIntTerm tm
                      )
-                  => (ty nTy -> Int -> Gen (tm nTm a))
+                  => (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmSub genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -340,10 +340,10 @@ genWellTypedTmSub genWellTyped ty s = do
 genWellTypedTmMul :: ( WithIntType ty
                      , WithIntTerm tm
                      )
-                  => (ty nTy -> Int -> Gen (tm nTm a))
+                  => (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmMul genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -355,10 +355,10 @@ genWellTypedTmMul genWellTyped ty s = do
 genWellTypedTmExp :: ( WithIntType ty
                      , WithIntTerm tm
                      )
-                  => (ty nTy -> Int -> Gen (tm nTm a))
+                  => (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genWellTypedTmExp genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -371,10 +371,10 @@ genIllTypedTmAdd1 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmAdd1 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -388,10 +388,10 @@ genIllTypedTmAdd2 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmAdd2 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -405,10 +405,10 @@ genIllTypedTmSub1 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmSub1 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -422,10 +422,10 @@ genIllTypedTmSub2 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmSub2 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -439,10 +439,10 @@ genIllTypedTmMul1 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmMul1 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -456,10 +456,10 @@ genIllTypedTmMul2 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmMul2 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -473,10 +473,10 @@ genIllTypedTmExp1 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmExp1 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2
@@ -490,10 +490,10 @@ genIllTypedTmExp2 :: ( WithIntType ty
                      , WithIntTerm tm
                      )
                   => (ty nTy -> Gen (ty nTy))
-                  -> (ty nTy -> Int -> Gen (tm nTm a))
+                  -> (ty nTy -> Int -> Gen (tm nTy nTm a))
                   -> ty nTy
                   -> Int
-                  -> Maybe (Gen (tm nTm a))
+                  -> Maybe (Gen (tm nTy nTm a))
 genIllTypedTmExp2 genNotType genWellTyped ty s = do
   _ <- preview _TyInt ty
   let s' = s `div` 2

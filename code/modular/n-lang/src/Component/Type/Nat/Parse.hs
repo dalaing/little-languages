@@ -29,7 +29,7 @@ parseTyNat h =
     review _TyNat () <$ rc "Nat" <?> "Nat"
 
 parseTypeInput :: WithNatType ty
-               => ParseTypeInput ty n
+               => ParseTypeInput ty
 parseTypeInput =
   ParseTypeInput
     [ParseTypeBase (reserveConstructors ["Nat"]) parseTyNat]

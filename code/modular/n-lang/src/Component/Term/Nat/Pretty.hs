@@ -20,7 +20,7 @@ import           Component.Term.Nat         (AsNatTerm (..), WithNatTerm)
 
 -- |
 prettyTmZero :: WithNatTerm tm
-             => tm n a       -- ^
+             => tm nTy nTm a       -- ^
              -> Maybe Doc -- ^
 prettyTmZero =
   fmap (const $ reservedConstructor "O") .
@@ -28,8 +28,8 @@ prettyTmZero =
 
 -- |
 prettyTmSucc :: WithNatTerm tm
-             => (tm n a -> Doc) -- ^
-             -> tm n a         -- ^
+             => (tm nTy nTm a -> Doc) -- ^
+             -> tm nTy nTm a         -- ^
              -> Maybe Doc   -- ^
 prettyTmSucc prettyTerm =
     fmap prettyTmSucc' .
@@ -40,8 +40,8 @@ prettyTmSucc prettyTerm =
 
 -- |
 prettyTmPred :: WithNatTerm tm
-             => (tm n a -> Doc) -- ^
-             -> tm n a         -- ^
+             => (tm nTy nTm a -> Doc) -- ^
+             -> tm nTy nTm a         -- ^
              -> Maybe Doc   -- ^
 prettyTmPred prettyTerm =
     fmap prettyTmPred' .

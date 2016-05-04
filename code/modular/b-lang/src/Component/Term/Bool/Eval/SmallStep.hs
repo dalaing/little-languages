@@ -17,8 +17,8 @@ import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 
 -- |
 eIfTrue :: WithBoolTerm tm
-        => tm n a             -- ^
-        -> Maybe (tm n a)        -- ^
+        => tm nTy nTm a             -- ^
+        -> Maybe (tm nTy nTm a)        -- ^
 eIfTrue tm = do
   (tm1, tm2, _) <- preview _TmIf tm
   _ <- preview _TmTrue tm1
@@ -26,8 +26,8 @@ eIfTrue tm = do
 
 -- |
 eIfFalse :: WithBoolTerm tm
-         => tm n a             -- ^
-         -> Maybe (tm n a)        -- ^
+         => tm nTy nTm a             -- ^
+         -> Maybe (tm nTy nTm a)        -- ^
 eIfFalse tm = do
   (tm1, _, tm3) <- preview _TmIf tm
   _ <- preview _TmFalse tm1
@@ -35,9 +35,9 @@ eIfFalse tm = do
 
 -- |
 eIf :: WithBoolTerm tm
-    => (tm n a -> Maybe (tm n a)) -- ^
-    -> tm n a              -- ^
-    -> Maybe (tm n a)         -- ^
+    => (tm nTy nTm a -> Maybe (tm nTy nTm a)) -- ^
+    -> tm nTy nTm a              -- ^
+    -> Maybe (tm nTy nTm a)         -- ^
 eIf step tm = do
   (tm1, tm2, tm3) <- preview _TmIf tm
   tm1' <- step tm1
@@ -45,7 +45,7 @@ eIf step tm = do
 
 -- |
 smallStepInput :: WithBoolTerm tm
-               => SmallStepInput tm n a
+               => SmallStepInput tm nTy nTm a
 smallStepInput =
   SmallStepInput
     [ SmallStepBase eIfTrue
