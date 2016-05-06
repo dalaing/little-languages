@@ -5,18 +5,22 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Tests.Type.Text (
     mkTextTests
   ) where
 
-import           Control.Lens            (view)
 import           Data.List               (group, intercalate, sort)
+
+import           Control.Lens            (view)
 import           Test.QuickCheck         (Property, forAllShrink, property,
                                           (===))
 import           Test.Tasty              (TestTree, testGroup)
 import           Test.Tasty.HUnit        (Assertion, assertBool, testCase)
 import           Test.Tasty.QuickCheck   (testProperty)
 import           Text.Trifecta.Rendering (Span)
+import Data.Constraint
 
 import           Common.Parse            (ReservedWords (..), parseFromString)
 import           Common.Pretty           (prettyToString)
@@ -24,11 +28,12 @@ import           Component               (ComponentOutput (..))
 import           Component.Type.Gen      (HasGenTypeOutput (..))
 import           Component.Type.Parse    (HasParseTypeOutput (..))
 import           Component.Type.Pretty   (HasPrettyTypeOutput (..))
+import Extras (Eq1(..), Show1(..))
 
-mkTextTests :: ( Eq (ty Span)
-               , Show (ty Span)
+mkTextTests :: ( Eq1 ty
+               , Show1 ty
                )
-            => ComponentOutput r e ty Span tm nTm a
+            => ComponentOutput r e ty tm
             -> TestTree
 mkTextTests c =
   testGroup "text"
@@ -43,7 +48,7 @@ isRight (Right _) =
 isRight _ =
   False
 
-assertUniqueReserved :: ComponentOutput r e ty nTy tm nTm a
+assertUniqueReserved :: ComponentOutput r e ty tm
                      -> Assertion
 assertUniqueReserved c =
   let
@@ -61,10 +66,11 @@ assertUniqueReserved c =
   in
     assertBool msg unique
 
-propPrettyParse :: ( Eq (ty Span)
-                   , Show (ty Span)
+propPrettyParse :: forall r e ty tm. (
+                     Eq1 ty
+                   , Show1 ty
                    )
-                => ComponentOutput r e ty Span tm nTm a
+                => ComponentOutput r e ty tm
                 -> Property
 propPrettyParse c =
   let
@@ -76,8 +82,12 @@ propPrettyParse c =
       parseFromString parseType' .
       prettyToString .
       prettyType'
-  in
-    forAllShrink genAnyType' shrAnyType' $ \ty ->
+    test ty =
       case roundTrip ty of
         Left _ -> property False
         Right ty' -> ty === ty'
+          \\ (spanEq1 :: Eq Span :- Eq (ty Span))
+          \\ (spanShow1 :: Show Span :- Show (ty Span))
+  in
+    forAllShrink genAnyType' shrAnyType' test
+      \\ (spanShow1 :: Show Span :- Show (ty Span))

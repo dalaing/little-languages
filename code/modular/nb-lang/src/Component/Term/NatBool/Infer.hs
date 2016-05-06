@@ -14,15 +14,17 @@ import Control.Monad.Except (MonadError)
 
 import Component.Type.Error.Unexpected (AsUnexpected(..), mkExpect)
 import Component.Term.Infer (InferRule(..), InferInput(..))
+import Extras (Eq1)
 
 import Component.Type.Nat (AsNatType(..), WithNatType)
 import Component.Type.Bool (AsBoolType(..), WithBoolType)
 import Component.Term.NatBool (AsNatBoolTerm(..), WithNatBoolTerm)
 
 -- |
-inferTmIsZero :: ( Eq (ty nTy)
-                 , AsUnexpected e ty nTy
-                 , MonadError e m
+inferTmIsZero :: ( Eq1 ty
+                 , Eq nTy
+                 , AsUnexpected e ty
+                 , MonadError (e nTy String) m
                  , WithNatBoolTerm tm
                  , WithNatType ty
                  , WithBoolType ty
@@ -42,13 +44,13 @@ inferTmIsZero stripNote infer =
       return $ review _TyBool ()
 
 -- |
-inferInput :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
+inferInput :: ( Eq1 ty
+              , AsUnexpected e ty
               , WithNatBoolTerm tm
               , WithNatType ty
               , WithBoolType ty
               )
-           => InferInput r e ty nTy tm nTm a
+           => InferInput r e ty tm
 inferInput =
   InferInput
     [InferRecurse inferTmIsZero]

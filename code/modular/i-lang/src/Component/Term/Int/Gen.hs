@@ -5,6 +5,7 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Component.Term.Int.Gen (
     genTermInput
   ) where
@@ -503,17 +504,46 @@ genIllTypedTmExp2 genNotType genWellTyped ty s = do
     tm2 <- genWellTyped nty s'
     return $ review _TmExp (tm1, tm2)
 
-genTermInput :: ( WithIntType ty
+genAnyTmAdd :: WithIntTerm tm => (Int -> Gen (tm nTy nTm a)) -> Int -> Gen (tm nTy nTm a)
+genAnyTmAdd g s =
+  let
+    s' = s `div` 2
+  in
+    genTmAdd (g s') (g s')
+
+genAnyTmSub :: WithIntTerm tm => (Int -> Gen (tm nTy nTm a)) -> Int -> Gen (tm nTy nTm a)
+genAnyTmSub g s =
+  let
+    s' = s `div` 2
+  in
+    genTmSub (g s') (g s')
+
+genAnyTmMul :: WithIntTerm tm => (Int -> Gen (tm nTy nTm a)) -> Int -> Gen (tm nTy nTm a)
+genAnyTmMul g s =
+  let
+    s' = s `div` 2
+  in
+    genTmMul (g s') (g s')
+
+genAnyTmExp :: WithIntTerm tm => (Int -> Gen (tm nTy nTm a)) -> Int -> Gen (tm nTy nTm a)
+genAnyTmExp g s =
+  let
+    s' = s `div` 2
+  in
+    genTmExp (g s') (g s')
+
+genTermInput :: forall ty tm. (
+                  WithIntType ty
                 , WithIntTerm tm
                 )
-             => GenTermInput ty nTy tm nTm a
+             => GenTermInput ty tm
 genTermInput =
    GenTermInput
     [ GenAnyTermBase genTmInt
-    , gatr genTmAdd
-    , gatr genTmSub
-    , gatr genTmMul
-    , gatr genTmExp
+    , GenAnyTermRecurse genAnyTmAdd
+    , GenAnyTermRecurse genAnyTmSub
+    , GenAnyTermRecurse genAnyTmMul
+    , GenAnyTermRecurse genAnyTmExp
     ]
     [ ShrAnyTermBase shrinkTmInt
     , ShrAnyTermRecurse shrinkTmAdd
@@ -546,9 +576,3 @@ genTermInput =
     , GenIllTypedTermRecurse genIllTypedTmExp1
     , GenIllTypedTermRecurse genIllTypedTmExp2
     ]
-  where
-    gatr g2 = GenAnyTermRecurse $ \g s ->
-      let
-        s' = s `div` 2
-      in
-        g2 (g s') (g s')

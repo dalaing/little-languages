@@ -5,17 +5,24 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 module Tests.Term.Infer (
     mkInferTests
   ) where
 
+import           Data.Maybe            (mapMaybe)
+import Data.Proxy (Proxy)
+
 import           Control.Lens          (view)
 import           Control.Lens.Prism    (isn't)
-import           Data.Maybe            (mapMaybe)
 import           Test.QuickCheck       (Property, forAllShrink, property,
                                         (.||.), (===))
 import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
+import Data.Constraint
+import Data.Constraint.Forall (ForallT, instT)
 
 import Component.Type.Error.UnknownType.Class (AsUnknownType(..))
 import           Component             (ComponentOutput)
@@ -24,26 +31,31 @@ import           Component.Term.Gen    (HasGenTermOutput (..), forAllWellTypedTe
 import           Component.Term.Infer  (HasInferOutput (..), runInfer)
 import           Component.Term.Eval.Value (HasValueOutput (..))
 import           Component.Term.Eval.SmallStep (HasSmallStepOutput (..))
+import Extras (Eq1(..), Eq2(..), Eq3(..), Show1(..), Show2(..), Show3(..), Monoid2(..))
 
-mkInferTests :: ( Eq e
-                , Show e
-                , Eq (tm nTy nTm String)
-                , Show (tm nTy nTm String)
-                , Eq (ty nTy)
-                , Show (ty nTy)
+mkInferTests :: ( Eq3 tm
+                , Eq1 ty
+                , Eq2 e
+                , Eq n
+                , Show3 tm
+                , Show1 ty
+                , Show2 e
+                , Show n
                 , AsUnknownType e
-                , Monoid r
+                , Monoid2 r
                 )
-             => ComponentOutput r e ty nTy tm nTm String
+             => ComponentOutput r e ty tm
+             -> Proxy n
+             -> Proxy n
              -> TestTree
-mkInferTests c =
+mkInferTests c _ p =
   testGroup "infer"
-    [ testProperty "patterns unique" $ propPatternUnique c
-    , testProperty "unknown never occurs" $ propUnknownNever c
-    , testProperty "well-typed infer" $ propWellTypedInfer c
-    , testProperty "ill-typed infer" $ propIllTypedInfer c
-    , testProperty "progress" $ propProgress c
-    , testProperty "preservation" $ propPreservation c
+    [ testProperty "patterns unique" $ propPatternUnique c p
+    , testProperty "unknown never occurs" $ propUnknownNever c p
+    , testProperty "well-typed infer" $ propWellTypedInfer c p
+    , testProperty "ill-typed infer" $ propIllTypedInfer c p
+    , testProperty "progress" $ propProgress c p
+    , testProperty "preservation" $ propPreservation c p
     ]
 
 isRight :: Either a b
@@ -60,62 +72,98 @@ isLeft (Left _) =
 isLeft _ =
   False
 
-propPatternUnique :: ( Show (tm nTy nTm String)
-                     , Monoid r
+propPatternUnique :: forall r e ty tm n. (
+                       Show3 tm
+                     , Show n
+                     , Eq3 tm
+                     , Eq n
+                     , Monoid2 r
                      )
-                  => ComponentOutput r e ty nTy tm nTm String
+                  => ComponentOutput r e ty tm
+                  -> Proxy n
                   -> Property
-propPatternUnique c =
+propPatternUnique c _ =
   let
     genAnyTerm' = view genAnyTerm c
     shrAnyTerm' = view shrAnyTerm c
     inferRules' = view inferRules c
+    ctx :: r n String
+    ctx = mempty \\ (spanMonoid2 :: Ord String :- Monoid (r n String))
+    test :: tm n n String -> Property
+    test tm =
+      let
+        matches =
+          length .
+          mapMaybe (\i -> fmap (runInfer ctx) . i $ tm) $
+          inferRules'
+      in
+        matches === 1
+          \\ (spanEq3 :: (Eq n, Eq n, Eq String) :- Eq (tm n n String))
   in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
-    let
-      matches =
-        length .
-        mapMaybe (\i -> fmap (runInfer mempty) . i $ tm) $
-        inferRules'
-    in
-      matches === 1
+    forAllShrink genAnyTerm' shrAnyTerm' test
+      \\ (spanShow3 :: (Show n, Show n, Show String) :- Show (tm n n String))
 
-propUnknownNever :: ( Show (tm nTy nTm a)
+propUnknownNever :: forall r e ty tm n. (
+                      Show3 tm
+                    , Show n
+                    , Eq3 tm
+                    , Eq n
                     , AsUnknownType e
-                    , Monoid r
+                    , Monoid2 r
                     )
-                 => ComponentOutput r e ty nTy tm nTm a
+                 => ComponentOutput r e ty tm
+                 -> Proxy n
                  -> Property
-propUnknownNever c =
+propUnknownNever c _ =
   let
     genAnyTerm' = view genAnyTerm c
     shrAnyTerm' = view shrAnyTerm c
-    infer' = runInfer mempty . view infer c
-  in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm -> property $
+    ctx :: r n String
+    ctx = mempty \\ (spanMonoid2 :: Ord String :- Monoid (r n String))
+    infer' :: tm n n String -> Either (e n String) (ty n)
+    infer' = runInfer ctx . view infer c
+      \\ (spanEq3 :: (Eq n, Eq n, Eq String) :- Eq (tm n n String))
+    test tm = property $
       case infer' tm of
         Left e -> isn't _UnknownType e
         Right _ -> True
+  in
+    forAllShrink genAnyTerm' shrAnyTerm' test
+      \\ (spanShow3 :: (Show n, Show n, Show String) :- Show (tm n n String))
 
-propWellTypedInfer :: ( Show (tm nTy nTm a)
-                      , Monoid r
+propWellTypedInfer :: forall r e ty tm n. (
+                        Show3 tm
+                      , Show n
+                      , Eq n
+                      , Monoid2 r
                       )
-                   => ComponentOutput r e ty nTy tm nTm a
+                   => ComponentOutput r e ty tm
+                   -> Proxy n
                    -> Property
-propWellTypedInfer c =
+propWellTypedInfer c p =
   let
     shrWellTypedTerm' = view shrWellTypedTerm c
-    infer' = runInfer mempty . view infer c
-  in
-    forAllWellTypedTerm c $ \tm ->
+    ctx :: r n String
+    ctx = mempty \\ (spanMonoid2 :: Ord String :- Monoid (r n String))
+    infer' = runInfer ctx . view infer c
+    forAllWellTypedTerm' = view forAllWellTypedTerm c p p
+    test :: tm n n String -> Bool
+    test tm =
       all (isRight . infer') $ tm : shrWellTypedTerm' tm
+  in
+    forAllWellTypedTerm' test
 
-propIllTypedInfer :: ( Show (tm nTy nTm a)
-                     , Monoid r
+propIllTypedInfer :: forall r e ty tm n. (
+                       Show3 tm
+                     , Show n
+                     , Eq3 tm
+                     , Eq n
+                     , Monoid2 r
                      )
-                  => ComponentOutput r e ty nTy tm nTm a
+                  => ComponentOutput r e ty tm
+                  -> Proxy n
                   -> Property
-propIllTypedInfer c =
+propIllTypedInfer c _ =
   let
     genIllTypedTerm' = view genIllTypedTerm c
     genContainingTerm' = view genContainingTerm c
@@ -125,44 +173,73 @@ propIllTypedInfer c =
       ty <- genAnyType'
       tm <- genIllTypedTerm' ty
       genContainingTerm' tm ty
-    infer' = runInfer mempty . view infer c
-  in
-    forAllShrink gen shrContainingTerm' $ \tm ->
+    ctx :: r n String
+    ctx = mempty \\ (spanMonoid2 :: Ord String :- Monoid (r n String))
+    infer' :: tm n n String -> Either (e n String) (ty n)
+    infer' = runInfer ctx . view infer c
+      \\ (spanEq3 :: (Eq n, Eq n, Eq String) :- Eq (tm n n String))
+    test tm =
       -- all (isLeft . infer') $ tm : shrIllTypedTerm' tm
       isLeft . infer' $ tm
+  in
+    forAllShrink gen shrContainingTerm' test
+      \\ (spanShow3 :: (Show n, Show n, Show String) :- Show (tm n n String))
 
-propProgress :: ( Show (tm nTy nTm String)
-                , Monoid r
+propProgress :: forall r e ty tm n. (
+                  Show3 tm
+                , Show n
+                , Eq n
+                , Monoid2 r
                 )
-             => ComponentOutput r e ty nTy tm nTm String
+             => ComponentOutput r e ty tm
+             -> Proxy n
              -> Property
-propProgress c =
+propProgress c p =
   let
-    infer' = runInfer mempty . view infer c
+    ctx :: r n String
+    ctx = mempty \\ (spanMonoid2 :: Ord String :- Monoid (r n String))
+    infer' = runInfer ctx . view infer c
     isValue' = view isValue c
     canStep' = view canStep c
-  in
-    forAllWellTypedTerm c $ \tm ->
+    forAllWellTypedTerm' = view forAllWellTypedTerm c p p
+    test :: tm n n String -> Property
+    test tm =
       case infer' tm of
         Left _ -> property True
         Right _ -> isValue' tm .||. canStep' tm
+  in
+    forAllWellTypedTerm' test
 
-propPreservation :: ( Eq e
-                    , Show e
-                    , Eq (tm nTy nTm String)
-                    , Show (tm nTy nTm String)
-                    , Eq (ty nTy)
-                    , Show (ty nTy)
-                    , Monoid r
+propPreservation :: forall r e ty tm n. (
+                      Eq3 tm
+                    , Eq1 ty
+                    , Eq2 e
+                    , Eq n
+                    , Show3 tm
+                    , Show1 ty
+                    , Show2 e
+                    , Show n
+                    , Monoid2 r
                     )
-                 => ComponentOutput r e ty nTy tm nTm String
+                 => ComponentOutput r e ty tm
+                 -> Proxy n
                  -> Property
-propPreservation c =
+propPreservation c p =
   let
     smallStep' = view smallStep c
-    infer' = runInfer mempty . view infer c
-  in
-    forAllWellTypedTerm c $ \tm ->
+    ctx :: r n String
+    ctx = mempty \\ (spanMonoid2 :: Ord String :- Monoid (r n String))
+    infer' = runInfer ctx . view infer c
+    forAllWellTypedTerm' = view forAllWellTypedTerm c p p
+    test :: (Eq (ty n), Eq (e n String), Show (ty n), Show (e n String)) => tm n n String -> Property
+    test tm =
       case smallStep' tm of
         Nothing -> property True
         Just tm' -> infer' tm === infer' tm'
+  in
+    forAllWellTypedTerm' $
+      test
+        \\ (spanEq1 :: Eq n :- Eq (ty n))
+        \\ (spanEq2 :: (Eq n, Eq String) :- Eq (e n String))
+        \\ (spanShow1 :: Show n :- Show (ty n))
+        \\ (spanShow2 :: (Show n, Show String) :- Show (e n String))

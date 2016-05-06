@@ -11,5 +11,5 @@ module Component.Type.Note.Gen (
 
 import Component.Type.Gen (GenTypeInput(..))
 
-genTypeInput :: GenTypeInput tm n
+genTypeInput :: GenTypeInput ty
 genTypeInput = mempty

@@ -192,7 +192,7 @@ genIllTypedTmPred genNotType genWellTyped ty s = do
 genTermInput :: ( WithNatTerm tm
                 , WithNatType ty
                 )
-             => GenTermInput ty nTy tm nTm a
+             => GenTermInput ty tm
 genTermInput =
   GenTermInput
     [ GenAnyTermBase genTmZero

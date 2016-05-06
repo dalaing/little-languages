@@ -27,13 +27,14 @@ import           Component.Type.Note                (WithNoteType)
 import           Component.Type.Note.Gen            (genTypeInput)
 import           Component.Type.Note.Parse          (parseTypeInput)
 import           Component.Type.Note.Pretty         (prettyTypeInput)
+import Extras (Eq1)
 
-noteRules :: ( Eq (ty nTy)
+noteRules :: ( Eq1 ty
              , WithNoteType ty
              , WithNoteTerm tm
-             , TranslateNote nTm nTy
+             -- , TranslateNote nTm nTy
              )
-          => ComponentInput r e ty nTy tm nTm a
+          => ComponentInput r e ty tm
 noteRules =
     ComponentInput tyI mempty tmI
   where

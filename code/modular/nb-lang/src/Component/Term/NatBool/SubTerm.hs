@@ -25,7 +25,7 @@ subTermTmIsZero subTerms tm =
   tm
 
 subTermInput :: WithNatBoolTerm tm
-             => SubTermInput tm nTy nTm a
+             => SubTermInput tm
 subTermInput =
   SubTermInput
     [SubTermRecurse subTermTmIsZero]

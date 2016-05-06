@@ -7,6 +7,9 @@ Portability : non-portable
 -}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Component.Type.Error.Unexpected (
     Unexpected(..)
   , AsUnexpected(..)
@@ -26,6 +29,7 @@ import           Text.PrettyPrint.ANSI.Leijen       (Doc, hang, text, (<+>))
 import qualified Text.PrettyPrint.ANSI.Leijen       as PP ((<$>))
 import           Text.Trifecta.Rendering            (Renderable (..))
 import           Text.Trifecta.Result               (Err (..), explain)
+import Data.Constraint ((\\), (:-))
 
 import           Common.Pretty                      (prettyToString)
 import           Component.Type.Error.Unexpected.Class (AsUnexpected (..))
@@ -35,29 +39,31 @@ import           Component.Type.Error.Pretty        (PrettyTypeErrorInput (..),
                                                      PrettyTypeErrorRule (..))
 import           Component.Type.Note                (AsNoteType (..),
                                                      WithNoteType)
+import Extras (Eq1(..))
 
-data Unexpected ty n =
+data Unexpected ty n a =
   Unexpected {
     actual   :: ty n
   , expected :: ty n
   }
   deriving (Eq, Ord, Show)
 
-instance AsUnexpected (Unexpected ty n) ty n where
+instance AsUnexpected (Unexpected ty) ty where
   _Unexpected = prism (uncurry Unexpected) $ \u ->
     case u of
       Unexpected ty1 ty2 -> Right (ty1, ty2)
 
-mkExpect :: ( Eq (ty n)
-            , AsUnexpected e ty n
-            , MonadError e m
+mkExpect :: forall e ty n m. (
+              Eq1 ty
+            , AsUnexpected e ty
+            , MonadError (e n String) m
             )
-         => (ty n -> ty n)
+         => (Eq n => (ty n -> ty n)
          -> ty n
          -> ty n
-         -> m ()
+         -> m ())
 mkExpect stripNote ac ex =
-  unless (stripNote ac == stripNote ex) $
+  unless ((stripNote ac == stripNote ex) \\ (spanEq1 :: Eq n :- Eq (ty n))) $
     throwing _Unexpected (ac, ex)
 
 prettyUnexpected' :: (ty n -> Doc)
@@ -83,20 +89,20 @@ prettyUnexpectedSrcLoc' prettyType (n, ac) ex =
   where
     msg = text "Unexpected type:"
 
-prettyUnexpected :: AsUnexpected e ty n
+prettyUnexpected :: AsUnexpected e ty
                  => (ty n -> Doc)
-                 -> e
+                 -> e n String
                  -> Maybe Doc
 prettyUnexpected prettyType =
   fmap (prettyUnexpected' prettyType) .
   preview _Unexpected
 
-prettyUnexpectedSrcLoc :: ( AsUnexpected e ty n
+prettyUnexpectedSrcLoc :: ( AsUnexpected e ty
                           , WithNoteType ty
                           , Renderable n
                           )
                        => (ty n -> Doc)
-                       -> e
+                       -> e n String
                        -> Maybe Doc
 prettyUnexpectedSrcLoc prettyType =
     let
@@ -107,8 +113,8 @@ prettyUnexpectedSrcLoc prettyType =
       fmap prettyUnexpected'' .
       preview _Unexpected
 
-unexpectedInput :: AsUnexpected e ty nTy
-                => ComponentInput r e ty nTy tm nTm a
+unexpectedInput :: AsUnexpected e ty
+                => ComponentInput r e ty tm
 unexpectedInput =
   ComponentInput
     mempty
@@ -117,15 +123,15 @@ unexpectedInput =
          [PrettyTypeErrorWithType prettyUnexpected]))
     mempty
 
-unexpectedSrcLocInput :: ( AsUnexpected e ty nTy
+unexpectedSrcLocInput :: forall r e ty tm. (
+                           AsUnexpected e ty
                          , WithNoteType ty
-                         , Renderable nTy
                          )
-                      => ComponentInput r e ty nTy tm nTm a
+                      => ComponentInput r e ty tm
 unexpectedSrcLocInput =
   ComponentInput
     mempty
     (TypeErrorInput
        (PrettyTypeErrorInput
-         [PrettyTypeErrorWithType prettyUnexpectedSrcLoc]))
+         [PrettyTypeErrorWithTypeSrcLoc prettyUnexpectedSrcLoc]))
     mempty

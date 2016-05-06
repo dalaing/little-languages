@@ -13,5 +13,5 @@ module Component.Type.Error.Unexpected.Class (
 
 import           Control.Lens.Prism (Prism')
 
-class AsUnexpected e ty n | e -> ty, e -> n where
-  _Unexpected :: Prism' e (ty n, ty n)
+class AsUnexpected e ty | e -> ty where
+  _Unexpected :: Prism' (e n a) (ty n, ty n)

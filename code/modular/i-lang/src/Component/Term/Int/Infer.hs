@@ -5,24 +5,28 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Component.Term.Int.Infer (
     inferInput
   ) where
 
 import Control.Lens (review, preview)
 import Control.Monad.Except (MonadError)
+import Data.Constraint
 
 import Component.Type.Error.Unexpected (AsUnexpected(..), mkExpect)
 import Component.Term.Infer (InferRule(..), InferInput(..))
+import Extras (Eq1(..))
 
 import Component.Type.Int (AsIntType(..), WithIntType)
 import Component.Term.Int (AsIntTerm(..), WithIntTerm)
 
 -- |
 inferTmInt :: ( Monad m
-               , WithIntTerm tm
-               , WithIntType ty
-               )
+              , WithIntTerm tm
+              , WithIntType ty
+              )
             => tm nTy nTm a          -- ^
             -> Maybe (m (ty nTy)) -- ^
 inferTmInt =
@@ -30,9 +34,10 @@ inferTmInt =
   preview _TmIntLit
 
 -- |
-inferTmAdd :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
-              , MonadError e m
+inferTmAdd :: ( Eq1 ty
+              , Eq nTy
+              , AsUnexpected e ty
+              , MonadError (e nTy String) m
               , WithIntTerm tm
               , WithIntType ty
               )
@@ -53,9 +58,10 @@ inferTmAdd stripNote infer =
       return $ review _TyInt ()
 
 -- |
-inferTmSub :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
-              , MonadError e m
+inferTmSub :: ( Eq1 ty
+              , Eq nTy
+              , AsUnexpected e ty
+              , MonadError (e nTy String) m
               , WithIntTerm tm
               , WithIntType ty
               )
@@ -76,9 +82,10 @@ inferTmSub stripNote infer =
       return $ review _TyInt ()
 
 -- |
-inferTmMul :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
-              , MonadError e m
+inferTmMul :: ( Eq1 ty
+              , Eq nTy
+              , AsUnexpected e ty
+              , MonadError (e nTy String) m
               , WithIntTerm tm
               , WithIntType ty
               )
@@ -99,9 +106,10 @@ inferTmMul stripNote infer =
       return $ review _TyInt ()
 
 -- |
-inferTmExp :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
-              , MonadError e m
+inferTmExp :: ( Eq1 ty
+              , Eq nTy
+              , AsUnexpected e ty
+              , MonadError (e nTy String) m
               , WithIntTerm tm
               , WithIntType ty
               )
@@ -122,12 +130,12 @@ inferTmExp stripNote infer =
       return $ review _TyInt ()
 
 -- |
-inferInput :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
+inferInput :: forall r e ty tm. ( Eq1 ty
+              , AsUnexpected e ty
               , WithIntTerm tm
               , WithIntType ty
               )
-           => InferInput r e ty nTy tm nTm a
+           => InferInput r e ty tm
 inferInput =
   InferInput
     [ InferBase inferTmInt

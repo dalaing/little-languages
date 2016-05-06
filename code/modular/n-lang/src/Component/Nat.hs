@@ -14,6 +14,7 @@ import           Component                           (ComponentInput (..))
 import           Component.Term                      (TermInput (..))
 import           Component.Type                      (TypeInput (..))
 import           Component.Type.Error.Unexpected        (AsUnexpected)
+import Extras (Eq1)
 
 import           Component.Term.Nat                (WithNatTerm)
 import           Component.Term.Nat.Eval.BigStep   (bigStepInput)
@@ -29,12 +30,12 @@ import           Component.Type.Nat.Gen            (genTypeInput)
 import           Component.Type.Nat.Parse          (parseTypeInput)
 import           Component.Type.Nat.Pretty         (prettyTypeInput)
 
-natRules :: ( Eq (ty nTy)
-            , AsUnexpected e ty nTy
+natRules :: ( Eq1 ty
+            , AsUnexpected e ty
             , WithNatType ty
             , WithNatTerm tm
             )
-         => ComponentInput r e ty nTy tm nTm a
+         => ComponentInput r e ty tm
 natRules =
     ComponentInput tyI mempty tmI
   where

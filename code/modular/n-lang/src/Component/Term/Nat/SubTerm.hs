@@ -41,7 +41,7 @@ subTermTmPred subTerms tm =
   tm
 
 subTermInput :: WithNatTerm tm
-             => SubTermInput tm nTy nTm a
+             => SubTermInput tm
 subTermInput =
   SubTermInput
     [ SubTermBase subTermTmZero

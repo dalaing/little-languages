@@ -28,14 +28,14 @@ import Component.Type.Note (AsNoteType(..), WithNoteType)
 import Component.Type.Error (TypeErrorInput(..))
 import Component.Type.Error.Pretty (PrettyTypeErrorRule(..), PrettyTypeErrorInput(..))
 
-data NotArrow ty n =
+data NotArrow ty n a =
   NotArrow (ty n) (ty n)
   deriving (Eq, Ord, Show)
 
-class AsNotArrow e ty n | e -> ty, e -> n where
-  _NotArrow :: Prism' e (ty n, ty n)
+class AsNotArrow e ty | e -> ty where
+  _NotArrow :: Prism' (e n a) (ty n, ty n)
 
-instance AsNotArrow (NotArrow ty n) ty n where
+instance AsNotArrow (NotArrow ty) ty where
   _NotArrow = prism (uncurry NotArrow) $ \x ->
     case x of
       NotArrow y z -> Right (y, z)
@@ -63,20 +63,20 @@ prettyNotArrowSrcLoc' prettyType (n, ac) ex =
   where
     msg = text "Expected a function:"
 
-prettyNotArrow :: AsNotArrow e ty n
+prettyNotArrow :: AsNotArrow e ty
                  => (ty n -> Doc)
-                 -> e
+                 -> e n String
                  -> Maybe Doc
 prettyNotArrow prettyType =
   fmap (prettyNotArrow' prettyType) .
   preview _NotArrow
 
-prettyNotArrowSrcLoc :: ( AsNotArrow e ty n
+prettyNotArrowSrcLoc :: ( AsNotArrow e ty
                         , WithNoteType ty
                         , Renderable n
                         )
                      => (ty n -> Doc)
-                     -> e
+                     -> e n String
                      -> Maybe Doc
 prettyNotArrowSrcLoc prettyType =
     let
@@ -87,17 +87,16 @@ prettyNotArrowSrcLoc prettyType =
       fmap prettyNotArrow'' .
       preview _NotArrow
 
-notArrowInput :: AsNotArrow e ty n
-               => TypeErrorInput e ty n
+notArrowInput :: AsNotArrow e ty
+              => TypeErrorInput e ty
 notArrowInput =
   TypeErrorInput
     (PrettyTypeErrorInput [PrettyTypeErrorWithType prettyNotArrow])
 
-notArrowSrcLocInput :: ( AsNotArrow e ty n
+notArrowSrcLocInput :: ( AsNotArrow e ty
                        , WithNoteType ty
-                       , Renderable n
                        )
-                    => TypeErrorInput e ty n
+                    => TypeErrorInput e ty
 notArrowSrcLocInput =
   TypeErrorInput
-    (PrettyTypeErrorInput [PrettyTypeErrorWithType prettyNotArrowSrcLoc])
+    (PrettyTypeErrorInput [PrettyTypeErrorWithTypeSrcLoc prettyNotArrowSrcLoc])

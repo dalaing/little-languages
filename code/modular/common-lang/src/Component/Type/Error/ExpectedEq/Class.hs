@@ -13,5 +13,5 @@ module Component.Type.Error.ExpectedEq.Class (
 
 import           Control.Lens.Prism (Prism')
 
-class AsExpectedEq e ty n | e -> ty, e -> n where
-  _ExpectedEq :: Prism' e (ty n, ty n)
+class AsExpectedEq e ty | e -> ty where
+  _ExpectedEq :: Prism' (e n a) (ty n, ty n)

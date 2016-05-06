@@ -27,7 +27,7 @@ subTermTmNote subTerms tm =
   tm
 
 subTermInput :: WithNoteTerm tm
-              => SubTermInput tm nTy nTm a
+             => SubTermInput tm 
 subTermInput =
   SubTermInput
     [SubTermRecurse subTermTmNote]

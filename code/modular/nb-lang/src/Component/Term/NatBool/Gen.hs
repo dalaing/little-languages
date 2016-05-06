@@ -94,7 +94,7 @@ genTermInput :: ( WithNatBoolTerm tm
                 , WithNatType ty
                 , WithBoolType ty
                 )
-             => GenTermInput ty nTy tm nTm a
+             => GenTermInput ty tm
 genTermInput =
   GenTermInput
     [GenAnyTermRecurse $ \ g s -> genTmIsZero (g ((s - 1) `max` 0))]

@@ -9,6 +9,8 @@ module Main (
     main
   ) where
 
+import Data.Proxy (Proxy(..))
+
 import Test.Tasty (defaultMain)
 import Data.Monoid ((<>))
 import Text.Trifecta.Rendering (Span)
@@ -23,7 +25,7 @@ import TestLanguage (languageRules, errorRules, TypeError, Type, Term)
 main :: IO ()
 main =
   defaultMain .
-  mkTests .
+  mkTests (Proxy :: Proxy Span) (Proxy :: Proxy Span).
   mkLanguageDefaultParser $
-  ((languageRules <> errorRules) :: ComponentInput (Context Type Span String) (TypeError Span String) Type Span Term Span String)
+  ((languageRules <> errorRules) :: ComponentInput (Context Type) TypeError Type Term)
 

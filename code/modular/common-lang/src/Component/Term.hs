@@ -48,23 +48,24 @@ import           Component.Term.SubTerm                 (SubTermInput (..),
 import           Component.Type                         (TypeOutput (..))
 import           Component.Type.Error.UnknownType.Class (AsUnknownType (..))
 import           Component.Type.Note.Strip              (StripNoteType)
+import Extras (Eq1, Eq3, Show3)
 
-data TermInput r e ty nTy tm nTm a =
+data TermInput r e ty tm =
   TermInput {
-    _subTermInput    :: SubTermInput tm nTy nTm a
-  , _genTermInput    :: GenTermInput ty nTy tm nTm a
+    _subTermInput    :: SubTermInput tm
+  , _genTermInput    :: GenTermInput ty tm
   , _parseTermInput  :: ParseTermInput ty tm
   , _prettyTermInput :: PrettyTermInput ty tm
-  , _inferInput      :: InferInput r e ty nTy tm nTm a
+  , _inferInput      :: InferInput r e ty tm
   , _valueInput      :: ValueInput tm
   , _smallStepInput  :: SmallStepInput tm
   , _bigStepInput    :: BigStepInput tm
   }
 
-instance GetReservedWords (TermInput r e ty nTy tm nTm a) where
+instance GetReservedWords (TermInput r e ty tm) where
   reservedWords = reservedWords . _parseTermInput
 
-instance Monoid (TermInput r e ty nTy tm nTm a) where
+instance Monoid (TermInput r e ty tm) where
   mempty =
     TermInput
       mempty
@@ -86,13 +87,13 @@ instance Monoid (TermInput r e ty nTy tm nTm a) where
       (mappend s1 s2)
       (mappend b1 b2)
 
-data TermOutput r e ty nTy tm nTm a =
+data TermOutput r e ty tm =
   TermOutput {
-    _toSubTermOutput    :: SubTermOutput tm nTy nTm a
-  , _toGenTermOutput    :: GenTermOutput ty nTy tm nTm a
+    _toSubTermOutput    :: SubTermOutput tm
+  , _toGenTermOutput    :: GenTermOutput ty tm
   , _toParseTermOutput  :: ParseTermOutput tm
   , _toPrettyTermOutput :: PrettyTermOutput tm
-  , _toInferOutput      :: InferOutput r e ty nTy tm nTm a
+  , _toInferOutput      :: InferOutput r e ty tm
   , _toValueOutput      :: ValueOutput tm
   , _toSmallStepOutput  :: SmallStepOutput tm
   , _toBigStepOutput    :: BigStepOutput tm
@@ -101,15 +102,17 @@ data TermOutput r e ty nTy tm nTm a =
 makeClassy ''TermOutput
 
 mkTerm :: ( AsUnknownType e
-          , Eq (tm nTy nTm a)
+          , Eq3 tm
+          , Eq1 ty
+          , Show3 tm
           , WithNoteTerm tm
           , StripNoteTerm tm tm
           , StripNoteType ty ty
           )
        => ParserHelperOutput
-       -> TypeOutput ty nTy
-       -> TermInput r e ty nTy tm nTm a
-       -> TermOutput r e ty nTy tm nTm a
+       -> TypeOutput ty
+       -> TermInput r e ty tm
+       -> TermOutput r e ty tm
 mkTerm h (TypeOutput gty paty prty) (TermInput t g pa pr i v s b) =
   let
     vo = mkValue v

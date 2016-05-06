@@ -13,11 +13,13 @@ import Data.Monoid ((<>))
 
 import Repl (mkRepl)
 import Language (mkLanguageDefaultParser)
+import Component (ComponentInput)
+import Component.Type.STLC (Context)
 
-import TestLanguage (languageRules, errorRulesSrcLoc)
+import TestLanguage (languageRules, errorRulesSrcLoc, TypeError, Type, Term)
 
 main :: IO ()
 main =
     mkRepl .
     mkLanguageDefaultParser $
-    languageRules <> errorRulesSrcLoc
+    ((languageRules <> errorRulesSrcLoc) :: ComponentInput (Context Type) TypeError Type Term )

@@ -15,6 +15,7 @@ import           Component.Term                      (TermInput (..))
 import           Component.Type                      (TypeInput (..))
 import           Component.Type.Error.ExpectedEq        (AsExpectedEq)
 import           Component.Type.Error.Unexpected        (AsUnexpected)
+import Extras (Eq1)
 
 import           Component.Term.Bool                (WithBoolTerm)
 import           Component.Term.Bool.Eval.BigStep   (bigStepInput)
@@ -30,13 +31,13 @@ import           Component.Type.Bool.Gen            (genTypeInput)
 import           Component.Type.Bool.Parse          (parseTypeInput)
 import           Component.Type.Bool.Pretty         (prettyTypeInput)
 
-boolRules :: ( Eq (ty nTy)
-             , AsUnexpected e ty nTy
-             , AsExpectedEq e ty nTy
+boolRules :: ( Eq1 ty 
+             , AsUnexpected e ty
+             , AsExpectedEq e ty
              , WithBoolType ty
              , WithBoolTerm tm
              )
-          => ComponentInput r e ty nTy tm nTm a
+          => ComponentInput r e ty tm
 boolRules =
     ComponentInput tyI mempty tmI
   where

@@ -58,7 +58,7 @@ subTermTmLam subTerms tm =
 subTermInput :: ( WithSTLCTerm tm ty
                 , ForallT Monad tm
                 )
-              => SubTermInput tm nTy nTm String
+              => SubTermInput tm
 subTermInput =
   SubTermInput
     [ SubTermBase subTermTmVar

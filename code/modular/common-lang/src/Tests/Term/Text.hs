@@ -5,18 +5,24 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Tests.Term.Text (
     mkTextTests
   ) where
 
-import           Control.Lens            (view)
 import           Data.List               (group, intercalate, sort)
+import Data.Proxy (Proxy)
+
+import           Control.Lens            (view)
 import           Test.QuickCheck         (Property, forAllShrink, property,
                                           (===))
 import           Test.Tasty              (TestTree, testGroup)
 import           Test.Tasty.HUnit        (Assertion, assertBool, testCase)
 import           Test.Tasty.QuickCheck   (testProperty)
 import           Text.Trifecta.Rendering (Span)
+import Data.Constraint
 
 import           Common.Parse            (ReservedWords (..), parseFromString)
 import           Common.Pretty           (prettyToString)
@@ -24,11 +30,12 @@ import           Component               (ComponentOutput (..))
 import           Component.Term.Gen      (HasGenTermOutput (..))
 import           Component.Term.Parse    (HasParseTermOutput (..))
 import           Component.Term.Pretty   (HasPrettyTermOutput (..))
+import Extras (Eq3(..), Show3(..))
 
-mkTextTests :: ( Eq (tm Span Span String)
-               , Show (tm Span Span String)
+mkTextTests :: ( Eq3 tm
+               , Show3 tm
                )
-            => ComponentOutput r e ty Span tm Span String
+            => ComponentOutput r e ty tm
             -> TestTree
 mkTextTests c =
   testGroup "text"
@@ -43,7 +50,7 @@ isRight (Right _) =
 isRight _ =
   False
 
-assertUniqueReserved :: ComponentOutput r e ty nTy tm nTm a
+assertUniqueReserved :: ComponentOutput r e ty tm
                      -> Assertion
 assertUniqueReserved c =
   let
@@ -61,10 +68,11 @@ assertUniqueReserved c =
   in
     assertBool msg unique
 
-propPrettyParse :: ( Eq (tm Span Span String)
-                   , Show (tm Span Span String)
+propPrettyParse :: forall r e ty tm. (
+                     Eq3 tm
+                   , Show3 tm
                    )
-                => ComponentOutput r e ty Span tm Span String
+                => ComponentOutput r e ty tm
                 -> Property
 propPrettyParse c =
   let
@@ -76,8 +84,13 @@ propPrettyParse c =
       parseFromString parseTerm' .
       prettyToString .
       prettyTerm'
-  in
-    forAllShrink genAnyTerm' shrAnyTerm' $ \tm ->
+    test :: tm Span Span String -> Property
+    test tm =
       case roundTrip tm of
         Left _ -> property False
         Right tm' -> tm === tm'
+          \\ (spanEq3 :: (Eq Span, Eq Span, Eq String) :- Eq (tm Span Span String))
+          \\ (spanShow3 :: (Show Span, Show Span, Show String) :- Show (tm Span Span String))
+  in
+    forAllShrink genAnyTerm' shrAnyTerm' test
+      \\ (spanShow3 :: (Show Span, Show Span, Show String) :- Show (tm Span Span String))

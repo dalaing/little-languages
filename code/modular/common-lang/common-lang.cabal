@@ -20,6 +20,8 @@ library
                      , Common.Parse
                      , Common.Note
                      , Common.Text
+                     , Forall
+                     , Extras
                      , Bound2
                      , Bifunctor2
                      , Language

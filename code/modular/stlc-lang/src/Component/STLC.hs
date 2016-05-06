@@ -20,6 +20,7 @@ import           Component.Term                      (TermInput (..))
 import           Component.Type                      (TypeInput (..))
 import Component.Type.Note (WithNoteType)
 import           Component.Type.Error.Unexpected        (AsUnexpected)
+import Extras (Eq1)
 
 import           Component.Term.STLC                (WithSTLCTerm)
 import           Component.Term.STLC.SubTerm        (subTermInput)
@@ -37,38 +38,38 @@ import           Component.Type.STLC.Pretty         (prettyTypeInput)
 import           Component.Type.Error.FreeVar       (freeVarInput, AsFreeVar)
 import           Component.Type.Error.NotArrow      (notArrowInput, notArrowSrcLocInput, AsNotArrow)
 
-stlcErrors :: ( AsFreeVar e String
-              , AsNotArrow e ty nTy
+stlcErrors :: ( AsFreeVar e
+              , AsNotArrow e ty
               )
-           => ComponentInput r e ty nTy tm nTm String
+           => ComponentInput r e ty tm
 stlcErrors =
   ComponentInput
     mempty
     (mappend freeVarInput notArrowInput)
     mempty
 
-stlcSrcLocErrors :: ( AsFreeVar e String
-                    , AsNotArrow e ty nTy
+stlcSrcLocErrors :: ( AsFreeVar e
+                    , AsNotArrow e ty
                     , WithNoteType ty
-                    , Renderable nTy
+                    -- , Renderable nTy
                     )
-                 => ComponentInput r e ty nTy tm nTm String
+                 => ComponentInput r e ty tm
 stlcSrcLocErrors =
   ComponentInput
     mempty
     (mappend freeVarInput notArrowSrcLocInput)
     mempty
 
-stlcRules :: ( Eq (ty nTy)
-             , AsUnexpected e ty nTy
-             , AsNotArrow e ty nTy
-             , AsFreeVar e String
-             , HasContext r ty nTy String
+stlcRules :: ( Eq1 ty
+             , AsUnexpected e ty
+             , AsNotArrow e ty
+             , AsFreeVar e
+             , HasContext r ty
              , WithSTLCType ty
              , WithSTLCTerm tm ty
              , ForallT Monad tm
              )
-          => ComponentInput r e ty nTy tm nTm String
+          => ComponentInput r e ty tm
 stlcRules =
     ComponentInput tyI mempty tmI
   where

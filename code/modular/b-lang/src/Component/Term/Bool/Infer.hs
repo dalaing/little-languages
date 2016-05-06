@@ -15,6 +15,7 @@ import Control.Monad.Except (MonadError)
 import Component.Type.Error.Unexpected (AsUnexpected(..), mkExpect)
 import Component.Type.Error.ExpectedEq (AsExpectedEq(..), mkExpectEq)
 import Component.Term.Infer (InferRule(..), InferInput(..))
+import Extras (Eq1)
 
 import Component.Term.Bool (AsBoolTerm(..), WithBoolTerm)
 import Component.Type.Bool (AsBoolType(..), WithBoolType)
@@ -42,10 +43,11 @@ inferTmTrue =
   preview _TmTrue
 
 -- |
-inferTmIf :: ( Eq (ty nTy)
-             , AsUnexpected e ty nTy
-             , AsExpectedEq e ty nTy
-             , MonadError e m
+inferTmIf :: ( Eq1 ty
+             , Eq nTy
+             , AsUnexpected e ty
+             , AsExpectedEq e ty
+             , MonadError (e nTy String) m
              , WithBoolTerm tm
              , WithBoolType ty
              )
@@ -68,13 +70,13 @@ inferTmIf stripNote infer =
       return ty3
 
 -- |
-inferInput :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
-              , AsExpectedEq e ty nTy
+inferInput :: ( Eq1 ty
+              , AsUnexpected e ty
+              , AsExpectedEq e ty
               , WithBoolTerm tm
               , WithBoolType ty
               )
-           => InferInput r e ty nTy tm nTm a
+           => InferInput r e ty tm
 inferInput =
   InferInput
     [ InferBase inferTmFalse

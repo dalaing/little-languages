@@ -11,5 +11,5 @@ module Component.Type.Error.UnknownType.Class (
 
 import Control.Lens.Prism (Prism')
 
-class AsUnknownType t where
-  _UnknownType :: Prism' t ()
+class AsUnknownType e where
+  _UnknownType :: Prism' (e n a) ()

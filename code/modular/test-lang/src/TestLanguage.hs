@@ -33,7 +33,7 @@ import Prelude.Extras (Eq1(..), Ord1(..), Show1(..))
 import Data.Bifunctor (Bifunctor(..))
 import Data.Bifoldable (Bifoldable(..))
 import Data.Bitraversable (Bitraversable(..))
-import Data.Constraint (Dict(..))
+import Data.Constraint
 
 import Bound2 (Bound3(..))
 import Bifunctor2 (Bifunctor2(..))
@@ -70,6 +70,7 @@ import Component.Type.Error.NotArrow (NotArrow(..), AsNotArrow(..))
 import Component.Type.Note.Strip (StripNoteType(..))
 import Component.Term.Note.Strip (StripNoteTerm(..))
 import           Language                      (mkLanguageDefaultParser)
+import qualified Extras (Eq1(..), Eq2(..), Eq3(..), Show1(..), Show2(..), Show3(..))
 
 data Type n =
     BoolTy (BoolType Type n)
@@ -77,6 +78,12 @@ data Type n =
   | StlcTy (STLCType Type n)
   | NoteTy (NoteType Type n)
   deriving (Eq, Ord, Show)
+
+instance Extras.Eq1 Type where
+  spanEq1 = Sub Dict
+
+instance Extras.Show1 Type where
+  spanShow1 = Sub Dict
 
 makeClassyPrisms ''Type
 
@@ -100,27 +107,33 @@ instance StripNoteType Type Type where
 
 data TypeError n a =
     TeUnknownType -- (Maybe n)
-  | TeUnexpected (Unexpected Type n)
-  | TeExpectedEq (ExpectedEq Type n)
-  | TeFreeVar (FreeVar a)
-  | TeNotArrow (NotArrow Type n)
+  | TeUnexpected (Unexpected Type n a)
+  | TeExpectedEq (ExpectedEq Type n a)
+  | TeFreeVar (FreeVar n a)
+  | TeNotArrow (NotArrow Type n a)
   deriving (Eq, Ord, Show)
+
+instance Extras.Eq2 TypeError where
+  spanEq2 = Sub Dict
+
+instance Extras.Show2 TypeError where
+  spanShow2 = Sub Dict
 
 makeClassyPrisms ''TypeError
 
-instance AsUnknownType (TypeError n a) where
+instance AsUnknownType TypeError where
   _UnknownType = _TeUnknownType
 
-instance AsUnexpected (TypeError n a) Type n where
+instance AsUnexpected TypeError Type where
   _Unexpected = _TeUnexpected . _Unexpected
 
-instance AsExpectedEq (TypeError n a) Type n where
+instance AsExpectedEq TypeError Type where
   _ExpectedEq = _TeExpectedEq . _ExpectedEq
 
-instance AsFreeVar (TypeError n a) a where
+instance AsFreeVar TypeError where
   _FreeVar = _TeFreeVar . _FreeVar
 
-instance AsNotArrow (TypeError n a) Type n where
+instance AsNotArrow TypeError Type where
   _NotArrow = _TeNotArrow . _NotArrow
 
 data Term nTy nTm a =
@@ -131,6 +144,12 @@ data Term nTy nTm a =
   | TmSTLC (STLCTerm Type Term nTy nTm a)
   | TmNoted (NoteTerm Term nTy nTm a)
   deriving (Eq, Ord, Show, Functor, Foldable, Traversable)
+
+instance Extras.Eq3 Term where
+  spanEq3 = Sub Dict
+
+instance Extras.Show3 Term where
+  spanShow3 = Sub Dict
 
 instance (Eq nTy, Eq nTm) => Eq1 (Term nTy nTm) where
   (==#) = (==)
@@ -210,28 +229,30 @@ instance Bitraversable (Term nTy) where
   bitraverse l r (TmSTLC i) = TmSTLC <$> bitraverse l r i
   bitraverse l r (TmNoted i) = TmNoted <$> bitraverse l r i
 
-errorRules :: ComponentInput r (TypeError n String) Type n Term n String
+errorRules :: ComponentInput r TypeError Type Term
 errorRules =
   unknownTypeInput <>
   unexpectedInput <>
   expectedEqInput <>
   stlcErrors
 
-errorRulesSrcLoc :: ( Show n
-                    , Renderable n
-                    )
-                 => ComponentInput r (TypeError n String) Type n Term n String
+errorRulesSrcLoc :: -- ( Show n
+                    -- , Renderable n
+                    -- )
+                 -- =>
+                 ComponentInput r TypeError Type Term
 errorRulesSrcLoc =
   unknownTypeInput <>
   unexpectedSrcLocInput <>
   expectedEqSrcLocInput <>
   stlcSrcLocErrors
 
-languageRules :: ( Eq n
-                 , Show n
-                 , TranslateNote n n
-                 )
-              => ComponentInput (Context Type n String) (TypeError n String) Type n Term n String
+languageRules :: -- ( Eq n
+                 -- , Show n
+                 -- , TranslateNote n n
+                 -- )
+              -- =>
+              ComponentInput (Context Type) TypeError Type Term
 languageRules =
   boolRules <>
   natRules <>

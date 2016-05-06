@@ -71,7 +71,7 @@ subTermTmExp subTerm tm =
       tm : subTerm x ++ subTerm y
 
 subTermInput :: WithIntTerm tm
-             => SubTermInput tm nTy nTm a
+             => SubTermInput tm
 subTermInput =
   SubTermInput
     [ SubTermBase subTermTmInt

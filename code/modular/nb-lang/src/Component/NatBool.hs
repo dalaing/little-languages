@@ -13,6 +13,7 @@ module Component.NatBool (
 import           Component                           (ComponentInput (..))
 import           Component.Term                      (TermInput (..))
 import           Component.Type.Error.Unexpected        (AsUnexpected)
+import Extras (Eq1)
 
 import           Component.Term.NatBool                (NatBoolTerm, WithNatBoolTerm)
 import           Component.Term.NatBool.Eval.BigStep   (bigStepInput)
@@ -26,13 +27,13 @@ import           Component.Term.NatBool.SubTerm        (subTermInput)
 import           Component.Type.Nat (WithNatType)
 import           Component.Type.Bool (WithBoolType)
 
-natBoolRules :: ( Eq (ty nTy)
-                , AsUnexpected e ty nTy
+natBoolRules :: ( Eq1 ty
+                , AsUnexpected e ty
                 , WithNatBoolTerm tm
                 , WithNatType ty
                 , WithBoolType ty
                 )
-             => ComponentInput r e ty nTy tm nTm a
+             => ComponentInput r e ty tm
 natBoolRules =
     ComponentInput mempty mempty tmI
   where

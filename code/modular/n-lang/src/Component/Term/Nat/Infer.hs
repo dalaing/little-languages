@@ -14,6 +14,7 @@ import Control.Monad.Except (MonadError)
 
 import Component.Type.Error.Unexpected (AsUnexpected(..), mkExpect)
 import Component.Term.Infer (InferRule(..), InferInput(..))
+import Extras (Eq1)
 
 import Component.Term.Nat (AsNatTerm(..), WithNatTerm)
 import Component.Type.Nat (AsNatType(..), WithNatType)
@@ -30,9 +31,10 @@ inferTmZero =
   preview _TmZero
 
 -- |
-inferTmSucc :: ( Eq (ty nTy)
-               , AsUnexpected e ty nTy
-               , MonadError e m
+inferTmSucc :: ( Eq1 ty
+               , Eq nTy
+               , AsUnexpected e ty
+               , MonadError (e nTy String) m
                , WithNatTerm tm
                , WithNatType ty
                )
@@ -51,9 +53,10 @@ inferTmSucc stripNote infer =
       return $ review _TyNat ()
 
 -- |
-inferTmPred :: ( Eq (ty nTy)
-               , AsUnexpected e ty nTy
-               , MonadError e m
+inferTmPred :: ( Eq1 ty
+               , Eq nTy
+               , AsUnexpected e ty
+               , MonadError (e nTy String) m
                , WithNatTerm tm
                , WithNatType ty
                )
@@ -72,12 +75,12 @@ inferTmPred stripNote infer =
       return $ review _TyNat ()
 
 -- |
-inferInput :: ( Eq (ty nTy)
-              , AsUnexpected e ty nTy
+inferInput :: ( Eq1 ty
+              , AsUnexpected e ty
               , WithNatTerm tm
               , WithNatType ty
               )
-           => InferInput r e ty nTy tm nTm a
+           => InferInput r e ty tm
 inferInput =
   InferInput
     [ InferBase inferTmZero

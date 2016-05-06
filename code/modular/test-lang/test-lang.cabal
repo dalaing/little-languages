@@ -49,6 +49,7 @@ executable repl
   build-depends:       base >= 4.8 && < 4.9
                      , trifecta >=1.5 && <1.6
                      , common-lang
+                     , stlc-lang
                      , test-lang
   hs-source-dirs:      repl
   ghc-options:         -Wall -O2

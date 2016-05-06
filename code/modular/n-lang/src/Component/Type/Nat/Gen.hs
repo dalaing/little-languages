@@ -51,7 +51,7 @@ shrNotTyNat =
   preview _TyNat
 
 genTypeInput :: WithNatType ty
-             => GenTypeInput ty n
+             => GenTypeInput ty
 genTypeInput =
   GenTypeInput
     [GenAnyTypeBase genAnyTyNat]

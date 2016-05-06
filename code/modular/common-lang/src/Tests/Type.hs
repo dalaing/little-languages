@@ -9,17 +9,21 @@ module Tests.Type (
     mkTypeTests
   ) where
 
+import Data.Proxy (Proxy)
+
 import           Test.Tasty              (TestTree, testGroup)
 import           Text.Trifecta.Rendering (Span)
 
 import           Component               (ComponentOutput)
 import           Tests.Type.Text         (mkTextTests)
+import Extras (Eq1, Show1)
 
-mkTypeTests :: ( Eq (ty Span)
-               , Show (ty Span)
+mkTypeTests :: ( Eq1 ty
+               , Show1 ty
                )
-            => ComponentOutput r e ty Span tm nTm a
+            => ComponentOutput r e ty tm
+            -> Proxy nTy
             -> TestTree
-mkTypeTests c =
+mkTypeTests c _ =
   testGroup "type"
     [mkTextTests c]

@@ -205,7 +205,7 @@ genIllTypedElse genNotType genWellTyped ty s = Just $ do
 genTermInput :: ( WithBoolTerm tm 
                 , WithBoolType ty
                 )
-             => GenTermInput ty nTy tm nTm a
+             => GenTermInput ty tm
 genTermInput =
   GenTermInput
     [ GenAnyTermBase genTmFalse

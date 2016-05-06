@@ -20,7 +20,7 @@ import           Component.Type.Error.Pretty         (PrettyTypeErrorInput (..),
                                                       PrettyTypeErrorRule (..))
 
 prettyUnknownType :: AsUnknownType e
-                  => e
+                  => e n String
                   -> Maybe Doc
 prettyUnknownType =
     let
@@ -31,13 +31,13 @@ prettyUnknownType =
       preview _UnknownType
 
 unknownTypeTypeErrorInput :: AsUnknownType e
-                          => TypeErrorInput e ty n
+                          => TypeErrorInput e ty
 unknownTypeTypeErrorInput =
   TypeErrorInput
    (PrettyTypeErrorInput [PrettyTypeErrorBase prettyUnknownType])
 
 unknownTypeInput :: AsUnknownType e
-                 => ComponentInput r e ty nTy tm nTm a
+                 => ComponentInput r e ty tm
 unknownTypeInput =
   ComponentInput
     mempty

@@ -24,28 +24,28 @@ import Component.Term.Note (WithNoteTerm)
 import Component.Type.Note (WithNoteType)
 import Component.Term.Note.Strip (StripNoteTerm)
 import Component.Type.Note.Strip (StripNoteType)
+import Extras (Eq1, Eq3, Show1, Show2, Show3)
 
-data LanguageInput r e ty nTy tm nTm a =
+data LanguageInput r e ty tm =
   LanguageInput {
     _typeParserHelper :: ParserHelperInput
   , _termParserHelper :: ParserHelperInput
-  , _componentInput   :: ComponentInput r e ty nTy tm nTm a
+  , _componentInput   :: ComponentInput r e ty tm
   }
 
 mkLanguage :: ( AsUnknownType e
-              , Eq e
-              , Show e
-              , Eq (ty nTy)
-              , Show (ty nTy)
-              , Eq (tm nTy nTm a)
-              , Show (tm nTy nTm a)
+              , Eq3 tm
+              , Eq1 ty
+              , Show3 tm
+              , Show1 ty
+              , Show2 e
               , WithNoteTerm tm
               , WithNoteType ty
               , StripNoteTerm tm tm
               , StripNoteType ty ty
               )
-           => LanguageInput r e ty nTy tm nTm a
-           -> ComponentOutput r e ty nTy tm nTm a
+           => LanguageInput r e ty tm
+           -> ComponentOutput r e ty tm
 mkLanguage (LanguageInput pty ptm c@(ComponentInput ty _ tm)) =
   let
     pty' = mkParserHelper (reservedWords ty) pty
@@ -55,18 +55,17 @@ mkLanguage (LanguageInput pty ptm c@(ComponentInput ty _ tm)) =
     co
 
 mkLanguageDefaultParser :: ( AsUnknownType e
-                           , Eq e
-                           , Show e
-                           , Eq (ty nTy)
-                           , Show (ty nTy)
-                           , Eq (tm nTy nTm a)
-                           , Show (tm nTy nTm a)
+                           , Eq3 tm
+                           , Eq1 ty
+                           , Show3 tm
+                           , Show1 ty
+                           , Show2 e
                            , WithNoteTerm tm
                            , WithNoteType ty
                            , StripNoteTerm tm tm
                            , StripNoteType ty ty
                            )
-                        => ComponentInput r e ty nTy tm nTm a
-                        -> ComponentOutput r e ty nTy tm nTm a
+                        => ComponentInput r e ty tm
+                        -> ComponentOutput r e ty tm
 mkLanguageDefaultParser c =
   mkLanguage (LanguageInput defaultTypeParserHelper defaultTermParserHelper c)

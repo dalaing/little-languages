@@ -51,7 +51,7 @@ shrNotTyInt =
   preview _TyInt
 
 genTypeInput :: WithIntType ty
-             => GenTypeInput ty n
+             => GenTypeInput ty 
 genTypeInput =
   GenTypeInput
     [GenAnyTypeBase genAnyTyInt]

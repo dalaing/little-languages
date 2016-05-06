@@ -31,9 +31,11 @@ import Control.Monad.Error.Lens (throwing)
 import Control.Monad.Reader (MonadReader, local)
 import Control.Monad.Except (MonadError)
 import qualified Data.Map as M (Map, lookup, insert)
+import Data.Constraint (Dict(..), (:-)(..))
 
 import Component.Type.Error.Unexpected (AsUnexpected, mkExpect)
 import Component.Type.Note.Strip (StripNoteType(..))
+import Extras (Eq1, Monoid2(..))
 
 import Component.Type.Error.FreeVar (AsFreeVar(..))
 import Component.Type.Error.NotArrow (AsNotArrow(..))
@@ -65,6 +67,9 @@ instance Ord a => Monoid (Context ty n a) where
   mappend (Context c1) (Context c2) =
     Context (mappend c1 c2)
 
+instance Monoid2 (Context ty) where
+  spanMonoid2 = Sub Dict
+
 find :: Ord a
      => a
      -> Context ty n a
@@ -80,17 +85,17 @@ insert :: Ord a
 insert n ty (Context m) =
   Context (M.insert n ty m)
 
-class HasContext r ty n a | r -> ty, r -> n, r -> a where
-  context :: Lens' r (Context ty n a)
+class HasContext r ty | r -> ty where
+  context :: Lens' (r n a) (Context ty n a)
 
-instance HasContext (Context ty n a) ty n a where
+instance HasContext (Context ty) ty where
   context = id
 
 findInContext :: ( Ord a
-                 , HasContext r ty n a
-                 , MonadReader r m
-                 , AsFreeVar e a
-                 , MonadError e m
+                 , HasContext r ty
+                 , MonadReader (r n a) m
+                 , AsFreeVar e
+                 , MonadError (e n a) m
                  )
               => a
               -> m (ty n)
@@ -100,11 +105,12 @@ findInContext a = do
     Nothing -> throwing _FreeVar a
     Just ty -> return ty
 
-applyArrow :: ( Eq (ty n)
+applyArrow :: ( Eq1 ty
+              , Eq n
               , WithSTLCType ty
-              , AsUnexpected e ty n
-              , AsNotArrow e ty n
-              , MonadError e m
+              , AsUnexpected e ty
+              , AsNotArrow e ty
+              , MonadError (e n String) m
               )
            => (ty n -> ty n)
            -> ty n
@@ -131,8 +137,8 @@ addToContext n ty =
   insert n ty
 
 withInContext :: ( Ord a
-                 , HasContext r ty n a
-                 , MonadReader r m
+                 , HasContext r ty
+                 , MonadReader (r n a) m
                  )
               => a
               -> ty n

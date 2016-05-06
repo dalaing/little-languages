@@ -19,26 +19,24 @@ import           Component.Type.Note  (AsNoteType (..), WithNoteType)
 
 inferTmNote :: ( WithNoteType ty
                , WithNoteTerm tm
-               , TranslateNote nTm nTy
                , Monad m
                )
-             => (ty nTy -> ty nTy)
-             -> (tm nTy nTm a -> m (ty nTy))
-             -> tm nTy nTm a
-             -> Maybe (m (ty nTy))
+             => (ty n -> ty n)
+             -> (tm n n a -> m (ty n))
+             -> tm n n a
+             -> Maybe (m (ty n))
 inferTmNote _ infer =
     fmap inferTmNote' .
     preview _TmNote
   where
     inferTmNote' (n, tm) = do
       ty <- infer tm
-      return $ review _TyNote (translateNote n, ty)
+      return $ review _TyNote (n, ty)
 
 inferInput :: ( WithNoteType ty
               , WithNoteTerm tm
-              , TranslateNote nTm nTy
               )
-            => InferInput r e ty nTy tm nTm a
+            => InferInput r e ty tm
 inferInput =
   InferInput
     [InferRecurse inferTmNote]

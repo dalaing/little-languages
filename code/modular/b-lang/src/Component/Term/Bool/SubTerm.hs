@@ -42,7 +42,7 @@ subTermTmIf subTerms tm =
       tm : subTerms tm1 ++ subTerms tm2 ++ subTerms tm3
 
 subTermInput :: WithBoolTerm tm
-             => SubTermInput tm nTy nTm a
+             => SubTermInput tm
 subTermInput =
   SubTermInput
     [ SubTermBase subTermTmFalse

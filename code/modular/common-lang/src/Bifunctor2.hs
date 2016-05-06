@@ -5,7 +5,6 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 -}
-{-# LANGUAGE RankNTypes #-}
 module Bifunctor2 (
     Bifunctor2(..)
   ) where

@@ -6,6 +6,8 @@ Stability   : experimental
 Portability : non-portable
 -}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Repl (
     mkRepl
   ) where
@@ -17,6 +19,8 @@ import           System.Console.Haskeline     (InputT, defaultSettings,
 import           Text.PrettyPrint.ANSI.Leijen (Doc, line, putDoc, text, (<+>),
                                                (<>))
 import Text.Trifecta.Rendering (Span)
+import Data.Constraint ((\\), (:-))
+import Data.Constraint.Forall (ForallT, instT)
 
 import           Common.Parse                 (parseFromString)
 import           Component                    (ComponentOutput)
@@ -27,11 +31,13 @@ import           Component.Term.Eval.SmallStep (HasSmallStepOutput (..))
 import           Component.Type.Pretty        (HasPrettyTypeOutput (..))
 import           Component.Type.Error.Pretty  (HasPrettyTypeErrorOutput (..))
 import Component.Term.Note (WithNoteTerm)
+import Extras (Monoid2(..))
 
-mkParseAndEval :: ( WithNoteTerm tm
-                  , Monoid r
+mkParseAndEval :: forall r e ty tm. (
+                    WithNoteTerm tm
+                  , Monoid2 r
                   )
-               => ComponentOutput r e ty Span tm Span String
+               => ComponentOutput r e ty tm
                -> String
                -> Doc
 mkParseAndEval c s =
@@ -40,12 +46,14 @@ mkParseAndEval c s =
     infer' = view infer c
     prettyTerm' = view prettyTerm c
     prettyType' = view prettyType c
-    prettyTypeError' = view prettyTypeError c
+    prettyTypeError' = view prettyTypeErrorSrcLoc c
     smallStepEval' = view smallStepEval c
+    ctx :: r Span String
+    ctx = mempty \\ (spanMonoid2 :: Ord String :- Monoid (r Span String))
   in
     case parseFromString parseTerm' s of
       Left d -> d
-      Right tm -> case runInfer mempty . infer' $ tm of
+      Right tm -> case runInfer ctx . infer' $ tm of
         Left e ->
           prettyTypeError' e
         Right ty ->
@@ -54,9 +62,9 @@ mkParseAndEval c s =
           prettyType' ty
 
 mkRepl :: ( WithNoteTerm tm
-          , Monoid r
+          , Monoid2 r
           )
-       => ComponentOutput r e ty Span tm Span String
+       => ComponentOutput r e ty tm
        -> IO ()
 mkRepl c =
   runInputT defaultSettings loop

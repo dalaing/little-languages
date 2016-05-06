@@ -7,6 +7,9 @@ Portability : non-portable
 -}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 module Component.Type.Error.ExpectedEq (
     ExpectedEq(..)
   , AsExpectedEq(..)
@@ -27,6 +30,7 @@ import           Text.PrettyPrint.ANSI.Leijen       (Doc, hang, text, (<+>))
 import qualified Text.PrettyPrint.ANSI.Leijen       as PP ((<$>))
 import           Text.Trifecta.Rendering            (Renderable (..))
 import           Text.Trifecta.Result               (Err (..), explain)
+import Data.Constraint ((\\), (:-))
 
 import           Common.Pretty                      (prettyToString)
 import           Component.Type.Error.ExpectedEq.Class (AsExpectedEq (..))
@@ -36,26 +40,28 @@ import           Component.Type.Error.Pretty        (PrettyTypeErrorInput (..),
                                                      PrettyTypeErrorRule (..))
 import           Component.Type.Note                (AsNoteType (..),
                                                      WithNoteType)
+import Extras (Eq1(..))
 
-data ExpectedEq ty n =
+data ExpectedEq ty n a =
   ExpectedEq (ty n) (ty n)
   deriving (Eq, Ord, Show)
 
-instance AsExpectedEq (ExpectedEq ty n) ty n where
+instance AsExpectedEq (ExpectedEq ty) ty where
   _ExpectedEq = prism (uncurry ExpectedEq) $ \u ->
     case u of
       ExpectedEq ty1 ty2 -> Right (ty1, ty2)
 
-mkExpectEq :: ( Eq (ty n)
-              , AsExpectedEq e ty n
-              , MonadError e m
+mkExpectEq :: forall e ty n m. (
+                Eq1 ty
+              , AsExpectedEq e ty
+              , MonadError (e n String) m
               )
-           => (ty n -> ty n)
+           => (Eq n => (ty n -> ty n)
            -> ty n
            -> ty n
-           -> m ()
+           -> m ())
 mkExpectEq stripNote ty1 ty2 =
-  unless (stripNote ty1 == stripNote ty2) $
+  unless ((stripNote ty1 == stripNote ty2) \\ (spanEq1 :: Eq n :- Eq (ty n))) $
     throwing _ExpectedEq (ty1, ty2)
 
 prettyExpectedEq' :: (ty n -> Doc)
@@ -84,16 +90,16 @@ prettyExpectedEqSrcLoc' prettyType ((n1, ty1), (n2, ty2)) =
   where
     msg = text "Expected these types to be equal:"
 
-prettyExpectedEq :: AsExpectedEq e ty n
+prettyExpectedEq :: AsExpectedEq e ty
                  => (ty n -> Doc)
-                 -> e
+                 -> e n String
                  -> Maybe Doc
 prettyExpectedEq prettyType =
   fmap (prettyExpectedEq' prettyType) .
   preview _ExpectedEq
 
-expectedEqInput :: AsExpectedEq e ty nTy
-                => ComponentInput r e ty nTy tm nTm a
+expectedEqInput :: AsExpectedEq e ty
+                => ComponentInput r e ty tm
 expectedEqInput =
   ComponentInput
     mempty
@@ -102,12 +108,12 @@ expectedEqInput =
          [PrettyTypeErrorWithType prettyExpectedEq]))
     mempty
 
-prettyExpectedEqSrcLoc :: ( AsExpectedEq e ty n
+prettyExpectedEqSrcLoc :: ( AsExpectedEq e ty
                           , WithNoteType ty
                           , Renderable n
                           )
                        => (ty n -> Doc)
-                       -> e
+                       -> e n String
                        -> Maybe Doc
 prettyExpectedEqSrcLoc prettyType =
     let
@@ -121,16 +127,15 @@ prettyExpectedEqSrcLoc prettyType =
       fmap prettyExpectedEq'' .
       preview _ExpectedEq
 
-expectedEqSrcLocInput :: ( AsExpectedEq e ty nTy
+expectedEqSrcLocInput :: ( AsExpectedEq e ty
                          , WithNoteType ty
-                         , Renderable nTy
                          )
-                      => ComponentInput r e ty nTy tm nTm a
+                      => ComponentInput r e ty tm
 expectedEqSrcLocInput =
   ComponentInput
     mempty
     (TypeErrorInput
        (PrettyTypeErrorInput
-         [PrettyTypeErrorWithType prettyExpectedEqSrcLoc]))
+         [PrettyTypeErrorWithTypeSrcLoc prettyExpectedEqSrcLoc]))
     mempty
 

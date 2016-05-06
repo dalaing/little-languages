@@ -52,7 +52,7 @@ shrNotTyBool =
   preview _TyBool
 
 genTypeInput :: WithBoolType ty
-             => GenTypeInput ty n
+             => GenTypeInput ty
 genTypeInput =
   GenTypeInput
     [GenAnyTypeBase genAnyTyBool]

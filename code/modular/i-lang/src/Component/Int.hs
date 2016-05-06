@@ -14,6 +14,7 @@ import           Component                           (ComponentInput (..))
 import           Component.Term                      (TermInput (..))
 import           Component.Type                      (TypeInput (..))
 import           Component.Type.Error.Unexpected        (AsUnexpected)
+import Extras (Eq1)
 
 import           Component.Term.Int                (WithIntTerm)
 import           Component.Term.Int.Eval.BigStep   (bigStepInput)
@@ -29,12 +30,12 @@ import           Component.Type.Int.Gen            (genTypeInput)
 import           Component.Type.Int.Parse          (parseTypeInput)
 import           Component.Type.Int.Pretty         (prettyTypeInput)
 
-intRules :: ( Eq (ty nTy)
-            , AsUnexpected e ty nTy
+intRules :: ( Eq1 ty
+            , AsUnexpected e ty
             , WithIntType ty
             , WithIntTerm tm
             )
-         => ComponentInput r e ty nTy tm nTm a
+         => ComponentInput r e ty tm
 intRules =
     ComponentInput tyI mempty tmI
   where
