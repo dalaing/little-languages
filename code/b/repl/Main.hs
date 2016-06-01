@@ -9,21 +9,27 @@ module Main (
     main
   ) where
 
+-- from 'transformers'
 import           Control.Monad.IO.Class       (liftIO)
+
+-- from 'haskeline'
 import           System.Console.Haskeline     (InputT, defaultSettings,
                                                getInputLine, runInputT)
 
+-- from 'ansi-wl-pprint'
 import           Text.PrettyPrint.ANSI.Leijen (Doc, line, putDoc, text, (<+>),
                                                (<>))
 
+-- local
 import           Common.Parse                 (parseFromString)
 import           Term.Eval.SmallStep          (eval)
-import           Term.Infer                   (runInfer, inferTerm)
+import           Term.Infer                   (inferTerm, runInfer)
 import           Term.Parse                   (parseTerm)
 import           Term.Pretty                  (prettyTerm)
 import           Type.Error.Pretty            (prettyTypeError)
 import           Type.Pretty                  (prettyType)
 
+-- | Parses a string into a term, typechecks the term, and then evaluates it.
 parseAndEval :: String
              -> Doc
 parseAndEval s =
@@ -32,7 +38,7 @@ parseAndEval s =
     Right tm -> case runInfer . inferTerm $ tm of
       Left e -> prettyTypeError e
       Right ty ->
-        prettyTerm (eval tm) <+> text ":" <+> prettyType ty
+        prettyTerm tm <+> text "==>" <+> prettyTerm (eval tm) <+> text ":" <+> prettyType ty
 
 main :: IO ()
 main = runInputT defaultSettings loop

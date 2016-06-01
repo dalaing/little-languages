@@ -9,11 +9,13 @@ module Test.Term (
     termTests
   ) where
 
-import Test.Tasty (TestTree, testGroup)
+-- from 'tasty'
+import           Test.Tasty      (TestTree, testGroup)
 
-import Test.Term.Eval (evalTests)
-import Test.Term.Infer (inferTests)
-import Test.Term.Text (textTests)
+-- local
+import           Test.Term.Eval  (evalTests)
+import           Test.Term.Infer (inferTests)
+import           Test.Term.Text  (textTests)
 
 termTests :: TestTree
 termTests =

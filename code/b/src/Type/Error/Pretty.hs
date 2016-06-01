@@ -11,15 +11,19 @@ module Type.Error.Pretty (
     prettyTypeError
   ) where
 
-import Text.PrettyPrint.ANSI.Leijen(Doc, text, (<+>), hang)
+-- from ansi-wl-pprint
+import           Text.PrettyPrint.ANSI.Leijen (Doc, hang, text, (<+>))
 import qualified Text.PrettyPrint.ANSI.Leijen as PP ((<$>))
 
-import Type.Pretty (prettyType)
-import Type.Error (TypeError(..))
+-- local
+import           Type.Error                   (TypeError (..))
+import           Type.Pretty                  (prettyType)
 
--- |
-prettyTypeError :: TypeError -- ^
-                -> Doc       -- ^
+-- | Pretty prints a 'TypeError'.
+
+-- No examples because we only have one type at the moment :/
+prettyTypeError :: TypeError
+                -> Doc
 prettyTypeError (Unexpected ac ex) =
   hang 2 (text "Unexpected type:" PP.<$>
           text "actual:" <+> prettyType ac PP.<$>

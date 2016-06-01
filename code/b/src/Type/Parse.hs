@@ -12,67 +12,110 @@ module Type.Parse (
   , parseType
   ) where
 
+-- from 'base'
+import           Control.Applicative         ((<|>))
 import           Data.Foldable               (asum)
 
-import qualified Data.HashSet                as HS
+-- from 'unordered-containers'
+import qualified Data.HashSet                as HS (fromList)
+
+-- from 'parsers'
 import           Text.Parser.Char            (alphaNum, upper)
 import           Text.Parser.Combinators     ((<?>))
 import           Text.Parser.Token           (IdentifierStyle (..),
-                                              TokenParsing, reserve)
+                                              TokenParsing, parens, reserve)
 import           Text.Parser.Token.Highlight (Highlight (..))
 
+-- local
 import           Type                        (Type (..))
 
--- |
-reservedTypes :: [String]
-reservedTypes =
-  ["Bool"]
+-- $setup
+-- >>> import Text.Trifecta.Parser
+-- >>> import Text.Trifecta.Result
+-- >>> import Text.Trifecta.Delta
+-- >>> import Text.PrettyPrint.ANSI.Leijen
+-- >>> let parse p s = case parseString p (Lines 0 0 0 0) s of Failure d -> Failure (plain d); Success s -> Success s
 
--- |
+-- | The tokenizer style for types in the B language.
 typeStyle :: TokenParsing m
-                 => IdentifierStyle m
+          => IdentifierStyle m
 typeStyle =
-  IdentifierStyle {
-    _styleName              = "type"
-  , _styleStart             = upper
-  , _styleLetter            = alphaNum
-  , _styleReserved          = HS.fromList reservedTypes
-  , _styleHighlight         = Constructor
-  , _styleReservedHighlight = ReservedConstructor
-  }
+    IdentifierStyle {
+      _styleName              = "type"
+    , _styleStart             = upper
+    , _styleLetter            = alphaNum
+    , _styleReserved          = HS.fromList reservedTypes
+    , _styleHighlight         = Constructor
+    , _styleReservedHighlight = ReservedConstructor
+    }
+  where
+    reservedTypes =
+      ["Bool"]
 
--- |
+-- | A helper function to parse reserved types.
 reservedType :: ( Monad m
                 , TokenParsing m
                 )
-             => String           -- ^
-             -> m ()             -- ^
+             => String
+             -> m ()
 reservedType =
   reserve typeStyle
 
--- |
+-- | A parser for 'Bool'.
+--
+-- >>> parse parseTyBool "Bool"
+-- Success TyBool
+--
+-- >>> parse parseTyBool "bool"
+-- Failure (interactive):1:1: error: expected: Bool
+-- bool<EOF>
+-- ^
+--
+-- >>> parse parseTyBool "potato"
+-- Failure (interactive):1:1: error: expected: Bool
+-- potato<EOF>
+-- ^
 parseTyBool :: ( Monad m
                , TokenParsing m
                )
-            => m Type           -- ^
+            => m Type
 parseTyBool =
   TyBool <$ reservedType "Bool"
   <?> "Bool"
 
--- |
+-- | The set of parsing rules for types of the B language.
 parseTypeRules :: ( Monad m
                   , TokenParsing m
                   )
-               => [m Type]         -- ^
+               => [m Type]
 parseTypeRules =
   [parseTyBool]
 
--- |
+-- | The parser for types of the B languge.
+--
+-- This function is built from the contents of 'parseTypeRules',
+-- with added support for parentheses.
+--
+-- >>> parse parseType "Bool"
+-- Success TyBool
+--
+-- >>> parse parseType "((Bool))"
+-- Success TyBool
+--
+-- >>> parse parseType "potato"
+-- Failure (interactive):1:1: error: expected: type
+-- potato<EOF>
+-- ^
+--
+-- >>> parse parseType "((potato))"
+-- Failure (interactive):1:3: error: expected: type
+-- ((potato))<EOF>
+--   ^
+--
 parseType :: ( Monad m
              , TokenParsing m
              )
-          => m Type           -- ^
+          => m Type
 parseType =
-  ( asum $
-    parseTypeRules
-  ) <?> "type"
+  (asum parseTypeRules <|> parens parseType)
+  <?> "type"

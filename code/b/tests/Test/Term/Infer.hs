@@ -9,11 +9,20 @@ module Test.Term.Infer (
     inferTests
   ) where
 
+-- from 'base'
 import           Data.Maybe            (mapMaybe)
-import           Test.QuickCheck       (Property, forAllShrink, property, (===), (.||.))
+
+-- from 'tasty'
 import           Test.Tasty            (TestTree, testGroup)
+
+-- from 'tasty-quickcheck'
 import           Test.Tasty.QuickCheck (testProperty)
 
+-- from 'QuickCheck'
+import           Test.QuickCheck       (Property, forAllShrink, property,
+                                        (.||.), (===))
+
+-- local
 import           Term                  (Term)
 import           Term.Eval.SmallStep   (canStep, smallStep)
 import           Term.Eval.Value       (isValue)

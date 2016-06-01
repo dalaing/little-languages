@@ -12,14 +12,18 @@ module Type.Gen (
   , shrinkType
   ) where
 
-import Test.QuickCheck (Gen)
+-- from 'QuickCheck'
+import           Test.QuickCheck (Gen)
 
-import Type(Type(..))
+-- local
+import           Type            (Type (..))
 
+-- | Generates types of the B language.
 genType :: Gen Type
 genType =
   pure TyBool
 
+-- | Shrinks types of the B language.
 shrinkType :: Type
            -> [Type]
 shrinkType _ =

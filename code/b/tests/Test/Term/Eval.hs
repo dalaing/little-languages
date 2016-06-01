@@ -9,13 +9,21 @@ module Test.Term.Eval (
     evalTests
   ) where
 
+-- from 'base'
 import           Data.List             (group)
 import           Data.Maybe            (mapMaybe)
-import           Test.QuickCheck       (Property, forAllShrink, property, (===),
-                                        (==>))
+
+-- from 'tasty'
 import           Test.Tasty            (TestTree, testGroup)
+
+-- from 'tasty-quickcheck'
 import           Test.Tasty.QuickCheck (testProperty)
 
+-- from 'QuickCheck'
+import           Test.QuickCheck       (Property, forAllShrink, property, (===),
+                                        (==>))
+
+-- local
 import           Term                  (size)
 import           Term.Eval.BigStep     (bigStepRules, eval)
 import           Term.Eval.SmallStep   (canStep, eval, isNormalForm, smallStep,

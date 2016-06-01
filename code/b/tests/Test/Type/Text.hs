@@ -9,10 +9,16 @@ module Test.Type.Text (
     textTests
   ) where
 
-import           Test.QuickCheck       (Property, forAllShrink, property, (===))
+-- from 'tasty'
 import           Test.Tasty            (TestTree, testGroup)
+
+-- from 'tasty-quickcheck'
 import           Test.Tasty.QuickCheck (testProperty)
 
+-- from 'QuickCheck'
+import           Test.QuickCheck       (Property, forAllShrink, property, (===))
+
+-- local
 import           Common.Parse          (parseFromString)
 import           Common.Pretty         (prettyToString)
 import           Type.Gen              (genType, shrinkType)

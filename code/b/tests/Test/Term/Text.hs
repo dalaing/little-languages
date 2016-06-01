@@ -9,14 +9,20 @@ module Test.Term.Text (
     textTests
   ) where
 
-import           Test.QuickCheck       (Property, forAllShrink, property, (===))
+-- from 'tasty'
 import           Test.Tasty            (TestTree, testGroup)
+
+-- from 'tasty-quickcheck'
 import           Test.Tasty.QuickCheck (testProperty)
 
+-- from 'QuickCheck'
+import           Test.QuickCheck       (Property, forAllShrink, property, (===))
+
+-- local
 import           Common.Parse          (parseFromString)
 import           Common.Pretty         (prettyToString)
 import           Term.Gen              (genTerm, shrinkTerm)
-import           Term.Parse            (parseTerm, parseTermRules, withParens)
+import           Term.Parse            (parseTerm, parseTermRules)
 import           Term.Pretty           (prettyTerm)
 
 textTests :: TestTree
@@ -43,7 +49,7 @@ propUniqueParse =
       matches =
         length .
         filter isRight .
-        fmap (\p -> parseFromString (withParens p) text) $
+        fmap (\p -> parseFromString p text) $
         parseTermRules
     in
       matches === 1

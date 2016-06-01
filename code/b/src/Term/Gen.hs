@@ -12,69 +12,72 @@ module Term.Gen (
   , shrinkTerm
   ) where
 
+-- from 'base'
 import           Data.Foldable   (asum)
 import           Data.Maybe      (fromMaybe)
+
+-- from 'QuickCheck'
 import           Test.QuickCheck (Gen, oneof, sized)
 
+-- local
 import           Term            (Term (..))
 
--- |
-genTmFalse :: Gen Term -- ^
+-- | Generates 'TmFalse' terms.
+genTmFalse :: Gen Term
 genTmFalse =
   pure TmFalse
 
--- |
-shrinkTmFalse :: Term         -- ^
-              -> Maybe [Term] -- ^
+-- | Shrinks 'TmFalse' terms.
+shrinkTmFalse :: Term
+              -> Maybe [Term]
 shrinkTmFalse TmFalse =
   Just []
 shrinkTmFalse _ =
   Nothing
 
--- |
-genTmTrue :: Gen Term -- ^
+-- | Generates 'TmTrue' terms.
+genTmTrue :: Gen Term
 genTmTrue =
   pure TmTrue
 
--- |
-shrinkTmTrue :: Term         -- ^
-             -> Maybe [Term] -- ^
+-- | Shrinks 'TmTrue' terms.
+shrinkTmTrue :: Term
+             -> Maybe [Term]
 shrinkTmTrue TmTrue =
   Just []
 shrinkTmTrue _ =
   Nothing
 
--- |
-genTmIf :: Gen Term -- ^
-        -> Gen Term -- ^
-        -> Gen Term -- ^
-        -> Gen Term -- ^
+-- | Generates 'TmIf' terms, given a generator for each of the subterms.
+genTmIf :: Gen Term -- ^ The generator for the test expression.
+        -> Gen Term -- ^ The generator for the 'then' expression.
+        -> Gen Term -- ^ The generator for the 'else' expression.
+        -> Gen Term
 genTmIf g1 g2 g3 =
   TmIf <$> g1 <*> g2 <*> g3
 
--- |
-shrinkTmIf :: (Term -> [Term]) -- ^
-           -> (Term -> [Term]) -- ^
-           -> (Term -> [Term]) -- ^
-           -> Term             -- ^
-           -> Maybe [Term]     -- ^
-shrinkTmIf s1 s2 s3 (TmIf tm1 tm2 tm3) = Just $
-  s1 tm1 ++ [tm1] ++
-  s2 tm2 ++ [tm2] ++
-  s3 tm3 ++ [tm3] ++
-  fmap (\tm1' -> TmIf tm1' tm2 tm3) (s1 tm1) ++
-  fmap (\tm2' -> TmIf tm1 tm2' tm3) (s2 tm2) ++
-  fmap (\tm3' -> TmIf tm1 tm2 tm3') (s3 tm3)
-shrinkTmIf _ _ _ _ =
+-- | Shrinks 'TmIf' terms.
+shrinkTmIf :: (Term -> [Term]) -- ^ The shrinking function for terms of the B language.
+           -> Term
+           -> Maybe [Term]
+shrinkTmIf shrink (TmIf tm1 tm2 tm3) = Just $
+  [tm1, tm2, tm3] ++
+  fmap (\tm1' -> TmIf tm1' tm2 tm3) (shrink tm1) ++
+  fmap (\tm2' -> TmIf tm1 tm2' tm3) (shrink tm2) ++
+  fmap (\tm3' -> TmIf tm1 tm2 tm3') (shrink tm3)
+shrinkTmIf _ _ =
   Nothing
 
--- |
-genTerm :: Gen Term -- ^
+-- | Generates terms of the B language.
+--
+-- The QuickCheck size parameter is interpreted as an upper bound on the
+-- size of the term.
+genTerm :: Gen Term
 genTerm = sized genTerm'
 
--- |
-genTerm' :: Int      -- ^
-         -> Gen Term -- ^
+-- | Helper function to generate terms of the B language with a specific size.
+genTerm' :: Int
+         -> Gen Term
 genTerm' 0 =
   oneof
     [ genTmFalse
@@ -90,14 +93,14 @@ genTerm' s =
     s3 = s `div` 3
     child3 = genTerm' s3
 
--- |
-shrinkTerm :: Term   -- ^
-           -> [Term] -- ^
+-- | Shrinks terms of the B language.
+shrinkTerm :: Term
+           -> [Term]
 shrinkTerm tm =
   fromMaybe [] .
   asum .
   fmap ($ tm) $
     [ shrinkTmFalse
     , shrinkTmTrue
-    , shrinkTmIf shrinkTerm shrinkTerm shrinkTerm
+    , shrinkTmIf shrinkTerm
     ]

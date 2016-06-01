@@ -9,9 +9,11 @@ module Test.Type (
     typeTests
   ) where
 
-import Test.Tasty (TestTree, testGroup)
+-- from 'tasty'
+import           Test.Tasty     (TestTree, testGroup)
 
-import Test.Type.Text (textTests)
+-- local
+import           Test.Type.Text (textTests)
 
 typeTests :: TestTree
 typeTests =

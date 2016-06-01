@@ -11,7 +11,7 @@ module Type (
     Type(..)
   ) where
 
--- | 
+-- | The types in the language B.
 data Type =
-  TyBool -- ^ 
+  TyBool -- ^ The type of Booleans.
   deriving (Eq, Ord, Show)

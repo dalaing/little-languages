@@ -12,28 +12,44 @@ module Type.Pretty (
   , prettyType
   ) where
 
+-- from 'base'
 import           Data.Foldable                (asum)
 import           Data.Maybe                   (fromMaybe)
 
-import           Common.Pretty                (reservedConstructor)
+-- from 'ansi-wl-pprint'
 import           Text.PrettyPrint.ANSI.Leijen (Doc, text)
 
+-- local
+import           Common.Pretty                (reservedConstructor)
 import           Type                         (Type (..))
 
--- |
-prettyTyBool :: Type      -- ^
-             -> Maybe Doc -- ^
+-- $setup
+-- >>> import Text.PrettyPrint.ANSI.Leijen
+-- >>> let render r w f d = putStr $ displayS (renderPretty r w (plain (f d))) ""
+
+-- | A pretty printer for 'TyBool'
+--
+-- >>> render 0.5 40 (fromMaybe (text "???") . prettyTyBool) $ TyBool
+-- Bool
+prettyTyBool :: Type
+             -> Maybe Doc
 prettyTyBool TyBool =
   Just $ reservedConstructor "Bool"
 
--- |
+-- | The set of pretty printing rules for types of the B language.
 prettyTypeRules :: [Type -> Maybe Doc]
 prettyTypeRules =
   [prettyTyBool]
 
--- |
-prettyType :: Type -- ^
-           -> Doc  -- ^
+-- | The pretty printer for types of the B language.
+--
+-- This function is built from the contents of 'prettyTypeRules'.
+-- It will print "???" if none of the rules apply - which should never happen.
+--
+-- >>> render 0.5 40 prettyType $ TyBool
+-- Bool
+prettyType :: Type
+           -> Doc
 prettyType tm =
   fromMaybe (text "???") .
   asum .
