@@ -29,7 +29,7 @@ import           Type.Error           (TypeError (..), expect, expectEq)
 
 -- | Infer the type of 'TmFalse'.
 --
--- >>> runInfer . fromMaybe UnknownType . inferTmFalse $ TmFalse
+-- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmFalse $ TmFalse
 -- Right TyBool
 inferTmFalse :: Monad m
              => Term
@@ -41,7 +41,7 @@ inferTmFalse _ =
 
 -- | Infer the type of 'TmFalse'.
 --
--- >>> runInfer . fromMaybe UnknownType . inferTmTrue $ TmTrue
+-- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmTrue $ TmTrue
 -- Right TyBool
 inferTmTrue :: Monad m
             => Term
@@ -53,7 +53,7 @@ inferTmTrue _ =
 
 -- | Infer the type of 'TmIf'.
 --
--- >>> runInfer . fromMaybe UnknownType . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmTrue
+-- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmTrue
 -- Right TyBool
 
 -- There will be better examples when we have more than one type

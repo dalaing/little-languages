@@ -57,7 +57,7 @@ valueRules =
 -- >>> value TmFalse
 -- Just TmFalse
 --
--- >>> isValue (TmIf TmFalse TmFalse TmTrue)
+-- >>> value (TmIf TmFalse TmFalse TmTrue)
 -- Nothing
 value :: Term
       -> Maybe Term
