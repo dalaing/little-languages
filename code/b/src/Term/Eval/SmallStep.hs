@@ -30,7 +30,7 @@ eIfTrue (TmIf TmTrue t2 _) =
 eIfTrue _ =
   Nothing
 
--- | The small-step rule for the ''if false' case.
+-- | The small-step rule for the 'if false' case.
 eIfFalse :: Term
          -> Maybe Term
 eIfFalse (TmIf TmFalse _ t3) =
@@ -38,9 +38,9 @@ eIfFalse (TmIf TmFalse _ t3) =
 eIfFalse _ =
   Nothing
 
--- | The small-step rule for the case where the
--- condition of an 'if' expression is not a value.
-eIf :: (Term -> Maybe Term) -- ^ The small-step function for B
+-- | The small-step rule for an 'if' expression where the
+-- condition is not a value.
+eIf :: (Term -> Maybe Term) -- ^ The small-step function for the B language.
     -> Term
     -> Maybe Term
 eIf step (TmIf tm1 tm2 tm3) = do

@@ -20,7 +20,7 @@ import           Data.Maybe    (isJust)
 -- local
 import           Term          (Term (..))
 
--- | The value rule for TmFalse
+-- | The value rule for 'TmFalse'.
 valueTmFalse :: Term
              -> Maybe Term
 valueTmFalse TmFalse =
@@ -28,7 +28,7 @@ valueTmFalse TmFalse =
 valueTmFalse _ =
   Nothing
 
--- | The value rule for TmTrue
+-- | The value rule for 'TmTrue'.
 valueTmTrue :: Term
             -> Maybe Term
 valueTmTrue TmTrue =

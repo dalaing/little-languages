@@ -37,7 +37,7 @@ eFalse _ =
   Nothing
 
 -- | The big-step rule for the 'if-true' case.
-eIfTrue :: (Term -> Maybe Term) -- ^ The big-step function for B
+eIfTrue :: (Term -> Maybe Term) -- ^ The big-step function for the B language.
         -> Term
         -> Maybe Term
 eIfTrue step (TmIf t1 t2 _)
@@ -49,7 +49,7 @@ eIfTrue _ _ =
   Nothing
 
 -- | The big-step rule for the 'if-false' case.
-eIfFalse :: (Term -> Maybe Term) -- ^ The big-step function for B
+eIfFalse :: (Term -> Maybe Term) -- ^ The big-step function for the B language.
          -> Term
          -> Maybe Term
 eIfFalse step (TmIf t1 _ t3)
