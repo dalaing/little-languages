@@ -17,14 +17,14 @@ library
                      , Common.Pretty
                      , Term
                      , Term.Eval.Value
-                     -- , Term.Eval.Value.Lazy
-                     -- , Term.Eval.Value.Strict
+                     , Term.Eval.Value.Lazy
+                     , Term.Eval.Value.Strict
                      , Term.Eval.SmallStep
-                     -- , Term.Eval.SmallStep.Lazy
-                     -- , Term.Eval.SmallStep.Strict
+                     , Term.Eval.SmallStep.Lazy
+                     , Term.Eval.SmallStep.Strict
                      , Term.Eval.BigStep
-                     -- , Term.Eval.BigStep.Lazy
-                     -- , Term.Eval.BigStep.Strict
+                     , Term.Eval.BigStep.Lazy
+                     , Term.Eval.BigStep.Strict
                      , Term.Infer
                      , Term.Pretty
                      , Term.Parse
