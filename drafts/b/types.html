@@ -1,0 +1,151 @@
+<!DOCTYPE html> 
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Dave Laing - A Type System for B</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="../../css/custom.css">
+        <link rel="stylesheet" href="../../css/syntax.css">
+        <link rel="alternate" type="application/atom+xml" title="Atom - Little Languages" href="../../atom.xml" />
+        <link rel="alternate" type="application/rss+xml" title="RSS - Little Languages" href="../../rss.xml" />
+    </head>
+    <body>
+        <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a href="../../">Little Languages</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li role="presentation"><a href="http://dlaing.org">Back to my main site</a></li>
+            </ul>
+        </div>
+
+        </div>
+        </nav>
+
+        <div class="container">
+            <div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><a href="../../drafts/b/types.html">A Type System for B</a></h3>
+    </div>
+    <div class="panel-body">
+        <p><a href="testing.html">Previously</a> we wrote some tests for the semantics of the <em>B</em> language.</p>
+<p>At the moment, we’re pretty confident that <em>B</em> doesn’t have any stuck terms.</p>
+<p>Let us put that confidence to one side and write the typing rules for <em>B</em>.</p>
+<p>This will introduce the ideas and the notation - but it is also a great introduction to the incremental nature of these pieces of PLT. Eventually we’re going to add more types to our language - and when we do that, we won’t need to change the typing rules for Booleans or the properties about the type system.</p>
+<p>Let’s jump in.</p>
+<h1 id="type-system-rules">Type system rules</h1>
+<p>We use another set of rules for types, which indicates the relationship between terms and types: <img width="79" alt=" {\text{term} \colon \text{type}} " height="14" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ4AAAAcCAQAAAA69M4jAAADDUlEQVR4nO1Zy5HDIAylFSqhEdfhMtwEPbgFOqABnznmkkO8IIxBIMDemUzY2TxPZmwB4kl8JAhjGILN7K9hGM4zU5+mcBvDcF5GIXIDw3BWoxC5gUE4c/Yag8gNDMNZsX0MIjcwBGcBNHam7QbsH47KpS0x9lG2ZsRs5eqQCXiTh3yBr/n4UvBMSbtckoMXDK5yFudXasV0SkTGjx82rMiyvu1JsSt8WiJPeHNPNGxiD7YdDR1deZYYW+Loz7bOZn+udE3kylLTQItDmQayuYSCa/9ouq7GWR7S3S7oaIV3s9MpEb/F8pbgWk3O4brtGeglMAEJXGtJvg18b/D+su8b0qaTQXiAm1OJqdDhh6l90Jw5MMHyJetLgyvTwVuLAevZ3iXiTY4QMNa4lT5qLMlSdHKD6Kpz5HHb61yu11PJMHrMWU+eH4bJtPVs7xCRRHWnMs4eVVGoirlDS3ID7qHmPAF9pXuUznZYquWCWvVt76jbihH0shW1ymsEubktuYv6DN1QCS840i33xLa+7R11LxTN/IO31tbC+aTzFggZAbLYW+mWJmHUt72jbicUhIDfpv9p5zGIucFlZS995/Vt76jbuxv3uM6L2ieizjXnXU7AsTqv4tHIxVokPuM8rCsGDU3MlnpuoYn3XxFRZLLKB122uS4fNMpgUbb08PmlTGq0be8QEbBt5tXXZPt9l/OuXXG2neeDxkom4hTvFSUnfdsTyMQUcU5YWUxebscjnjvf47z+8azFOeKJYm7e9wudn/25JB20nu1F43COi0rCiTXUMihNNJANlQo1jCK/KQl9XD2e1TgHrNVN3+en5uydw4BRCU3ddoTJmvJk/sYjxQxHaSfVcAEQsKPHVOTzRUmKaj51mXMwt1x4Hn7FuAsNBbc8T2RZ3/YKGTqTEfUc5+OocaZOFgFxu5mIKziMkW1/I1TtFqSZIX4BqCdCX+cRcAlGiNOtf9a+ziMwn3Gak1lAQOse+9/CJS8u4RDFDV6Ei50vyPMG+eNyHLh/Rwx5ng1wYSTckfzaeT+9w7a+69mvQAAAAABJRU5ErkJggg==" class="display-math" style="margin:0; vertical-align:-4px;" /></p>
+<p>As usual, the rules for the <img width="31" alt="\text{true}" height="11" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD8AAAAWCAQAAADd9YyqAAABbElEQVR4nMWW0Q2EIAxAuwqTsAhzMAZLuIMrsIEL8M2nP37otRUVtJya3IWSS6SlfaVaOIBSNFhoKBZ8S7xri/ct8QrmlngPSyu8ZvgCA35+61Cst9DxK9Fpjcc5JIsr5pJmkw7jRhxrHMFMxgnxEz/RMGyJMHJaFucBf5RknyyRLXGPsq2NRWyD2pCw5H1NLkmt+IRxGIJkxudQeJSws8agRzzZ3Tu8Ty+FhMprXuBHrtwhmiv8Gi+73OE7wZMSMiDIN3wQ9Pf4IHiG/et5gZcb8g4/F720jqEW7ff4RcDTENvvP/jHB1mJiRX9G/zIu2+Gp9l48VJPiv8E31/wodBo/vjOsF4++brMVWdFq+PtCa/54M413aX8CuuhpGAqy9VnZ1Xk7hVd+O1uu1O40uF8LvZ73BLbGvHQITGY/cS31rbbpRjx4qH5qvL8N42uJLuvPdK3fBlRzIHXfBVT68uqaO5lk3Yn97WW9B8meSOTExVOXgAAAABJRU5ErkJggg==" class="inline-math" style="margin:0; vertical-align:-1px;" /> and <img width="34" alt="\text{false}" height="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEQAAAAZCAQAAAAiCkAQAAACAUlEQVR4nO1XwbGEIAylFSqxEeugDJuwB1ugAxvg7NHLHuC/BFSCiO6fcf7lh3HcBRJeQvKyq1RNemXw/LEY9VFODWpV8+3ehYfH8wKMwAB6vAO+3e2eADi8AeQDsxrvjoF0DzTsG0BMZrR7BOMlIOMvjL4C5DdG/4G8DsRgzDC68ieTpWqHIiW+mJFDT4AYzM14iI003lJGrJE1e1UMtEjF6xNNjbuiSyxrAHI9MW4JxOEgnT5PBdn10HcJAOnVHLvwroNi/s1j6IaOxVFy9VjrC1ikOTwFYjlGx9F0eVNDZy2uQos1ydVEmp9vgOQMW99xzHiYlhHbIjpWjiVo1eZ6PoaSbWjukDMzHzdmYDYnHFackuJO8b085gBEDY5uvA2EsijwoB6eA/LcTo0YBLusqgYQA5MeSgPCeBcRgjInKBHOFvpQASJpoglEc/js7tk9kA28Zc0j1cOV98+ALOn3yfWOsnxz6TgdYxashaWvgBj2Q1d32KpOKGqm21PUMmuXop9dTcv/pbrnzJYbs8Q0Lo+d6uxaAyJrf7kFUuaLz5pFeTkaMLWqSGSBnAO88HFGDcQfk3rnBKkTuL4OmcR1WMEbxLoVOgtibH71nPtUuhMXX+wYPpmQOoZnDLfJiXlnyRpgFIM5uizqz+7bvyw6Vfwh1wa2lahRDTviXOGPH9EBfp+gqlxbAAAAAElFTkSuQmCC" class="inline-math" style="margin:0; vertical-align:-1px;" /> cases are the easy ones: <img width="139" alt=" \prftree[r]{T-True} {\text{true} \colon \text{Bool}} " height="22" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARcAAAAtCAQAAAAuTOcgAAAEVUlEQVR4nO1cybWrMAx1K1TiRqiDMtIEPaQFd0ADrFmyYZF8D5B4kMwQOYT3db15MYrsE914kO6LEIzykEJtam1hH4xLoBFP3SbRvYL6sD396/VgXw+FfTAuAaXDeA96XGh9SE2FXKgpfDAuAaXXhBBpqIW4ibGwD8YloHQYQ0ChFnp7KeuDcQn0oo564FDnNhIKH4xLIA0hHOpeVEV9MC6BraFW+v5T0gfjooBDTeOjEa29WEuxZGvauf8WZWbSngWtPlgPujkvjJNRki6Dvh2ZJ40+7ZgTz3IFH5LMzGIZrly17u1nmpj3cuLvdJSky/LspoNu8LDJPAeVkCPuqbX9ED2P72SML6M0XUyQu/kUYzac2uvP02W069Ib0uaSGafiG3SBgrxGlxZ4nyFQfIlnfBXfoEuP9Ofo0gPv65Pygz0GcaNp6sNQb8UaXaB5rNHlMW9ifutSXw03srZl4cZD7Z74bb+P43R5AnQxja/TpwIPtUpWq/0+PqPLltWR8VX86mY02tWF8WP4VbqYV6kEouLN6FycRZd7Qpc+6JH2sBuT486Z3XNxFl2aiC5Gfxf2tMl2VOn15s9UuVv0OpsKiijgvD/EJ7oSF6Qkm0HoY7D5EyjIo7d6VNrupl8/gvUklHkamz+UpJP6G6PmUpl/BbzbfMHjo5BAMJ7HZEnfiviS/DxwF1nzEfbH85S6Z7IyB2ULkM3L8p36b4QpPior+ExlWSuQ4vcVFApcmOs57VRitCur1qSXH6qQvIo8mm9pLnATh+nijnb0mYSr06Uobhemi0trU8udmS4ZqEvTxd0faA9rTBcUlf5uMl3S0ZguILAb/G8Bo0sl3L+K0o/GdEkg5zC8L6jLTR6TD9MKiCtvxDwwurj+NP9Sz6W8Ds3N5CyYLgBcAmyy384l+bUs6ph8mFZAPIIVDAgwXVrbG3uu9LjjnByQ9u94q1qzYLqgwDcjTD5MJSCuRF7vEfv3LaX21tl1MV63TEo7TGp3ei71LgumCwqcLph8mE5AvP3cpOb8it/MOndP6NInJTRzmJ88eqxbMF1Q5OkCHyK/LyCGNyNpvfqzb8DtrfOqJOsWTJcM8nSB5MNkAuKds4RvRlNQBujAooBP/HULpksGebrgTwgExDtnCZ9y3HF3IeIEjuLKbNVGC6ZLBiXoQi8gxukSZl7gClIj3hXZdQumSwal6EKb+sPpshT0q8zITBcyhKSIL7/H6EIvIF6ny3vkdM7tLgumSwYl6EIvIMbpIoPNCA6037tuwXTJ4Ahd6ATEW4VZOF26YHuRwZF1gVlRbpstmC4ZtN5HI4MtBKcLlYD40yLAsonkSd5Ec9lmwXQBUXkrQfhDVrh8mEZAvKcI0ItUplC/VpZwjmGFypUj9ll0dnv7M+p4WtT6o5nmxPqCvHyYSkC8JRejorn4zfzGNeS30eMO88gTWNzELcIRfl/FfArqA1mRogLij+HP7qjFf4d/5UqNCHyVmFMAAAAASUVORK5CYII=" class="display-math" style="margin:0; vertical-align:-1px;" /></p>
+<p><img width="144" alt=" \prftree[r]{T-False} {\text{false} \colon \text{Bool}} " height="22" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASEAAAAtCAQAAABLoRVfAAAFPklEQVR4nO2cy7WrOgyGaYVK3Ah1UEaaoAdacAc0wJghEwbh+gXYssBiB4hzj36vc1ZCjCH4iyVLWrsoWM9JFJLUmsNRGsIIaQ2mvdU/1g+pLmbVpqJbp/ptjvTr+8G8P57WBj3Ttt4cnUn30hZj8lqszCTVlLXBkSGacKEQo0yrNGfW0fHSgFGR74cR+ilJtf6EihEqipeCgDIWjpCG6I0ex8dghH5KUuERCkOoUAhQxtpDqEh6U/4YjNBPqY8MDI7QJ4ZM60VyqBmhH1Q8XThCvTJGKR0hJCKDuT8GI/RToiIkCb5MjFDjrXG8Cv0zwhGiKEYoBk+o/Z+O/nQ7vlGMUG1cfh0ceKmVMASxUZ/o0aQal5WNrkSoAwg1q+9Vqz3eiGz0IUK9GmMxoW0QdqzU+b1DR59Fc9dZD+g6hGqwlRdqyv13b9WghxUiJEEwQa6fVSCKrc+De0vWl/QpQqNLVEyIWZsDaLoorAkRGoHhKtfPRjC2MDF2Vhb6FKFWTa1uL5PagAjNnteCuc7hsbfCIlyn7DrWIMDQI+Csm3WlLzQG70oQyEwj1BlUGg8jC2BvcnGh+nhNG7jd0NJO5707Mq3SJFRtAvcYIeFStxqk3kNJH+3carc0jRsIHNTcbmjpze8RQoOb0K2dRahWKLzVdL+U0UmvQjYkuV1tcqZqRhCifTvWAzpCSEarWvjpfnRaqzTGRq5rCQUhq3otGrHu+ByvOKx8dKUhi0fuQP9jhEJMhHGZtb8zgpFYWekuhGxxWwn6D+5VfExrBvsx4dxoaYIHUCUbsjx0F0LxmrMdGXZ6xTFnGymybjYEpj0foa7U7XIk4GrdiVAYyxkICEFD93aYNJEp07WR6WoCT7XZ5ulqOopNtK7f84Xdzc7WWiKlXlfo8+8pXFQZRo3TKp3Du+fm2pVjWyc69fOfjKkqvRiPjQQtKMxm97ap9cxXWLKr49anlpPaMVglHLit/3cKu4XZS4zRJrQ1j+r9h4k61iffE27X5xP7nnizj81KZSDTG/rWJWArkycbvK16eL7+X6dmW/PNBi/lar/tYAybzuTHpXMJTc7REkUYMj/S9ypRJGoaKhcgu+Nq+VbclO5HtOlo6pfP7DmYmRJ/iwfV3kMS5NNzQ0gvy3fEN/JGKBM1f3pI+SFkA/WUwvazV2OEEvrbQ8oRIetDXLurZIQIYoRSV2OEEvq/IFQWcxQrueZqjNCBtP/dmfA2zM0+W9hd7uwQ9q6MIWSPx/GhyqUzu93Y0VEPRigh/eAm44SG9S9PF3aPaJYGF45QY47CsXWYbSnUEuY1/CapHowQQfFDerqwuyyof61iGcHvK9R4nYkJwRWuNPj7d96pu6lO9WCECMITds8WdssTER3p4j9+0ytoGyHUR4HSEtQPp3swQgThCOVb2I0bMlv94mNYo8bR/zmkezBCJMUP6fHC7tP3i+/IpiDF0aEJDz/Dne7BCJG0/5AeK+w+fb+432Rd6gXPCb2OX6qV7sEIkbRXX5trYfc+QmFkCM+YWUBqYg9GiCTMkOVc2L2P0FLgUK6vGaFHFD+kvAu70whZQffaqjnVgxEiCT6k3Au79xESgSHDJ98/mu7BCJEEH9J3Crtpf35yuTKOUBeYJhH9FOx9baHNdA9GiCQMoacLuz9PcCwGCH6T0FDVRWyi0z0YoYTCEu1vFHafS3BYdz0co1pXoBDOMCdnky3nesCnwwIKS7S3vNbThd20WJEEV/bbZFCPVZu/0GOvPaEp3v0eqQJ41qEyKey+RPbaR/ef7vEP6z+rB0Us6KXmAgAAAABJRU5ErkJggg==" class="display-math" style="margin:0; vertical-align:-1px;" /></p>
+<p>An if-expression is well typed when test expression has type <img width="35" alt="\text{Bool}" height="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEcAAAAYCAQAAAACYSi2AAABcUlEQVR4nO1XwbGEIAylFSqhEeqgjN+EPdgCHdCAZ49ePOxuSAaHYBQUDx5+Ms5gfJBHgASVSjKoWVQP+qeeFxr9A48oRjlwvKgvaIB20hHevtBtfJhOHDl6O6BD4pFOKRboRJJPi79HR8FMot2/hY7C+HzeQ2fGL/afjmDXaF8fJdNBh+z7/GPhS8wf4TA3nSFu0hnQOhRWrSbIHA7bBtvlUtYQl+kYmFPAnGN2rhZQnVkCnDx7CdFIxzONoR53dCbAcZsGZ2vmvo64uVgG03meBB28LztcjOPYjOg6WSsrE0EsGj47fXVEV96h7ZxmtoolwyFGNyK66PDMI1cwcuYaEV10yEGa2WvokJRbm2S4hOiiY9hiyQPl1jqii05g4TdsSyZZskJSR3TQoSDPBZIvhiuOdhvilM4kXCPsFhk+V8/qmMVr+DVEwOUvI7h1PdIVOko3HQfBp3+NAJiyxJ4juAcn9L0lBv83zq5ldcQmP0khijCXxc0oAAAAAElFTkSuQmCC" class="inline-math" style="margin:0; vertical-align:-1px;" /> and when both branches have the same type. When those conditions hold, the type of the if-expression is the same as the type of the branches.</p>
+<p>Expressed in our rule system we have: <img width="199" alt=" \prftree[r]{T-If} {t_1 \colon \text{Bool}} {t_2 \colon \text{T}} {t_3 \colon \text{T}} {\text{if $t_1$ then $t_2$ else $t_3$} \colon \text{T}} " height="36" src="data:image/png;base64,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" class="display-math" style="margin:0; vertical-align:-3px;" /></p>
+<p>TODO ill-typed term that isn’t stuck, conservative type systems</p>
+<h1 id="type-errors">Type errors</h1>
+<p>TODO normal forms and type errors</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">TypeError</span> <span class="fu">=</span>
+    <span class="dt">UnknownType</span>
+  <span class="fu">|</span> <span class="dt">Unexpected</span> {<span class="ot"> actual ::</span> <span class="dt">Type</span>,<span class="ot"> expected ::</span> <span class="dt">Type</span> }
+  <span class="fu">|</span> <span class="dt">ExpectedEq</span> {<span class="ot"> type1 ::</span> <span class="dt">Type</span>,<span class="ot"> type2 ::</span> <span class="dt">Type</span> }
+  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Ord</span>,<span class="dt">Show</span>)
+
+<span class="ot">expect ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m 
+       <span class="ot">=&gt;</span> <span class="dt">Type</span> 
+       <span class="ot">-&gt;</span> <span class="dt">Type</span> 
+       <span class="ot">-&gt;</span> m ()
+expect actual expected <span class="fu">=</span>
+  unless (actual <span class="fu">==</span> expected) <span class="fu">$</span>
+    throwError <span class="fu">$</span> <span class="dt">Unexpected</span> actual expected
+
+<span class="ot">expectEq ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m 
+       <span class="ot">=&gt;</span> <span class="dt">Type</span> 
+       <span class="ot">-&gt;</span> <span class="dt">Type</span> 
+       <span class="ot">-&gt;</span> m ()
+expectEq ty1 ty2 <span class="fu">=</span>
+  unless (ty1 <span class="fu">==</span> ty2) <span class="fu">$</span>
+    throwError <span class="fu">$</span> <span class="dt">ExpectedEq</span> ty1 ty2</code></pre></div>
+<h1 id="typing-rules-in-haskell">Typing rules in Haskell</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmFalse ::</span> <span class="dt">Monad</span> m
+             <span class="ot">=&gt;</span> <span class="dt">Term</span>
+             <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
+inferTmFalse <span class="dt">TmFalse</span> <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span>
+  return <span class="dt">TyBool</span>
+inferTmFalse _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmTrue ::</span> <span class="dt">Monad</span> m
+            <span class="ot">=&gt;</span> <span class="dt">Term</span>
+            <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
+inferTmTrue <span class="dt">TmTrue</span> <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span>
+  return <span class="dt">TyBool</span>
+inferTmTrue _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmIf ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
+          <span class="ot">=&gt;</span> (<span class="dt">Term</span> <span class="ot">-&gt;</span> m <span class="dt">Type</span>)
+          <span class="ot">-&gt;</span> <span class="dt">Term</span>
+          <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
+inferTmIf inferTerm (<span class="dt">TmIf</span> tm1 tm2 tm3) <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span> <span class="kw">do</span>
+  ty1 <span class="ot">&lt;-</span> inferTerm tm1
+  expect ty1 <span class="dt">TyBool</span>
+  ty2 <span class="ot">&lt;-</span> inferTerm tm2
+  ty3 <span class="ot">&lt;-</span> inferTerm tm3
+  expectEq ty2 ty3
+  return ty3
+inferTmIf _ _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTermRules ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
+               <span class="ot">=&gt;</span> [<span class="dt">Term</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)]
+inferTermRules <span class="fu">=</span>
+  [ inferTmFalse
+  , inferTmTrue
+  , inferTmIf inferTerm
+  ]
+
+<span class="ot">inferTerm ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
+          <span class="ot">=&gt;</span> <span class="dt">Term</span>
+          <span class="ot">-&gt;</span> m <span class="dt">Type</span>
+inferTerm tm <span class="fu">=</span>
+  fromMaybe (throwError <span class="dt">UnknownType</span>) <span class="fu">.</span>
+  asum <span class="fu">.</span>
+  fmap (<span class="fu">$</span> tm) <span class="fu">$</span>
+  inferTermRules</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">runInfer ::</span> <span class="dt">Except</span> e a <span class="co">-- ^</span>
+         <span class="ot">-&gt;</span> <span class="dt">Either</span> e a <span class="co">-- ^</span>
+runInfer <span class="fu">=</span> runExcept</code></pre></div>
+<h1 id="properties-for-type-systems">Properties for type systems</h1>
+<h1 id="testing-the-properties">Testing the properties</h1>
+<h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
+    </div>
+    
+    <div class="panel-footer">
+        <h5>Posted on May 19, 2016 </h5>
+    </div>
+    
+</div>
+
+            <div class="row">
+                <div class="col-md-5"> Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a> </div>
+                <div class="col-md-7">
+                    This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>
+                    <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-59162164-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+    </body>
+</html>

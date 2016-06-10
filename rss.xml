@@ -2,10 +2,10 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"
     xmlns:dc="http://purl.org/dc/elements/1.1/">
     <channel>
-        <title>The Cachething Chronicles</title>
-        <link>http://dlaing.org/cachething</link>
+        <title>Little Languages</title>
+        <link>http://dlaing.org/little-languages</link>
         <description><![CDATA[]]></description>
-        <atom:link href="http://dlaing.org/cachething/rss.xml" rel="self"
+        <atom:link href="http://dlaing.org/little-languages/rss.xml" rel="self"
                    type="application/rss+xml" />
         <lastBuildDate>Unknown</lastBuildDate>
         

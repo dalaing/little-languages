@@ -29,53 +29,106 @@
 
         <div class="container">
             <h1 id="whats-all-this-then">What’s all this then?</h1>
-<p>I’m glad you asked. It’s a new blog series I’m writing, to go along with some code I’ve been hacking on and a talk I’m preparing / I’m giving / I’ve given (delete whichever inappropriate) for YOW! Lambda Jam.</p>
+<p>I’m glad you asked. It’s a new blog series I’m writing, to go along with some code I’ve been hacking on and a talk I presented at YOW! Lambda Jam.</p>
 <p>The focus is on writing Domain Specific Languages (DSLs) in Haskell.</p>
 <p>Some of it will be about some of the cool tools, techniques and libraries we can use in Haskell. There’s some great stuff out there, with mixed amounts of documentation. I’m not going to fully cover the gaps there, but hopefully I can get you to take a look at something you might otherwise have left on the shelf.</p>
 <p>Some of it will be about how to get your feet wet with Programming Language Theory (PLT) in order to help improve your DSLs. For the most part it’s super useful, it’s not anywhere near as scary as it looks going in, and you can get a lot of good use out of the easy bits that you pick up in the beginning.</p>
 <p>Some of it will be madness, where I try to work out <em>if</em> I can do something without much regard for <em>whether</em> I should be doing it at all. I’ll try to remember to point out when I’m doing that.</p>
 <p>There will also be some themes that run through this project: testability and composition. We’ll be using QuickCheck to do a lot of heavy lifting for us on the testing front. For composition, we’ll periodically refactor the code that we have to make things more reusable and composable.</p>
+<h1 id="the-talk">The talk</h1>
+<p>Here are <a href="https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf">the slides</a>.</p>
+<p>I’ll post a link to the video when that becomes available.</p>
 <h1 id="the-blog-posts">The blog posts</h1>
-<p>Coming soon. <!--
+<h2 id="part-1---the-basics">Part 1 - The basics</h2>
+<p>Coming (very) soon… <!--
 - [The B language](./posts/b.html)
     - [The semantics of B](./posts/b/semantics.html)
     - [Testing B](./posts/b/testing.html)
-    - [Printing and Parsing B](./posts/b/text.html)
-      - include round trip tests
-      - include a source code formatter
-    - [A REPL for B](./posts/b/repl.html)
-      - basic haskeline
-      - add the ability to step through evaluation?
-      - would be nice to be able to print rule names as we go...
-- [Improving the modularity of B](./posts/modularity.html)
+    - [Parsing and Printing B](./posts/b/text.html)
 - [The N language](./posts/n.html)
-  - first post introduces the formalism, leaves implementation as an exercise
-  - [The implementation of n](./posts/n/implementation.html)
-  - goes through the exercise
-    - covers lazy versus strict
 - [The I language](./posts/i.html)
-  - first post introduces the formalism, leaves implementation as an exercise
-    - discussion of controlling evaluation order through semantics rules
-  - [The implementation of I](./posts/i/implementation.html)
-    - goes through the exercise
-      - discussion of expression parser and expression printer
 - [The NB language](./posts/nb.html)
-    - first post introduces the formalism
-      - natEq semantics as an exercise
-      - implementation as an exercise
-      - thinking about how things can go wrong as an exercise
-    - [A type system for NB](./posts/nb/type.html)
-    - [Testing the type system](./posts/nb/testing.html)
-      - includes the new generators
-    - post on syntax helpers / GADTs ?
-    - [Better type errors for NB](./posts/nb/errors.html)
-      - includes adding annotations to the term and the type
-      - includes parsing with source locations
-      - include test for that with subTerms?
-    - a REPL post
+    - [Types for NB](./posts/nb/types.html)
+    - [Testing NB](./posts/nb/testing.html)
+    - [Better error messages](./posts/nb/srclocs.html)
+- [The IB language](./posts/ib.html)
+- [Simply-Typed Lambda Calculus](./posts/stlc.html)
+    - [Using `bound` for variable substitution](./posts/stlc/bound.html) 
+    - [Semantics for STLC-B](./posts/stlc/semantics.html)
+    - [Adding contexts](./posts/stlc/contexts.html) 
+    - [Types for STLC-B](./posts/stlc/types.html)
+    - [Adding warnings](./posts/stlc/warnings.html) 
+
 - LC and STLC
-  - brings bound into play
-  - brings contexts into the type system
+  - describe LC and it's various tricky cases in main post
+  - describe bound
+  - semantics of STLC, implementation using bound
+  - type system for STLC, implementation using reader
+  - add warnings for shadowing / unused variables
+
+## Intermezzo 
+  - lambda calculus cooked 5 ways
+  - fun with hbound and syntax helpers
+  - internal and external languages
+  - small check (if we can turn sets of rules / structures into a maximum depth)
+
+## Part 2 - Making things more modular
+
+- modularity for NB (no annotations)
+  - classy prisms for the term
+    - rework the rules
+  - a monoid for combining rules
+  - typeclasses for combining rules
+- adding annotations and LC
+  - intro to constraints
+  - the impact of extra type variables on the monoid approach
+  - the impact of extra type variables on the typeclass approach
+
+## Intermezzo
+- observable sharing for CSE
+  - transforming back from the graph into a let block could be interesting
+- code formatters and more advanced testing of text functions
+
+## Part 3 - Extensions
+- let, fix, letrec
+  - non-recursive let
+  - adding fix for letrec
+  - indentation aware parsing
+- patterns
+  - need source locations
+- case / alt
+  - pattern match coverage tests
+- TLDs
+- user defined data types
+  - recast B using data types
+- recursive data types
+  - recast N using data types
+  - recast NB using data types from the previous recastings
+- a basic module system
+
+## Intermezzo
+- literate documents 
+- a REPL for learning
+  - from a REPL to a debugger
+- a DSL for SQL 92 (?)
+
+## Part 4 - Type inference
+- constraint based type inference
+- bidirectional type inference 
+- System F, Fc, Fw
+- Typeclasses (?) 
+
+## Intermezzo
+- strictness vs laziness via annotations type level variables
+- affine languages
+
+## Part 5 - Compilation of strict languages
+- Tiger book approaches
+
+## Part 5 - Compilation of lazy languages
+- PJ and lester approaches
+- Tiger book approaches
+
 --></p>
 <h1 id="for-those-of-you-playing-along-at-home">For those of you playing along at home</h1>
 <p>These posts should all be self-contained, so you probably don’t <em>need</em> the following books. I had them in my books-that-I-want queue for a long time but wasn’t sure I eas ready for them, and now I kind of wish that I dived in earlier.</p>
@@ -92,11 +145,11 @@
 <h1 id="why-are-you-doing-this">Why are you doing this?</h1>
 <p>When I was new to Haskell, someone mentioned a paper that covered something I was interested in, and so I started to skim it.</p>
 <p>It was about an extension to Haskell, and I can clearly remember that it was formatted in two columns. Other bits I’m a bit more vague about, since it was pretty alien to me.</p>
-<p>The bit that really struck me was all on one page.</p>
+<p>The bit that really struck me was that it was all on one page.</p>
 <p>The first column mentioned the additions to the type system in some syntax that I couldn’t read. The second column mentioned the addition to the semantics in some other-but-related syntax that I also couldn’t read. After the diagrams with the changes where the proofs that the changes didn’t break anything in the existing system and that the changes delivered on their promises.</p>
 <p>The paper then went on to discuss various extensions and alternatives to their change - clearly the authors had done what they’d wanted to do on that page, and were keen to discuss other matters.</p>
 <p>I was very struck by how composable the two strange-looking syntaxes were, and how effective the existing proofs and proof strategies were at dealing with incremental changes. That’s when I asked some questions, picked up TAPL, and - after reading Chapter 2 of TAPL - picked up HTPI.</p>
-<p>If you read a bit of TAPL or PFPL, you’ll see that it takes a similar approach. It spends a lot of time incrementally building up a series of languages and proving both that the increments do what they say and that they don’t make a mess while doing it.</p>
+<p>If you read a bit of TAPL or PFPL, you’ll see that it takes a similar approach. It spends a lot of time incrementally building up a series of languages and proving that the increments add what they claim to and that they don’t make a mess while doing it.</p>
 <p>I found that exciting, and hopefully I can spread some of that excitement around with this series.</p>
 <p>There are also a few tools that make some of this easier, and I’m pretty keen to spread the word about them.</p>
 
