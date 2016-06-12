@@ -13,13 +13,8 @@ module Term.Pretty (
   , prettyTerm
   ) where
 
--- from 'base'
-import           Data.Foldable                (asum)
-import           Data.Maybe                   (fromMaybe)
-
 -- from 'ansi-wl-pprint'
-import           Text.PrettyPrint.ANSI.Leijen (Doc, align, group, text, int, (<+>))
-import           Text.PrettyPrint.ANSI.Leijen as PP ((<$>))
+import           Text.PrettyPrint.ANSI.Leijen (Doc, int, (<+>))
 
 -- from 'parsers'
 import           Text.Parser.Expression       (Assoc(..))
@@ -30,6 +25,7 @@ import           Common.Text                  (OperatorInfo(..))
 import           Term                         (Term (..))
 
 -- $setup
+-- >>> import Data.Maybe (fromMaybe)
 -- >>> import Text.PrettyPrint.ANSI.Leijen
 -- >>> let render r w f d = putStr $ displayS (renderPretty r w (plain (f d))) ""
 

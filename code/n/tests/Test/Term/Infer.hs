@@ -19,14 +19,14 @@ import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck       (Property, forAllShrink, property,
+import           Test.QuickCheck       (Property, property,
                                         (.||.), (===))
 
 -- local
 import           Term                  (Term)
 import           Term.Eval.SmallStep   (canStep, smallStep)
 import           Term.Eval.Value       (isValue)
-import           Term.Gen              (genTerm, shrinkTerm)
+import           Term.Gen              (AnyTerm(..))
 import           Term.Infer            (inferTerm, inferTermRules, runInfer)
 import           Type                  (Type)
 import           Type.Error            (TypeError)
@@ -52,37 +52,37 @@ infer =
   runInfer .
   inferTerm
 
-propPatternUnique :: Property
-propPatternUnique =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    let
-      matches =
-        length .
-        mapMaybe (\i -> fmap runInfer . i $ tm) $
-        inferTermRules
-    in
-      matches === 1
+propPatternUnique :: AnyTerm
+                  -> Property
+propPatternUnique (AnyTerm tm) =
+  let
+    matches =
+      length .
+      mapMaybe (\i -> fmap runInfer . i $ tm) $
+      inferTermRules
+  in
+    matches === 1
 
 -- For now, all of our terms are well typed.
-propWellTypedInfer :: Property
-propWellTypedInfer =
-  forAllShrink genTerm shrinkTerm $
-    isRight .
-    infer
+propWellTypedInfer :: AnyTerm
+                   -> Bool
+propWellTypedInfer (AnyTerm tm) =
+  isRight .
+  infer $
+  tm
 
 -- Assumes we are dealing with a well-typed term.
-propProgress :: Property
-propProgress =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    case infer tm of
-      Left _ -> property True
-      Right _ -> isValue tm .||. canStep tm
+propProgress :: AnyTerm
+             -> Property
+propProgress (AnyTerm tm) =
+  case infer tm of
+    Left _ -> property True
+    Right _ -> isValue tm .||. canStep tm
 
 -- Assumes we are dealing with a well-typed term.
-propPreservation :: Property
-propPreservation =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    case smallStep tm of
-      Nothing -> property True
-      Just tm' -> infer tm === infer tm'
-
+propPreservation :: AnyTerm
+                 -> Property
+propPreservation (AnyTerm tm) =
+  case smallStep tm of
+    Nothing -> property True
+    Just tm' -> infer tm === infer tm'

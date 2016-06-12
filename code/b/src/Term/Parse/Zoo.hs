@@ -303,6 +303,9 @@ parseTermCharOrder =
 -- >>> parse parseTermChar "if potato then False else True"
 -- Success (TmIf (TmVar "potato") TmFalse TmTrue)
 --
+-- >>> parse parseTermChar "if potato thenFalseelseTrue"
+-- Success (TmIf (TmVar "potato") TmFalse TmTrue)
+--
 -- >>> parse parseTermChar "if False potato False else True"
 -- Failure (interactive):1:10: error: expected: "then",
 --     space
@@ -506,6 +509,9 @@ parseTermToken =
 -- Failure (interactive):1:10: error: expected: "then"
 -- if False potato False else True<EOF>
 --          ^
+-- >>> parse parseTermTokenName "if potato then FalseelseTrue"
+-- Success (TmIf (TmVar "potato") TmFalse TmTrue)
+--
 parseTermTokenName :: (Monad m, TokenParsing m) => m Term
 parseTermTokenName =
   (asum parseTermRulesTokenName <|> parens parseTermTokenName)

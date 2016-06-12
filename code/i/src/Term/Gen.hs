@@ -10,6 +10,7 @@ Generators for terms of the I language.
 module Term.Gen (
     genTerm
   , shrinkTerm
+  , AnyTerm(..)
   ) where
 
 -- from 'base'
@@ -131,6 +132,16 @@ genTerm' s =
     s2 = s `div` 2
     child2 = genTerm' s2
 
+-- | The set of shrinking rules for terms of the I language.
+shrinkTermRules :: [Term -> Maybe [Term]]
+shrinkTermRules = [
+    shrinkTmInt
+  , shrinkTmAdd shrinkTerm
+  , shrinkTmSub shrinkTerm
+  , shrinkTmMul shrinkTerm
+  , shrinkTmExp shrinkTerm
+  ]
+
 -- | Shrinks terms of the I language.
 shrinkTerm :: Term
            -> [Term]
@@ -138,9 +149,15 @@ shrinkTerm tm =
   fromMaybe [] .
   asum .
   fmap ($ tm) $
-    [ shrinkTmInt
-    , shrinkTmAdd shrinkTerm
-    , shrinkTmSub shrinkTerm
-    , shrinkTmMul shrinkTerm
-    , shrinkTmExp shrinkTerm
-    ]
+  shrinkTermRules
+
+-- | A newtype wrapped for generating terms of the I language.
+newtype AnyTerm = AnyTerm {
+    getAnyTerm :: Term
+  } deriving (Eq, Show)
+
+instance Arbitrary AnyTerm where
+  arbitrary =
+    fmap AnyTerm genTerm
+  shrink =
+    fmap AnyTerm . shrinkTerm . getAnyTerm

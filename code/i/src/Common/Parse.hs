@@ -16,6 +16,10 @@ module Common.Parse (
 -- from 'base'
 import           Control.Applicative          ((<|>))
 import           Data.Foldable                (asum)
+import           Data.Function                (on)
+import           Data.List                    (groupBy, sortOn)
+import           Data.Maybe                   (mapMaybe)
+import           Data.Ord                     (Down (..))
 
 -- from 'ansi-wl-pprint'
 import           Text.PrettyPrint.ANSI.Leijen (Doc)
@@ -49,28 +53,27 @@ data ParseRule m t =
 
 -- |
 gatherRegular :: ParseRule m t
-              -> [m t]
+              -> Maybe (m t)
 gatherRegular (ParseRegular p) =
-  [p]
+  Just p
 gatherRegular _ =
-  []
+  Nothing
 
 -- |
 gatherOp :: ParseRule m t
-         -> OperatorTable m t
+         -> Maybe (Int, Operator m t)
 gatherOp (ParseOp (OperatorInfo assoc prec) p) =
-  [Infix p assoc] : replicate prec []
+  Just (prec, Infix p assoc)
 gatherOp _ =
-  []
+  Nothing
 
 -- |
-combineTables :: [OperatorTable m a]
+combineTables :: [(Int, Operator m a)]
               -> OperatorTable m a
-combineTables os =
-    foldr (zipWith (++) . pad) (pad []) os
-  where
-    l = maximum . map length $ os
-    pad ls = replicate (l - length ls) [] ++ ls
+combineTables =
+    fmap (fmap snd) .
+    groupBy ((==) `on` fst) .
+    sortOn (Down . fst)
 
 -- |
 mkParser :: TokenParsing m
@@ -81,11 +84,11 @@ mkParser rules =
     parseTerm =
       (<|> parens parseExpr) .
       asum .
-      concatMap gatherRegular $
+      mapMaybe gatherRegular $
       rules
     tables =
       combineTables .
-      fmap gatherOp $
+      mapMaybe gatherOp $
       rules
     parseExpr =
       buildExpressionParser tables parseTerm

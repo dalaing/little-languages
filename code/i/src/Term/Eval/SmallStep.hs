@@ -119,14 +119,24 @@ eExp2 step (TmExp tm1 tm2) =
 eExp2 _ _ =
   Nothing
 
--- | The small-step reduction rule for exponentiation.
+-- | The small-step reduction rule for exponentiation with non-negative exponents.
 eExpIntInt :: Term
            -> Maybe Term
 eExpIntInt (TmExp (TmInt i1) (TmInt i2)) =
-  Just . TmInt $
-    -- this is bad, and we should feel bad for doing it
-    if i2 < 0 then 0 else i1 ^ i2
+  if 0 <= i2
+  then Just . TmInt $ i1 ^ i2
+  else Nothing
 eExpIntInt _ =
+  Nothing
+
+-- | The small-step reduction rule for exponentiation with negative exponents.
+eExpIntNeg :: Term
+              -> Maybe Term
+eExpIntNeg (TmExp (TmInt _) (TmInt i2)) =
+  if i2 < 0
+  then Just . TmInt $ 0
+  else Nothing
+eExpIntNeg _ =
   Nothing
 
 -- | The set of small-step rules for the I language.
@@ -147,6 +157,7 @@ smallStepRules =
   , eExp1 smallStep
   , eExp2 smallStep
   , eExpIntInt
+  , eExpIntNeg
   ]
 
 -- | The small-step function for the I language.

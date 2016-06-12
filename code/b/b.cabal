@@ -9,7 +9,8 @@ maintainer:          dave.laing.80@gmail.com
 -- copyright:           
 category:            Language
 build-type:          Simple
--- extra-source-files:  
+extra-source-files:  images/*.png
+extra-doc-files:     images/*.png
 cabal-version:       >=1.10
 
 library

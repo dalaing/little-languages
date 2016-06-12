@@ -10,10 +10,11 @@ Generators for types of the N language.
 module Type.Gen (
     genType
   , shrinkType
+  , AnyType(..)
   ) where
 
 -- from 'QuickCheck'
-import           Test.QuickCheck (Gen)
+import           Test.QuickCheck (Gen, Arbitrary(..))
 
 -- local
 import           Type            (Type (..))
@@ -28,3 +29,14 @@ shrinkType :: Type
            -> [Type]
 shrinkType _ =
   []
+
+-- | A newtype wrapped for generating types of the N language.
+newtype AnyType = AnyType {
+    getAnyType :: Type
+  } deriving (Eq, Show)
+
+instance Arbitrary AnyType where
+  arbitrary =
+    fmap AnyType genType
+  shrink =
+    fmap AnyType . shrinkType . getAnyType

@@ -16,13 +16,13 @@ import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck       (Property, forAllShrink, property, (===))
+import           Test.QuickCheck       (Property, property, (===))
 
 -- local
 import           Common.Parse          (parseFromString)
 import           Common.Pretty         (prettyToString)
-import           Term.Gen              (genTerm, shrinkTerm)
-import           Term.Parse            (parseTerm, parseTermRules)
+import           Term.Gen              (AnyTerm(..))
+import           Term.Parse            (parseTerm)
 import           Term.Pretty           (prettyTerm)
 
 textTests :: TestTree
@@ -30,15 +30,15 @@ textTests = testGroup "text"
   [ testProperty "pretty-parse round trip" propPrettyParse
   ]
 
-propPrettyParse :: Property
-propPrettyParse =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    let
-      roundTrip =
-        parseFromString parseTerm .
-        prettyToString .
-        prettyTerm
-    in
-      case roundTrip tm of
-        Left _ -> property False
-        Right tm' -> tm === tm'
+propPrettyParse :: AnyTerm
+                -> Property
+propPrettyParse (AnyTerm tm) =
+  let
+    roundTrip =
+      parseFromString parseTerm .
+      prettyToString .
+      prettyTerm
+  in
+    case roundTrip tm of
+      Left _ -> property False
+      Right tm' -> tm === tm'

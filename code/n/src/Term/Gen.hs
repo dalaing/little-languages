@@ -10,6 +10,7 @@ Generators for terms of the N language.
 module Term.Gen (
     genTerm
   , shrinkTerm
+  , AnyTerm(..)
   ) where
 
 -- from 'base'
@@ -17,7 +18,7 @@ import           Data.Foldable   (asum)
 import           Data.Maybe      (fromMaybe)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck (Gen, oneof, sized)
+import           Test.QuickCheck (Gen, Arbitrary(..), oneof, sized)
 
 -- local
 import           Term            (Term (..))
@@ -45,8 +46,8 @@ genTmSucc g =
 shrinkTmSucc :: (Term -> [Term]) -- ^ The shrinking function for terms of the N language.
              -> Term
              -> Maybe [Term]
-shrinkTmSucc shrink (TmSucc tm) =
-  Just $ tm : fmap TmSucc (shrink tm)
+shrinkTmSucc shr (TmSucc tm) =
+  Just $ tm : fmap TmSucc (shr tm)
 shrinkTmSucc _ _ =
   Nothing
 
@@ -60,8 +61,8 @@ genTmPred g =
 shrinkTmPred :: (Term -> [Term]) -- ^ The shrinking function for terms of the N language.
              -> Term
              -> Maybe [Term]
-shrinkTmPred shrink (TmPred tm) =
-  Just $ tm : fmap TmPred (shrink tm)
+shrinkTmPred shr (TmPred tm) =
+  Just $ tm : fmap TmPred (shr tm)
 shrinkTmPred _ _ =
   Nothing
 
@@ -89,6 +90,14 @@ genTerm' s =
     s' = s - 1
     child = genTerm' s'
 
+-- | The set of shrinking rules for terms of the N language.
+shrinkTermRules :: [Term -> Maybe [Term]]
+shrinkTermRules = [
+    shrinkTmZero
+  , shrinkTmSucc shrinkTerm
+  , shrinkTmPred shrinkTerm
+  ]
+
 -- | Shrinks terms of the N language.
 shrinkTerm :: Term
            -> [Term]
@@ -96,7 +105,15 @@ shrinkTerm tm =
   fromMaybe [] .
   asum .
   fmap ($ tm) $
-    [ shrinkTmZero
-    , shrinkTmSucc shrinkTerm
-    , shrinkTmPred shrinkTerm
-    ]
+  shrinkTermRules
+
+-- | A newtype wrapped for generating terms of the N language.
+newtype AnyTerm = AnyTerm {
+    getAnyTerm :: Term
+  } deriving (Eq, Show)
+
+instance Arbitrary AnyTerm where
+  arbitrary =
+    fmap AnyTerm genTerm
+  shrink =
+    fmap AnyTerm . shrinkTerm . getAnyTerm

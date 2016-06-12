@@ -139,55 +139,85 @@ parseTermRules =
 -- This function is built from the contents of 'parseTermRules',
 -- with added support for parentheses.
 --
+-- We can parse all of the simple forms of the terms:
 -- >>> parse parseTerm "3"
 -- Success (TmInt 3)
 --
 -- >>> parse parseTerm "2 + 5"
 -- Success (TmAdd (TmInt 2) (TmInt 5))
 --
--- >>> parse parseTerm "3 + 2 + 5"
--- Success (TmAdd (TmAdd (TmInt 3) (TmInt 2)) (TmInt 5))
+-- >>> parse parseTerm "2 - 5"
+-- Success (TmSub (TmInt 2) (TmInt 5))
 --
--- >>> parse parseTerm "3 + (2 + 5)"
--- Success (TmAdd (TmInt 3) (TmAdd (TmInt 2) (TmInt 5)))
+-- >>> parse parseTerm "2 * 5"
+-- Success (TmMul (TmInt 2) (TmInt 5))
 --
 -- >>> parse parseTerm "2 ^ 5"
 -- Success (TmExp (TmInt 2) (TmInt 5))
 --
+-- The left associative operators group to the left:
+-- >>> parse parseTerm "3 - 2 + 5"
+-- Success (TmAdd (TmSub (TmInt 3) (TmInt 2)) (TmInt 5))
+--
+-- So brackets grouping things on the left are redundant:
+-- >>> parse parseTerm "(3 - 2) + 5"
+-- Success (TmAdd (TmSub (TmInt 3) (TmInt 2)) (TmInt 5))
+--
+-- We need brackets if we want to group things on the right:
+-- >>> parse parseTerm "3 - (2 + 5)"
+-- Success (TmSub (TmInt 3) (TmAdd (TmInt 2) (TmInt 5)))
+--
+-- The right associative operator groups to the right:
 -- >>> parse parseTerm "3 ^ 2 ^ 5"
 -- Success (TmExp (TmInt 3) (TmExp (TmInt 2) (TmInt 5)))
 --
+-- So brackets grouping things on the right are redundant:
+-- >>> parse parseTerm "3 ^ (2 ^ 5)"
+-- Success (TmExp (TmInt 3) (TmExp (TmInt 2) (TmInt 5)))
+--
+-- We need brackets if we want to group things on the left:
 -- >>> parse parseTerm "(3 ^ 2) ^ 5"
 -- Success (TmExp (TmExp (TmInt 3) (TmInt 2)) (TmInt 5))
 --
+-- Multiplication binds more tightly than addition:
 -- >>> parse parseTerm "3 * 2 + 5"
 -- Success (TmAdd (TmMul (TmInt 3) (TmInt 2)) (TmInt 5))
---
--- >>> parse parseTerm "3 * (2 + 5)"
--- Success (TmMul (TmInt 3) (TmAdd (TmInt 2) (TmInt 5)))
 --
 -- >>> parse parseTerm "3 + 2 * 5"
 -- Success (TmAdd (TmInt 3) (TmMul (TmInt 2) (TmInt 5)))
 --
+-- So we need to use brackets multiply by the sum of two terms:
+-- >>> parse parseTerm "3 * (2 + 5)"
+-- Success (TmMul (TmInt 3) (TmAdd (TmInt 2) (TmInt 5)))
+--
 -- >>> parse parseTerm "(3 + 2) * 5"
 -- Success (TmMul (TmAdd (TmInt 3) (TmInt 2)) (TmInt 5))
 --
+-- Exponentiation binds more tightly than multiplication:
 -- >>> parse parseTerm "3 ^ 2 * 5"
 -- Success (TmMul (TmExp (TmInt 3) (TmInt 2)) (TmInt 5))
 --
+-- >>> parse parseTerm "3 * 2 ^ 5"
+-- Success (TmMul (TmInt 3) (TmExp (TmInt 2) (TmInt 5)))
+--
+-- So we need to use brackets if the exponent or the power is a product (or sum) of two terms:
 -- >>> parse parseTerm "3 ^ (2 * 5)"
 -- Success (TmExp (TmInt 3) (TmMul (TmInt 2) (TmInt 5)))
 --
+-- >>> parse parseTerm "(3 * 2) ^ 5"
+-- Success (TmExp (TmMul (TmInt 3) (TmInt 2)) (TmInt 5))
+--
+-- Nonsense is still rejected:
 -- >>> parse parseTerm "potato"
 -- Failure (interactive):1:1: error: expected: term
 -- potato<EOF>
 -- ^
 --
+-- Even if you try to hide it in brackets:
 -- >>> parse parseTerm "((potato))"
 -- Failure (interactive):1:3: error: expected: operator
 -- ((potato))<EOF>
 --   ^
---
 parseTerm :: ( Monad m
              , TokenParsing m
              )

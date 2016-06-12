@@ -10,6 +10,7 @@ Generators for terms of the B language.
 module Term.Gen (
     genTerm
   , shrinkTerm
+  , AnyTerm(..)
   ) where
 
 -- from 'base'
@@ -17,7 +18,7 @@ import           Data.Foldable   (asum)
 import           Data.Maybe      (fromMaybe)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck (Gen, oneof, sized)
+import           Test.QuickCheck (Gen, Arbitrary(..), oneof, sized)
 
 -- local
 import           Term            (Term (..))
@@ -60,11 +61,11 @@ genTmIf g1 g2 g3 =
 shrinkTmIf :: (Term -> [Term]) -- ^ The shrinking function for terms of the B language.
            -> Term
            -> Maybe [Term]
-shrinkTmIf shrink (TmIf tm1 tm2 tm3) = Just $
+shrinkTmIf shr (TmIf tm1 tm2 tm3) = Just $
   [tm1, tm2, tm3] ++
-  fmap (\tm1' -> TmIf tm1' tm2 tm3) (shrink tm1) ++
-  fmap (\tm2' -> TmIf tm1 tm2' tm3) (shrink tm2) ++
-  fmap (\tm3' -> TmIf tm1 tm2 tm3') (shrink tm3)
+  fmap (\tm1' -> TmIf tm1' tm2 tm3) (shr tm1) ++
+  fmap (\tm2' -> TmIf tm1 tm2' tm3) (shr tm2) ++
+  fmap (\tm3' -> TmIf tm1 tm2 tm3') (shr tm3)
 shrinkTmIf _ _ =
   Nothing
 
@@ -93,14 +94,30 @@ genTerm' s =
     s3 = s `div` 3
     child3 = genTerm' s3
 
--- | Shrinks terms of the B language.
+-- | The set of shrinking rules for terms of the B language.
+shrinkTermRules :: [Term -> Maybe [Term]]
+shrinkTermRules = [
+    shrinkTmFalse
+  , shrinkTmTrue
+  , shrinkTmIf shrinkTerm
+  ]
+
+-- | The shrinking function for terms of the B language.
 shrinkTerm :: Term
            -> [Term]
 shrinkTerm tm =
   fromMaybe [] .
   asum .
   fmap ($ tm) $
-    [ shrinkTmFalse
-    , shrinkTmTrue
-    , shrinkTmIf shrinkTerm
-    ]
+  shrinkTermRules
+
+-- | A newtype wrapped for generating terms of the B language.
+newtype AnyTerm = AnyTerm {
+    getAnyTerm :: Term
+  } deriving (Eq, Show)
+
+instance Arbitrary AnyTerm where
+  arbitrary =
+    fmap AnyTerm genTerm
+  shrink =
+    fmap AnyTerm . shrinkTerm . getAnyTerm

@@ -21,7 +21,7 @@ module Common.Pretty (
 
 -- from 'base'
 import           Data.Foldable (asum)
-import           Data.Maybe (fromMaybe, isNothing)
+import           Data.Maybe (fromMaybe)
 
 -- from 'ansi-wl-pprint'
 import           Text.Parser.Token.Highlight  (Highlight (..))
