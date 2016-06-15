@@ -15,7 +15,7 @@ module Term.Gen (
 
 -- from 'base'
 import           Data.Foldable   (asum)
-import           Data.Maybe      (fromMaybe)
+import           Data.Maybe      (fromMaybe, mapMaybe)
 
 -- from 'QuickCheck'
 import           Test.QuickCheck (Gen, Arbitrary(..), oneof, sized)
@@ -28,6 +28,102 @@ genTmInt :: Gen Term
 genTmInt =
   TmInt <$> arbitrary
 
+-- | Generates 'TmAdd' terms, given a generator for each of the subterms.
+genTmAdd :: Gen Term -- ^ The generator for the first argument.
+         -> Gen Term -- ^ The generator for the second argument.
+         -> Gen Term
+genTmAdd g1 g2 =
+  TmAdd <$> g1 <*> g2
+
+-- | Generates 'TmSub' terms, given a generator for each of the subterms.
+genTmSub :: Gen Term -- ^ The generator for the first argument.
+         -> Gen Term -- ^ The generator for the second argument.
+         -> Gen Term
+genTmSub g1 g2 =
+  TmSub <$> g1 <*> g2
+
+-- | Generates 'TmMul' terms, given a generator for each of the subterms.
+genTmMul :: Gen Term -- ^ The generator for the first argument.
+         -> Gen Term -- ^ The generator for the second argument.
+         -> Gen Term
+genTmMul g1 g2 =
+  TmMul <$> g1 <*> g2
+
+-- | Generates 'TmExp' terms, given a generator for each of the subterms.
+genTmExp :: Gen Term -- ^ The generator for the first argument.
+         -> Gen Term -- ^ The generator for the second argument.
+         -> Gen Term
+genTmExp g1 g2 =
+  TmExp <$> g1 <*> g2
+
+-- | Helper function for building the 'TmAdd' terms in 'genTerm'.
+genTermTmAdd :: (Int -> Gen Term) -- ^ The generator for terms of the I language.
+             -> Int
+             -> Maybe (Gen Term)
+genTermTmAdd _  0 =
+  Nothing
+genTermTmAdd gen s =
+  let
+    child = gen (s `div` 2)
+  in
+    Just $ genTmAdd child child
+
+-- | Helper function for building the 'TmSub' terms in 'genTerm'.
+genTermTmSub :: (Int -> Gen Term) -- ^ The generator for terms of the I language.
+             -> Int
+             -> Maybe (Gen Term)
+genTermTmSub _  0 =
+  Nothing
+genTermTmSub gen s =
+  let
+    child = gen (s `div` 2)
+  in
+    Just $ genTmSub child child
+
+-- | Helper function for building the 'TmMul' terms in 'genTerm'.
+genTermTmMul :: (Int -> Gen Term) -- ^ The generator for terms of the I language.
+             -> Int
+             -> Maybe (Gen Term)
+genTermTmMul _  0 =
+  Nothing
+genTermTmMul gen s =
+  let
+    child = gen (s `div` 2)
+  in
+    Just $ genTmMul child child
+
+-- | Helper function for building the 'TmExp' terms in 'genTerm'.
+genTermTmExp :: (Int -> Gen Term) -- ^ The generator for terms of the I language.
+             -> Int
+             -> Maybe (Gen Term)
+genTermTmExp _  0 =
+  Nothing
+genTermTmExp gen s =
+  let
+    child = gen (s `div` 2)
+  in
+    Just $ genTmExp child child
+
+-- | Generates terms of the I language.
+--
+-- The QuickCheck size parameter is interpreted as an upper bound on the
+-- size of the term.
+genTerm :: Gen Term
+genTerm = sized genTerm'
+
+-- | Helper function to generate terms of the I language with a specific size.
+genTerm' :: Int
+         -> Gen Term
+genTerm' s =
+  oneof $ [
+      genTmInt
+    ] ++ mapMaybe (\f -> f genTerm' s) [
+      genTermTmAdd
+    , genTermTmSub
+    , genTermTmMul
+    , genTermTmExp
+    ]
+
 -- | Shrinks 'TmInt' terms.
 shrinkTmInt :: Term
             -> Maybe [Term]
@@ -35,13 +131,6 @@ shrinkTmInt (TmInt i) =
   Just (TmInt <$> shrink i)
 shrinkTmInt _ =
   Nothing
-
--- | Generates 'TmAdd' terms, given a generator for each of the subterms.
-genTmAdd :: Gen Term -- ^ The generator for the first argument.
-         -> Gen Term -- ^ The generator for the second argument.
-         -> Gen Term
-genTmAdd g1 g2 =
-  TmAdd <$> g1 <*> g2
 
 -- | Shrinks 'TmAdd' terms
 shrinkTmAdd :: (Term -> [Term]) -- ^ The shrinking function for terms of the I language.
@@ -54,13 +143,6 @@ shrinkTmAdd shr (TmAdd tm1 tm2) = Just $
 shrinkTmAdd _ _ =
   Nothing
 
--- | Generates 'TmSub' terms, given a generator for each of the subterms.
-genTmSub :: Gen Term -- ^ The generator for the first argument.
-         -> Gen Term -- ^ The generator for the second argument.
-         -> Gen Term
-genTmSub g1 g2 =
-  TmSub <$> g1 <*> g2
-
 -- | Shrinks 'TmSub' terms
 shrinkTmSub :: (Term -> [Term]) -- ^ The shrinking function for terms of the I language.
             -> Term
@@ -71,13 +153,6 @@ shrinkTmSub shr (TmSub tm1 tm2) = Just $
   fmap (\s -> TmSub tm1 s) (shr tm2)
 shrinkTmSub _ _ =
   Nothing
-
--- | Generates 'TmMul' terms, given a generator for each of the subterms.
-genTmMul :: Gen Term -- ^ The generator for the first argument.
-         -> Gen Term -- ^ The generator for the second argument.
-         -> Gen Term
-genTmMul g1 g2 =
-  TmMul <$> g1 <*> g2
 
 -- | Shrinks 'TmMul' terms
 shrinkTmMul :: (Term -> [Term]) -- ^ The shrinking function for terms of the I language.
@@ -90,13 +165,6 @@ shrinkTmMul shr (TmMul tm1 tm2) = Just $
 shrinkTmMul _ _ =
   Nothing
 
--- | Generates 'TmExp' terms, given a generator for each of the subterms.
-genTmExp :: Gen Term -- ^ The generator for the first argument.
-         -> Gen Term -- ^ The generator for the second argument.
-         -> Gen Term
-genTmExp g1 g2 =
-  TmExp <$> g1 <*> g2
-
 -- | Shrinks 'TmExp' terms
 shrinkTmExp :: (Term -> [Term]) -- ^ The shrinking function for terms of the I language.
             -> Term
@@ -107,31 +175,6 @@ shrinkTmExp shr (TmExp tm1 tm2) = Just $
   fmap (\s -> TmExp tm1 s) (shr tm2)
 shrinkTmExp _ _ =
   Nothing
-
--- | Generates terms of the I language.
---
--- The QuickCheck size parameter is interpreted as an upper bound on the
--- size of the term.
-genTerm :: Gen Term
-genTerm = sized genTerm'
-
--- | Helper function to generate terms of the I language with a specific size.
-genTerm' :: Int
-         -> Gen Term
-genTerm' 0 =
-    genTmInt
-genTerm' s =
-    oneof
-      [ genTmInt
-      , genTmAdd child2 child2
-      , genTmSub child2 child2
-      , genTmMul child2 child2
-      , genTmExp child2 child2
-      ]
-  where
-    s2 = s `div` 2
-    child2 = genTerm' s2
-
 -- | The set of shrinking rules for terms of the I language.
 shrinkTermRules :: [Term -> Maybe [Term]]
 shrinkTermRules = [
