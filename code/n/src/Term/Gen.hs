@@ -15,7 +15,7 @@ module Term.Gen (
 
 -- from 'base'
 import           Data.Foldable   (asum)
-import           Data.Maybe      (fromMaybe)
+import           Data.Maybe      (fromMaybe, mapMaybe)
 
 -- from 'QuickCheck'
 import           Test.QuickCheck (Gen, Arbitrary(..), oneof, sized)
@@ -28,28 +28,11 @@ genTmZero :: Gen Term
 genTmZero =
   pure TmZero
 
--- | Shrinks 'TmZero' terms.
-shrinkTmZero :: Term
-             -> Maybe [Term]
-shrinkTmZero TmZero =
-  Just []
-shrinkTmZero _ =
-  Nothing
-
 -- | Generates 'TmSucc' terms, given a generator for the argument to 'TmSucc.'
 genTmSucc :: Gen Term -- ^ The generator for the argument
           -> Gen Term
 genTmSucc g =
   TmSucc <$> g
-
--- | Shrinks 'TmSucc' terms.
-shrinkTmSucc :: (Term -> [Term]) -- ^ The shrinking function for terms of the N language.
-             -> Term
-             -> Maybe [Term]
-shrinkTmSucc shr (TmSucc tm) =
-  Just $ tm : fmap TmSucc (shr tm)
-shrinkTmSucc _ _ =
-  Nothing
 
 -- | Generates 'TmPred' terms, given a generator for the argument to 'TmPred.'
 genTmPred :: Gen Term -- ^ The generator for the argument
@@ -57,14 +40,29 @@ genTmPred :: Gen Term -- ^ The generator for the argument
 genTmPred g =
   TmPred <$> g
 
--- | Shrinks 'TmPred' terms.
-shrinkTmPred :: (Term -> [Term]) -- ^ The shrinking function for terms of the N language.
-             -> Term
-             -> Maybe [Term]
-shrinkTmPred shr (TmPred tm) =
-  Just $ tm : fmap TmPred (shr tm)
-shrinkTmPred _ _ =
+-- | Helper function for building the 'TmSucc' terms in 'genTerm'.
+genTermTmSucc :: (Int -> Gen Term) -- ^ The generator for terms of the N language.
+              -> Int
+              -> Maybe (Gen Term)
+genTermTmSucc _  0 =
   Nothing
+genTermTmSucc gen s =
+  let
+    child = gen (s - 1)
+  in
+    Just $ genTmSucc child
+
+-- | Helper function for building the 'TmPred' terms in 'genTerm'.
+genTermTmPred :: (Int -> Gen Term) -- ^ The generator for terms of the N language.
+              -> Int
+              -> Maybe (Gen Term)
+genTermTmPred _  0 =
+  Nothing
+genTermTmPred gen s =
+  let
+    child = gen (s - 1)
+  in
+    Just $ genTmPred child
 
 -- | Generates terms of the N language.
 --
@@ -76,19 +74,39 @@ genTerm = sized genTerm'
 -- | Helper function to generate terms of the N language with a specific size.
 genTerm' :: Int
          -> Gen Term
-genTerm' 0 =
-  oneof
-    [ genTmZero
-    ]
 genTerm' s =
-    oneof
-      [ genTmZero
-      , genTmSucc child
-      , genTmPred child
-      ]
-  where
-    s' = s - 1
-    child = genTerm' s'
+  oneof $ [
+      genTmZero
+    ] ++ mapMaybe (\f -> f genTerm' s) [
+      genTermTmSucc
+    , genTermTmPred
+    ]
+
+-- | Shrinks 'TmZero' terms.
+shrinkTmZero :: Term
+             -> Maybe [Term]
+shrinkTmZero TmZero =
+  Just []
+shrinkTmZero _ =
+  Nothing
+
+-- | Shrinks 'TmSucc' terms.
+shrinkTmSucc :: (Term -> [Term]) -- ^ The shrinking function for terms of the N language.
+             -> Term
+             -> Maybe [Term]
+shrinkTmSucc shr (TmSucc tm) =
+  Just $ tm : fmap TmSucc (shr tm)
+shrinkTmSucc _ _ =
+  Nothing
+
+-- | Shrinks 'TmPred' terms.
+shrinkTmPred :: (Term -> [Term]) -- ^ The shrinking function for terms of the N language.
+             -> Term
+             -> Maybe [Term]
+shrinkTmPred shr (TmPred tm) =
+  Just $ tm : fmap TmPred (shr tm)
+shrinkTmPred _ _ =
+  Nothing
 
 -- | The set of shrinking rules for terms of the N language.
 shrinkTermRules :: [Term -> Maybe [Term]]
