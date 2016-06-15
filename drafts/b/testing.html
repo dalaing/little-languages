@@ -256,26 +256,6 @@ reverse_idempotent_prop xs <span class="fu">=</span>
 [<span class="dv">0</span>,<span class="dv">1</span>]
 [<span class="dv">1</span>,<span class="dv">0</span>] <span class="fu">/=</span> [<span class="dv">0</span>,<span class="dv">1</span>]</code></pre></div>
 <p>which looks simple here, but can be a huge time-saver with more complex properties.</p>
-<p>Working with a <code>Property</code> also means we can also use <code>==&gt;</code> to filter out invalid inputs.</p>
-<p>We can take this failing property:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_head ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
-reverse_head xs <span class="fu">=</span>
-  head xs <span class="fu">===</span> last (reverse xs)
-
-<span class="fu">&gt;</span> quickCheck reverse_head
-<span class="fu">***</span> <span class="dt">Failed</span><span class="fu">!</span> <span class="dt">Exception</span><span class="fu">:</span> <span class="ch">'Prelude.head: empty list'</span> (after <span class="dv">1</span> test)<span class="fu">:</span>
-<span class="dt">Exception</span> thrown while printing test <span class="kw">case</span><span class="fu">:</span> <span class="ch">'Prelude.head: empty list'</span>
-<span class="fu">+++</span> <span class="dt">OK</span>, passed <span class="dv">100</span> tests<span class="fu">.</span></code></pre></div>
-<p>and fix it up:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_head ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
-reverse_head xs <span class="fu">=</span>
-  (not <span class="fu">.</span> null <span class="fu">$</span> xs) <span class="fu">==&gt;</span>
-    head xs <span class="fu">===</span> last (reverse xs)
-
-<span class="fu">&gt;</span> quickCheck reverse_head
-<span class="fu">+++</span> <span class="dt">OK</span>, passed <span class="dv">100</span> tests<span class="fu">.</span></code></pre></div>
-<p>If the filtering is to aggressive we may not be able to generate enough data to fulfill the test. I tend to use <code>==&gt;</code> when I’m certain that I’m dealing with an edge case that makes up a small percentage of the test data (and I usually check that with <code>classify</code>, <code>collect</code> or <code>cover</code>).</p>
-<p>If that’s not the case I tend to expand my library of <code>Gen</code> related helpers.</p>
 <p>We have a couple of options for using <code>Gen</code>s to produce a <code>Property</code>.</p>
 <p>Let’s say I have the following:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genLeftSkewedTree    ::</span> <span class="dt">Arbitrary</span> a <span class="ot">=&gt;</span> <span class="dt">Gen</span> (<span class="dt">Tree</span> a)
@@ -306,6 +286,68 @@ myProp2 <span class="fu">=</span>
   forAll genLeftSkewedTree myProp'</code></pre></div>
 <p>I tend to use the newtype approach most of the time. If something is common and I’m sure it’s sticking around, I’ll tend to accumulate functionality around the generators, and the newtype tends to help keep that in order. It also makes the properties easier to read.</p>
 <p>I tend to use <code>forAll</code> and <code>forAllShrink</code> if I need a one-off combination of <code>Gen</code>s for a property, if I can’t easily use a newtype for some reason, or if I’m prototyping something and aren’t sure if I’m going to need the <code>Gen</code> in that form when I’m done.</p>
+<p>Working with a <code>Property</code> also means we can also use <code>==&gt;</code> to filter out invalid inputs.</p>
+<p>We can take this failing property:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_head ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
+reverse_head xs <span class="fu">=</span>
+  head xs <span class="fu">===</span> last (reverse xs)
+
+<span class="fu">&gt;</span> quickCheck reverse_head
+<span class="fu">***</span> <span class="dt">Failed</span><span class="fu">!</span> <span class="dt">Exception</span><span class="fu">:</span> <span class="ch">'Prelude.head: empty list'</span> (after <span class="dv">1</span> test)<span class="fu">:</span>
+[]
+<span class="dt">Exception</span> thrown while printing test <span class="kw">case</span><span class="fu">:</span> <span class="ch">'Prelude.head: empty list'</span></code></pre></div>
+<p>and fix it up:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_head ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
+reverse_head xs <span class="fu">=</span>
+  (not <span class="fu">.</span> null <span class="fu">$</span> xs) <span class="fu">==&gt;</span>
+    head xs <span class="fu">===</span> last (reverse xs)
+
+<span class="fu">&gt;</span> quickCheck reverse_head
+<span class="fu">+++</span> <span class="dt">OK</span>, passed <span class="dv">100</span> tests<span class="fu">.</span></code></pre></div>
+<p>If the filtering is to aggressive we may not be able to generate enough data to fulfill the test.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propReverseSingle ::</span> [<span class="dt">Int</span>]
+                  <span class="ot">-&gt;</span> <span class="dt">Property</span>
+propReverseSingle xs <span class="fu">=</span>
+  length xs <span class="fu">==</span> <span class="dv">1</span> <span class="fu">==&gt;</span> 
+    xs <span class="fu">==</span> reverse xs
+
+<span class="fu">&gt;</span> quickCheck propReverseSingle
+<span class="fu">***</span> <span class="dt">Gave</span> up<span class="fu">!</span> <span class="dt">Passed</span> only <span class="dv">43</span> tests<span class="fu">.</span></code></pre></div>
+<p>I tend to use <code>==&gt;</code> when I’m certain that I’m dealing with an edge case that makes up a small percentage of the test data (and I usually check that with <code>classify</code>, <code>collect</code> or <code>cover</code>).</p>
+<p>If that’s not the case I tend to expand my library of <code>Gen</code> related helpers.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genSingletonList ::</span> <span class="dt">Arbitrary</span> a
+                 <span class="ot">=&gt;</span> <span class="dt">Gen</span> [a]
+genSingletonList <span class="fu">=</span> <span class="kw">do</span>
+  x <span class="ot">&lt;-</span> arbitrary
+  return [x]
+
+<span class="ot">shrinkSingletonList ::</span> <span class="dt">Arbitrary</span> a
+                    <span class="ot">=&gt;</span> [a]
+                   <span class="ot">-&gt;</span> [[a]]
+shrinkSingletonList [x] <span class="fu">=</span>
+  fmap pure (shrink x)
+shrinkSingletonList _ <span class="fu">=</span>
+  []
+  
+<span class="kw">newtype</span> <span class="dt">SingletonList</span> a <span class="fu">=</span> <span class="dt">SingletonList</span> {
+<span class="ot">    getSingletonList ::</span> [a]
+  } <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Show</span>)
+
+<span class="kw">instance</span> <span class="dt">Arbitrary</span> a <span class="ot">=&gt;</span> <span class="dt">Arbitrary</span> (<span class="dt">SingletonList</span> a) <span class="kw">where</span>
+  arbitrary <span class="fu">=</span>
+    fmap <span class="dt">SingletonList</span> genSingletonList
+  shrink <span class="fu">=</span>
+    fmap <span class="dt">SingletonList</span> <span class="fu">.</span>
+    shrinkSingletonList <span class="fu">.</span>
+    getSingletonList
+
+<span class="ot">propReverseSingle ::</span> <span class="dt">SingletonList</span> <span class="dt">Int</span>
+                  <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+propReverseSingle (<span class="dt">SingletonList</span> xs) <span class="fu">=</span>
+  xs <span class="fu">==</span> reverse xs
+
+<span class="fu">&gt;</span> quickCheck propReverseSingle
+<span class="fu">+++</span> <span class="dt">OK</span>, passed <span class="dv">100</span> tests<span class="fu">.</span></code></pre></div>
 <h1 id="quickcheck-for-b">QuickCheck for <em>B</em></h1>
 <h2 id="generators">Generators</h2>
 <p>We start of with some simple helper functions, to generate each of the terms in <em>B</em>.</p>
@@ -347,8 +389,8 @@ genTerm' s <span class="fu">=</span>
     (<span class="kw">if</span> s <span class="fu">==</span> <span class="dv">0</span> <span class="kw">then</span> [] <span class="kw">else</span> nonZeroSizedGens) <span class="fu">++</span>
     zeroSizedGens
   <span class="kw">where</span>
-    zeroSizedGens <span class="fu">=</span> 
-      [ genTmFalse
+    zeroSizedGens <span class="fu">=</span> [
+        genTmFalse
       , genTmTrue
       ]
     nonZeroSizedGens <span class="fu">=</span> 
@@ -357,6 +399,31 @@ genTerm' s <span class="fu">=</span>
         child <span class="fu">=</span> genTerm s'
       <span class="kw">in</span> 
         [genTmIf child child child]</code></pre></div>
+<p>This is a bit of a mess, but we can clean it up by writing helper functions to do size-aware generation for each constructor of our term that has a recursive component.</p>
+<p>In this case, we only need such a helper for ‘TmIf’.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTermTmIf ::</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span>)
+            <span class="ot">-&gt;</span> <span class="dt">Int</span>
+            <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">Gen</span> <span class="dt">Term</span>)
+genTermTmIf _  <span class="dv">0</span> <span class="fu">=</span>
+  <span class="dt">Nothing</span>
+genTermTmIf gen s <span class="fu">=</span>
+  <span class="kw">let</span>
+    child <span class="fu">=</span> gen (s <span class="ot">`div`</span> <span class="dv">3</span>)
+  <span class="kw">in</span>
+    <span class="dt">Just</span> <span class="fu">$</span> genTmIf child child child</code></pre></div>
+<p>The function gets passed a size-aware generator for terms and the size that we’re after, and returns the appropriate ‘Gen’ when the size is larger than 0.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTerm ::</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTerm <span class="fu">=</span> sized genTerm'
+
+<span class="ot">genTerm' ::</span> <span class="dt">Int</span>
+         <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTerm' s <span class="fu">=</span>
+  oneof <span class="fu">$</span> [
+      genTmFalse
+    , genTmTrue
+    ] <span class="fu">++</span> mapMaybe (\f <span class="ot">-&gt;</span> f genTerm' s) [
+      genTermTmIf
+    ]</code></pre></div>
 <h2 id="shrinking-functions">Shrinking functions</h2>
 <p>There’s nothing to shrink for the <code>TmFalse</code> and <code>TmTrue</code> cases:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTmFalse ::</span> <span class="dt">Term</span> 
