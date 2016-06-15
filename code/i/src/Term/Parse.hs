@@ -20,7 +20,6 @@ import           Text.Parser.Char            (oneOf)
 import           Text.Parser.Combinators     ((<?>))
 import           Text.Parser.Token           (IdentifierStyle (..),
                                               TokenParsing, reserve, integer)
-import           Text.Parser.Token.Highlight (Highlight (..))
 import           Text.Parser.Expression      (Assoc(..))
 
 -- local

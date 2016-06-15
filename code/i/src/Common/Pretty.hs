@@ -24,12 +24,12 @@ import           Data.Foldable (asum)
 import           Data.Maybe (fromMaybe)
 
 -- from 'ansi-wl-pprint'
-import           Text.Parser.Token.Highlight  (Highlight (..))
 import           Text.PrettyPrint.ANSI.Leijen (Doc, displayS, plain,
                                                renderPretty, text, parens)
 
 -- from 'parsers'
 import           Text.Parser.Expression       (Assoc(..))
+import           Text.Parser.Token.Highlight  (Highlight (..))
 
 -- from 'trifecta'
 import           Text.Trifecta.Highlight      (withHighlight)
@@ -101,21 +101,23 @@ operator =
   withHighlight Operator .
   text
 
--- |
-data PrettyRule t =
-    PrettyRegular (t -> Maybe Doc)                               -- ^
-  | PrettyOp OperatorInfo (t -> Maybe (t, t)) (Doc -> Doc -> Doc) -- ^
+-- | Rules for pretty printing languages.
+data PrettyRule a =
+    PrettyRegular (a -> Maybe Doc)                               -- ^ A pretty printer for 'a'.
+  | PrettyOp OperatorInfo (a -> Maybe (a, a)) (Doc -> Doc -> Doc) -- ^ A rule for pretty printing for an infix binary operator on 'a', made up of information about the operator, a function for matching on the operator and returning the arguments, and a function for printing the operator given the pretty printed form of the arguments to the operator.
 
-tryRegular :: t
-           -> PrettyRule t
-           -> Maybe Doc
-tryRegular t (PrettyRegular f) =
+-- | Gathers the regular pretty printing rules.
+gatherRegular :: a
+              -> PrettyRule a
+              -> Maybe Doc
+gatherRegular t (PrettyRegular f) =
   f t
-tryRegular _ _ =
+gatherRegular _ _ =
   Nothing
 
-findOperatorInfo :: [PrettyRule t]
-                 -> t
+-- | Finds the 'OperatorInfo' for 'a', if any exists.
+findOperatorInfo :: [PrettyRule a]
+                 -> a
                  -> Maybe OperatorInfo
 findOperatorInfo rules tm =
     asum .
@@ -127,57 +129,84 @@ findOperatorInfo rules tm =
     checkOperatorInfo _ _ =
       Nothing
 
-tryOp :: t
-      -> (t -> Doc)
-      -> (t -> Maybe OperatorInfo)
-      -> PrettyRule t
-      -> Maybe Doc
-tryOp t pretty findInfo (PrettyOp i match printer) = do
+-- | Describes an argument to a binary operator.
+data Argument =
+    ArgumentLeft  -- ^ The argument on the left.
+  | ArgumentRight -- ^ The argument on the right.
+  deriving (Eq, Ord, Show)
+
+-- | Determines if an argument to an operator is in a position where it might avoid need brackets, given the associativity of the operator.
+argumentAssociates :: Argument
+                   -> Assoc
+                   -> Bool
+argumentAssociates ArgumentLeft AssocLeft =
+  True
+argumentAssociates ArgumentRight AssocRight =
+  True
+argumentAssociates _ _ =
+  False
+
+-- | Works out if the argument to an operator needs parentheses.
+needsParens :: Argument           -- ^ The position of the argument.
+            -> OperatorInfo       -- ^ The operator info for the current operator.
+            -> Maybe OperatorInfo -- ^ The operator info for the argument to the current operator, if any (typically the output of 'findOperatorInfo')a.
+            -> Bool               -- ^ Whether we should put parentheses around the argument.
+needsParens _ _ Nothing =
+  -- if the argument is not an operator, then we don't need parentheses
+  False
+needsParens arg info (Just argInfo) =
+  -- we need parens if the operator has  no associativity
+  assoc info == AssocNone ||
+  -- or if the argument has a lower precedence than the current operator
+  precedence argInfo < precedence info ||
+  -- or if the argument has the same precedence as the current operator but the argument
+  -- is not in the position matching the associativity of this operator
+  (precedence argInfo == precedence info && not (argumentAssociates arg (assoc info)))
+
+-- | Gathers the operator pretty printing rules.
+gatherOp :: a                         -- ^ The thing we're printing.
+         -> (a -> Doc)                -- ^ The combined printing rule (the result of 'mkPretty').
+         -> (a -> Maybe OperatorInfo) -- ^ A function to search for operator info in the rules (the result of 'findOperatorInfo').
+         -> PrettyRule a              -- ^ The rule to process.
+         -> Maybe Doc                 -- ^ The pretty printed output, if any.
+gatherOp t pretty findInfo (PrettyOp i match printer) = do
   (t1, t2) <- match t
-  let i1 = findInfo t1
-  let i2 = findInfo t2
-  let h1 = maybe True (\j -> _precedence j > _precedence i) i1
-  let h2 = maybe True (\j -> _precedence j > _precedence i) i2
-  let e1 = maybe True (\j -> _precedence j == _precedence i) i1
-  let e2 = maybe True (\j -> _precedence j == _precedence i) i2
+  let addParens b =
+        if b then parens else id
   let p1 =
-        if (_assoc i == AssocLeft && e1) || h1
-        then id
-        else parens
+        addParens .
+        needsParens ArgumentLeft i .
+        findInfo $
+        t1
   let p2 =
-        if (_assoc i == AssocRight && e2) || h2
-        then id
-        else parens
+        addParens .
+        needsParens ArgumentRight i .
+        findInfo $
+        t2
   return $ printer (p1 . pretty $ t1) (p2 . pretty $ t2)
-tryOp _ _ _ _ =
+gatherOp _ _ _ _ =
   Nothing
 
--- |
-mkPretty :: [PrettyRule t]
-         -> t
+-- | Combine a list of pretty printing rules into a pretty printing function.
+mkPretty :: [PrettyRule a]
+         -> a
          -> Doc
 mkPretty rules =
   let
-    prettyTerm tm =
+    prettyRegular tm =
       asum .
-      fmap (tryRegular tm) $
+      fmap (gatherRegular tm) $
       rules
     findInfo =
       findOperatorInfo rules
     prettyOp tm =
       asum .
-      fmap (tryOp tm prettyExpr findInfo) $
+      fmap (gatherOp tm prettyTerm findInfo) $
       rules
-    prettyExpr tm =
+    prettyTerm tm =
       fromMaybe (text "???") .
-      asum . fmap ($ tm) $
-      [ prettyTerm , prettyOp ]
+      asum .
+      fmap ($ tm) $
+      [ prettyRegular , prettyOp ]
   in
-    prettyExpr
-
-{-
-  fromMaybe (text "???") .
-  asum .
-  fmap ($ tm) $
-  prettyTermRules
--}
+    prettyTerm

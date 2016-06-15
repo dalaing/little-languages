@@ -46,51 +46,53 @@ parseFromString p s =
     Success r -> Right r
     Failure d -> Left d
 
--- |
-data ParseRule m t =
-    ParseRegular (m t)                     -- ^
-  | ParseOp OperatorInfo (m (t -> t -> t)) -- ^
+-- | Rules for parsing languages.
+--
+-- The intent is that 'm' is some kind of parsing monad, and that 'a' is the type being parsed.
+data ParseRule m a =
+    ParseRegular (m a)                     -- ^ A parser for 'a'.
+  | ParseOp OperatorInfo (m (a -> a -> a)) -- ^ A rule for parsing an infix binary operator on 'a', made up of information about the operator and the combination of a parser for the operator and a the constructor for the operator in 'a'.
 
--- |
-gatherRegular :: ParseRule m t
-              -> Maybe (m t)
+-- | Gathers the regular parsing rules.
+gatherRegular :: ParseRule m a
+              -> Maybe (m a)
 gatherRegular (ParseRegular p) =
   Just p
 gatherRegular _ =
   Nothing
 
--- |
-gatherOp :: ParseRule m t
-         -> Maybe (Int, Operator m t)
-gatherOp (ParseOp (OperatorInfo assoc prec) p) =
-  Just (prec, Infix p assoc)
+-- | Gathers the parsing rules for operators.
+gatherOp :: ParseRule m a
+         -> Maybe (Int, Operator m a)
+gatherOp (ParseOp (OperatorInfo a prec) parser) =
+  Just (prec, Infix parser a)
 gatherOp _ =
   Nothing
 
--- |
-combineTables :: [(Int, Operator m a)]
+-- | Combines information about parsing rules for operators into an 'OperatorTable'.
+createTable :: [(Int, Operator m a)]
               -> OperatorTable m a
-combineTables =
+createTable =
     fmap (fmap snd) .
     groupBy ((==) `on` fst) .
     sortOn (Down . fst)
 
--- |
+-- | Combines a list of parsing rules into a parser.
 mkParser :: TokenParsing m
-         => [ParseRule m t]
-         -> m t
+         => [ParseRule m a]
+         -> m a
 mkParser rules =
   let
-    parseTerm =
-      (<|> parens parseExpr) .
+    parseRegular =
+      (<|> parens parseTerm) .
       asum .
       mapMaybe gatherRegular $
       rules
     tables =
-      combineTables .
+      createTable .
       mapMaybe gatherOp $
       rules
-    parseExpr =
-      buildExpressionParser tables parseTerm
+    parseTerm =
+      buildExpressionParser tables parseRegular
   in
-    parseExpr
+    parseTerm
