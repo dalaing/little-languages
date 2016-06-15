@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 library
   exposed-modules:     Common.Parse
                      , Common.Pretty
+                     , Common.Gen
                      , Term
                      , Term.Eval.Value
                      , Term.Eval.SmallStep
