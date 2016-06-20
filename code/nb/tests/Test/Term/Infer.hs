@@ -19,22 +19,28 @@ import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck       (Property, forAllShrink, property,
-                                        (.||.), (===))
+import           Test.QuickCheck       (Arbitrary (..), Property, property,
+                                        (.||.), (===), forAllShrink)
 
 -- local
 import           Term                  (Term)
 import           Term.Eval.SmallStep   (canStep, smallStep)
 import           Term.Eval.Value       (isValue)
-import           Term.Gen              (genTerm, shrinkTerm)
+import           Term.Gen              (AnyTerm (..), IllTypedTerm (..),
+                                        WellTypedTerm (..), genIllTypedTerm,
+                                        shrinkIllTypedTerm)
 import           Term.Infer            (inferTerm, inferTermRules, runInfer)
 import           Type                  (Type)
+import           Type.Gen              (genType)
 import           Type.Error            (TypeError)
+import           Type.Error.Gen        (AnyTypeError (..))
 
 inferTests :: TestTree
 inferTests = testGroup "infer"
   [ testProperty "patterns unique" propPatternUnique
   , testProperty "well-typed infer" propWellTypedInfer
+  , testProperty "ill-typed infer" propIllTypedInfer
+  , testProperty "ill-typed error" propIllTypedError
   , testProperty "progress" propProgress
   , testProperty "preservation" propPreservation
   ]
@@ -46,43 +52,68 @@ isRight (Right _) =
 isRight _ =
   False
 
+isLeft :: Either a b
+       -> Bool
+isLeft (Left _) =
+  True
+isLeft _ =
+  False
+
 infer :: Term
       -> Either TypeError Type
 infer =
   runInfer .
   inferTerm
 
-propPatternUnique :: Property
-propPatternUnique =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    let
-      matches =
-        length .
-        mapMaybe (\i -> fmap runInfer . i $ tm) $
-        inferTermRules
-    in
-      matches === 1
+-- Test out the generators
 
--- For now, all of our terms are well typed.
-propWellTypedInfer :: Property
-propWellTypedInfer =
-  forAllShrink genTerm shrinkTerm $
-    isRight .
+propWellTypedInfer :: WellTypedTerm
+                   -> Bool
+propWellTypedInfer wttm =
+  all
+    (isRight . infer . getWellTypedTerm)
+    (wttm : shrink wttm)
+
+propIllTypedInfer :: IllTypedTerm
+                  -> Bool
+propIllTypedInfer ittm =
+  all
+    (isLeft . infer . getIllTypedTerm)
+    (ittm : shrink ittm)
+
+propIllTypedError :: AnyTypeError
+                  -> Property
+propIllTypedError (AnyTypeError te) =
+  forAllShrink (genType >>= genIllTypedTerm te) shrinkIllTypedTerm $
+    (== Left te) .
     infer
 
--- Assumes we are dealing with a well-typed term.
-propProgress :: Property
-propProgress =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    case infer tm of
-      Left _ -> property True
-      Right _ -> isValue tm .||. canStep tm
+-- Canary : check the typing rules are disjoint and exhaustive
 
--- Assumes we are dealing with a well-typed term.
-propPreservation :: Property
-propPreservation =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    case smallStep tm of
-      Nothing -> property True
-      Just tm' -> infer tm === infer tm'
+propPatternUnique :: AnyTerm
+                  -> Property
+propPatternUnique (AnyTerm tm) =
+  let
+    matches =
+      length .
+      mapMaybe (\i -> fmap runInfer . i $ tm) $
+      inferTermRules
+  in
+    matches === 1
+
+-- Type safety properties
+
+propProgress :: WellTypedTerm
+             -> Property
+propProgress (WellTypedTerm tm) =
+  case infer tm of
+    Left _ -> property True
+    Right _ -> isValue tm .||. canStep tm
+
+propPreservation :: WellTypedTerm
+                 -> Property
+propPreservation (WellTypedTerm tm) =
+  case smallStep tm of
+    Nothing -> property True
+    Just tm' -> infer tm === infer tm'
 

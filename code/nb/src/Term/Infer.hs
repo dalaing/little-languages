@@ -43,8 +43,10 @@ inferTmZero _ =
 --
 -- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmSucc inferTerm) $ TmSucc TmZero
 -- Right TyNat
-
--- There will be better examples when we have more than one type
+--
+-- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmSucc inferTerm) $ TmSucc TmFalse
+-- Left (Unexpected TyBool TyNat)
+--
 inferTmSucc :: MonadError TypeError m
             => (Term -> m Type) -- ^ The infer function for NB.
             -> Term
@@ -60,8 +62,10 @@ inferTmSucc _ _ =
 --
 -- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmPred inferTerm) $ TmPred TmZero
 -- Right TyNat
-
--- There will be better examples when we have more than one type
+--
+-- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmPred inferTerm) $ TmPred TmFalse
+-- Left (Unexpected TyBool TyNat)
+--
 inferTmPred :: MonadError TypeError m
             => (Term -> m Type) -- ^ The infer function for NB.
             -> Term
@@ -101,8 +105,13 @@ inferTmTrue _ =
 --
 -- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmTrue
 -- Right TyBool
-
--- There will be better examples when we have more than one type
+--
+-- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmZero TmFalse TmTrue
+-- Left (Unexpected TyNat TyBool)
+--
+-- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmZero
+-- Left (ExpectedEq TyBool TyNat)
+--
 inferTmIf :: MonadError TypeError m
           => (Term -> m Type)       -- ^ The infer function for NB.
           -> Term
@@ -121,8 +130,10 @@ inferTmIf _ _ =
 --
 -- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIsZero inferTerm) $ TmIsZero (TmSucc TmZero)
 -- Right TyBool
-
--- There will be better examples when we have more than one type
+--
+-- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIsZero inferTerm) $ TmIsZero TmFalse
+-- Left (Unexpected TyBool TyNat)
+--
 inferTmIsZero :: MonadError TypeError m
               => (Term -> m Type) -- ^ The infer function for NB.
               -> Term

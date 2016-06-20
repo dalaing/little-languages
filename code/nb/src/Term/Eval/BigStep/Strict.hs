@@ -41,8 +41,8 @@ eSucc _ _ =
 
 -- | The big-step rule for 'pred O'.
 ePredZero :: (Term -> Maybe Term) -- ^ The big-step function for the N language.
-      -> Term
-      -> Maybe Term
+          -> Term
+          -> Maybe Term
 ePredZero step (TmPred tm) =
   case step tm of
     Just TmZero -> Just TmZero
@@ -52,8 +52,8 @@ ePredZero _ _ =
 
 -- | The big-step rule for 'pred S'.
 ePredSucc :: (Term -> Maybe Term) -- ^ The big-step function for the N language.
-      -> Term
-      -> Maybe Term
+          -> Term
+          -> Maybe Term
 ePredSucc step (TmPred tm) =
   case step tm of
     Just (TmSucc tm') -> Just tm'

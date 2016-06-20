@@ -99,8 +99,8 @@ eIsZeroZero _ =
 -- | The small-step rule for the 'isZero S' case.
 eIsZeroSucc :: Term
             -> Maybe Term
-eIsZeroSucc (TmIsZero (TmSucc _)) =
-  Just TmFalse
+eIsZeroSucc (TmIsZero (TmSucc tm)) =
+  TmFalse <$ value tm
 eIsZeroSucc _ =
   Nothing
 

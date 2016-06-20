@@ -38,7 +38,7 @@ parseAndEval s =
     Right tm -> case runInfer . inferTerm $ tm of
       Left e -> prettyTypeError e
       Right ty ->
-        prettyTerm tm <+> text "==>" <+> prettyTerm (eval tm) <+> text ":" <+> prettyType ty
+        prettyTerm (eval tm) <+> text ":" <+> prettyType ty
 
 main :: IO ()
 main = runInputT defaultSettings loop

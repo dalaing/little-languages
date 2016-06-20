@@ -39,35 +39,25 @@ eSucc _ =
   Nothing
 
 -- | The big-step rule for 'pred O'.
-ePredZero :: Term
+ePredZero :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
+          -> Term
           -> Maybe Term
-ePredZero (TmPred TmZero) =
-  Just TmZero
-ePredZero _ =
+ePredZero step (TmPred tm) =
+  case step tm of
+    Just TmZero -> Just TmZero
+    _ -> Nothing
+ePredZero _ _ =
   Nothing
 
 -- | The big-step rule for 'pred S'.
 ePredSucc :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
           -> Term
           -> Maybe Term
-ePredSucc step (TmPred (TmSucc tm)) =
-  step tm
-ePredSucc _ _ =
-  Nothing
-
--- | The big-step rule for 'pred pred'.
---
--- Ideally we wouldn't be matching on the second 'Pred', but it might be worth
--- making this a little uglier to preserve the exhaustive and distinct property
--- of our rules
-ePredPred :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
-          -> Term
-          -> Maybe Term
-ePredPred step (TmPred (TmPred tm)) =
-  case step (TmPred tm) of
-    Just tm' -> step (TmPred tm')
+ePredSucc step (TmPred tm) =
+  case step tm of
+    Just (TmSucc tm') -> step tm'
     _ -> Nothing
-ePredPred _ _ =
+ePredSucc _ _ =
   Nothing
 
 -- | The big-step rule for 'TmTrue'.
@@ -140,9 +130,8 @@ bigStepRules :: [Term -> Maybe Term]
 bigStepRules =
   [ eZero
   , eSucc
-  , ePredZero
+  , ePredZero bigStep
   , ePredSucc bigStep
-  , ePredPred bigStep
   , eTrue
   , eFalse
   , eIfTrue bigStep

@@ -16,12 +16,12 @@ import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck       (Property, forAllShrink, property, (===))
+import           Test.QuickCheck       (Property, property, (===))
 
 -- local
 import           Common.Parse          (parseFromString)
 import           Common.Pretty         (prettyToString)
-import           Type.Gen              (genType, shrinkType)
+import           Type.Gen              (AnyType(..))
 import           Type.Parse            (parseType, parseTypeRules)
 import           Type.Pretty           (prettyType)
 
@@ -31,33 +31,33 @@ textTests = testGroup "text"
   , testProperty "pretty-parse round trip" propPrettyParse
   ]
 
-propUniqueParse :: Property
-propUniqueParse =
-  forAllShrink genType shrinkType $ \ty ->
-    let
-      isRight (Right _) = True
-      isRight _ = False
-      text =
-        prettyToString .
-        prettyType $
-        ty
-      matches =
-        length .
-        filter isRight .
-        fmap (\p -> parseFromString p text) $
-        parseTypeRules
-    in
-      matches === 1
+propUniqueParse :: AnyType
+                -> Property
+propUniqueParse (AnyType ty) =
+  let
+    isRight (Right _) = True
+    isRight _ = False
+    text =
+      prettyToString .
+      prettyType $
+      ty
+    matches =
+      length .
+      filter isRight .
+      fmap (\p -> parseFromString p text) $
+      parseTypeRules
+  in
+    matches === 1
 
-propPrettyParse :: Property
-propPrettyParse =
-  forAllShrink genType shrinkType $ \ty ->
-    let
-      roundTrip =
-        parseFromString parseType .
-        prettyToString .
-        prettyType
-    in
-      case roundTrip ty of
-        Left _ -> property False
-        Right ty' -> ty === ty'
+propPrettyParse :: AnyType
+                -> Property
+propPrettyParse (AnyType ty) =
+  let
+    roundTrip =
+      parseFromString parseType .
+      prettyToString .
+      prettyType
+  in
+    case roundTrip ty of
+      Left _ -> property False
+      Right ty' -> ty === ty'

@@ -20,7 +20,7 @@ import           Test.Tasty                 (TestTree, testGroup)
 import           Test.Tasty.QuickCheck      (testProperty)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck            (Property, forAllShrink, property,
+import           Test.QuickCheck            (Property,
                                              (===), (==>))
 
 -- local
@@ -29,7 +29,7 @@ import           Term.Eval.BigStep.Strict   (bigStepRules, eval)
 import           Term.Eval.SmallStep.Strict (canStep, eval, isNormalForm,
                                              smallStep, smallStepRules)
 import           Term.Eval.Value.Strict     (isValue, valueRules)
-import           Term.Gen                   (genTerm, shrinkTerm)
+import           Term.Gen                   (AnyTerm(..), WellTypedTerm(..))
 
 strictTests :: TestTree
 strictTests = testGroup "strict"
@@ -43,60 +43,60 @@ strictTests = testGroup "strict"
   , testProperty "small step and big step agree" propSmallBig
   ]
 
-propValueNormal :: Property
-propValueNormal =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    isValue tm ==> isNormalForm tm
+propValueNormal :: AnyTerm
+                -> Property
+propValueNormal (AnyTerm tm) =
+  isValue tm ==> isNormalForm tm
 
-propNormalValue :: Property
-propNormalValue =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    isNormalForm tm ==> isValue tm
+propNormalValue :: WellTypedTerm
+                -> Property
+propNormalValue (WellTypedTerm tm) =
+  isNormalForm tm ==> isValue tm
 
     -- - either isValue, or there are 1 or more steps we can take that have the same result
-propSmallDeterminate :: Property
-propSmallDeterminate =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    canStep tm ==>
-      let
-        distinctResults =
-          length .
-          group .
-          mapMaybe ($ tm) $
-          smallStepRules
-      in
-        distinctResults === 1
-
-propSmallShrinks :: Property
-propSmallShrinks =
-  forAllShrink genTerm shrinkTerm $ \tm -> property $
-    case smallStep tm of
-      Nothing -> True
-      Just tm' -> size tm' < size tm
-
-propSmallUnique :: Property
-propSmallUnique =
-  forAllShrink genTerm shrinkTerm $ \tm ->
+propSmallDeterminate :: WellTypedTerm
+                     -> Property
+propSmallDeterminate (WellTypedTerm tm) =
+  canStep tm ==>
     let
-      matches =
+      distinctResults =
         length .
+        group .
         mapMaybe ($ tm) $
-        valueRules ++ smallStepRules
+        smallStepRules
     in
-      matches === 1
+      distinctResults === 1
 
-propBigUnique :: Property
-propBigUnique =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    let
-      matches =
-        length .
-        mapMaybe ($ tm) $
-        bigStepRules
-    in
-      matches === 1
+propSmallShrinks :: AnyTerm
+                 -> Bool
+propSmallShrinks (AnyTerm tm) =
+  case smallStep tm of
+    Nothing -> True
+    Just tm' -> size tm' < size tm
 
-propSmallBig :: Property
-propSmallBig =
-  forAllShrink genTerm shrinkTerm $ \tm ->
-    Term.Eval.SmallStep.Strict.eval tm === Term.Eval.BigStep.Strict.eval tm
+propSmallUnique :: WellTypedTerm
+                -> Property
+propSmallUnique (WellTypedTerm tm) =
+  let
+    matches =
+      length .
+      mapMaybe ($ tm) $
+      valueRules ++ smallStepRules
+  in
+    matches === 1
+
+propBigUnique :: WellTypedTerm
+              -> Property
+propBigUnique (WellTypedTerm tm) =
+  let
+    matches =
+      length .
+      mapMaybe ($ tm) $
+      bigStepRules
+  in
+    matches === 1
+
+propSmallBig :: WellTypedTerm
+             -> Property
+propSmallBig (WellTypedTerm tm) =
+  Term.Eval.SmallStep.Strict.eval tm === Term.Eval.BigStep.Strict.eval tm
