@@ -155,13 +155,8 @@ needsParens _ _ Nothing =
   -- if the argument is not an operator, then we don't need parentheses
   False
 needsParens arg info (Just argInfo) =
-  -- we need parens if the operator has  no associativity
-  assoc info == AssocNone ||
-  -- or if the argument has a lower precedence than the current operator
-  precedence argInfo < precedence info ||
-  -- or if the argument has the same precedence as the current operator but the argument
-  -- is not in the position matching the associativity of this operator
-  (precedence argInfo == precedence info && not (argumentAssociates arg (assoc info)))
+  precedence argInfo <= precedence info &&
+  (precedence argInfo /= precedence info || assoc info /= assoc argInfo || not (argumentAssociates arg (assoc info)))
 
 -- | Gathers the operator pretty printing rules.
 gatherOp :: a                         -- ^ The thing we're printing.

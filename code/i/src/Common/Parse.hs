@@ -42,7 +42,7 @@ parseFromString :: Parser a
                 -> String
                 -> Either Doc a
 parseFromString p s =
-  case parseString p (Lines 0 0 0 0) s of
+  case parseString p (Columns 0 0) s of
     Success r -> Right r
     Failure d -> Left d
 

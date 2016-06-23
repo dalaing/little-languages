@@ -18,13 +18,14 @@ import qualified Data.HashSet                as HS
 -- from 'parsers'
 import           Text.Parser.Char            (oneOf)
 import           Text.Parser.Combinators     ((<?>))
+import           Text.Parser.Expression      (Assoc (..))
 import           Text.Parser.Token           (IdentifierStyle (..),
-                                              TokenParsing, reserve, integer)
-import           Text.Parser.Expression      (Assoc(..))
+                                              TokenParsing, integer, reserve)
+import           Text.Parser.Token.Highlight (Highlight (..))
 
 -- local
-import           Common.Text                 (OperatorInfo(..))
-import           Common.Parse                (ParseRule(..), mkParser)
+import           Common.Parse                (ParseRule (..), mkParser)
+import           Common.Text                 (OperatorInfo (..))
 import           Term                        (Term (..))
 
 -- $setup
@@ -32,7 +33,7 @@ import           Term                        (Term (..))
 -- >>> import Text.Trifecta.Result
 -- >>> import Text.Trifecta.Delta
 -- >>> import Text.PrettyPrint.ANSI.Leijen
--- >>> let parse p s = case parseString p (Lines 0 0 0 0) s of Failure d -> Failure (plain d); Success s -> Success s
+-- >>> let parse p s = case parseString p (Columns 0 0) s of Failure d -> Failure (plain d); Success s -> Success s
 
 -- | The tokenizer style for operators in the I language.
 operatorStyle :: TokenParsing m

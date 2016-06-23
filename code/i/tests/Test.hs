@@ -10,18 +10,20 @@ module Main (
   ) where
 
 -- from 'tasty'
-import           Test.Tasty (TestTree, defaultMain, testGroup)
+import           Test.Tasty  (TestTree, defaultMain, testGroup)
 
 -- local
-import           Test.Term  (termTests)
-import           Test.Type  (typeTests)
+import           Test.Common (commonTests)
+import           Test.Term   (termTests)
+import           Test.Type   (typeTests)
 
 main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
 tests = testGroup "tests"
-  [ typeTests
+  [ commonTests
+  , typeTests
   , termTests
   ]
 
