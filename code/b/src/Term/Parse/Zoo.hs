@@ -29,7 +29,7 @@ import           Text.Parser.Token.Highlight
 -- >>> import Text.Trifecta.Result
 -- >>> import Text.Trifecta.Delta
 -- >>> import Text.PrettyPrint.ANSI.Leijen
--- >>> let parse p s = case parseString p (Lines 0 0 0 0) s of Failure d -> Failure (plain d); Success s -> Success s
+-- >>> let parse p s = case parseString p (Columns 0 0) s of Failure d -> Failure (plain d); Success s -> Success s
 
 identifierStyle :: TokenParsing m
                 => IdentifierStyle m

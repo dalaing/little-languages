@@ -33,7 +33,7 @@ library
                      , Type.Error.Pretty
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.8 && <4.9
+  build-depends:       base >=4.8 && <4.10
                      , QuickCheck >=2.8 && <2.9
                      , parsers >=0.12 && <0.13
                      , unordered-containers >=0.2 && <0.3
@@ -48,7 +48,7 @@ test-suite test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      tests
   main-is:             Test.hs
-  build-depends:         base               >= 4.8  && < 4.9
+  build-depends:         base               >= 4.8  && < 4.10
                        , tasty              >= 0.11 && < 0.12
                        , tasty-quickcheck   >= 0.8 && < 0.9
                        , QuickCheck         >= 2.8 && < 2.9
@@ -69,7 +69,7 @@ test-suite doctests
 
 executable repl
   main-is:             Main.hs
-  build-depends:       base >= 4.8 && < 4.9
+  build-depends:       base >= 4.8 && < 4.10
                      , ansi-wl-pprint >=0.6 && <0.7
                      , haskeline >= 0.7 && < 0.8
                      , transformers >= 0.4 && < 0.5
