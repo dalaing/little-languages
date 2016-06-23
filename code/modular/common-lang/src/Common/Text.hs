@@ -22,9 +22,7 @@ data ExpressionInfo =
 combineTables :: [OperatorTable m a]
               -> OperatorTable m a
 combineTables os =
-    reverse .
-    foldr (zipWith (++) . pad) (pad []) $
-    os
+    foldr (zipWith (++) . pad) (pad []) os
   where
     l = maximum . map length $ os
     pad ls = replicate (l - length ls) [] ++ ls

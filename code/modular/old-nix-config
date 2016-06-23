@@ -1,0 +1,49 @@
+{ pkgs } :
+{ 
+
+  packageOverrides = super: let self = super.pkgs; in with self; rec {
+
+     myHaskellEnv = haskellPackages.ghcWithPackages
+        (haskellPackages: with haskellPackages; [
+           cabal-install cabal2nix alex happy hscolour cpphs 
+           directory filepath
+           pandoc hakyll latex-formulae-image latex-formulae-pandoc latex-formulae-hakyll
+           QuickCheck HUnit tasty tasty-quickcheck tasty-hunit criterion doctest doctest-discover
+           lens 
+           llvm-general
+           reactive-banana sdl2 reactive-banana-sdl2 linear
+           stylish-haskell hoogle
+           ghc-mod hindent 
+           optparse-applicative configurator safe errors validation
+           servant servant-client servant-server
+           bound parsers trifecta ansi-wl-pprint
+           singletons generics-eot constraints
+           Diff
+           sbv
+           Agda idris
+        ]);
+
+     myPythonEnv = pkgs.myEnvFun {
+       name = "pystats";
+       buildInputs = with python35Packages; [
+         python35
+         numpy
+         scipy
+         matplotlib
+         statsmodels
+         pandas
+       ];
+     };
+
+     myGhcjsEnv = haskell.packages.ghcjs.ghcWithPackages
+        (haskellPackages: with haskellPackages; [
+           reflex reflex-dom
+        ]);
+
+     myCoqEnv = buildEnv {
+       name = "myCoqEnv";
+       paths = ["coq-8.5b2" "ProofGeneral-4.2"];
+     };
+  };
+}
+

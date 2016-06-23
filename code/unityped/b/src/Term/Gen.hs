@@ -38,7 +38,7 @@ shrTmIf :: (Term -> [Term]) -> (Term -> [Term]) -> (Term -> [Term]) -> Term -> M
 shrTmIf s1 s2 s3 = fmap shrTmIf' . preview _TmIf
   where
     shrTmIf' (t1, t2, t3) =
-      s2 t2 ++
+      s2 t2 ++ 
       s3 t3 ++
       fmap (\u1 -> TmIf u1 t2 t3) (s1 t1) ++
       fmap (\u2 -> TmIf t1 u2 t3) (s2 t2) ++

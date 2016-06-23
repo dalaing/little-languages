@@ -1,0 +1,7 @@
+packages:   common-lang/
+            b-lang/ 
+            n-lang/ 
+            i-lang/ 
+            nb-lang/ 
+            stlc-lang/ 
+            test-lang/ 

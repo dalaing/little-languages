@@ -16,7 +16,7 @@ library
   exposed-modules:     TestLanguage
   -- other-modules:       
   -- other-extensions:    
-  build-depends:         base >=4.8 && <4.9
+  build-depends:         base >=4.8 && <4.10
                        , lens >= 4.13 && < 4.14
                        , trifecta >=1.5 && <1.6
                        , bifunctors >=5.2 && <5.3
@@ -35,7 +35,7 @@ test-suite test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      tests
   main-is:             Test.hs
-  build-depends:         base               >= 4.8  && < 4.9
+  build-depends:         base               >= 4.8  && < 4.10
                        , tasty              >= 0.11 && < 0.12
                        , trifecta >=1.5 && <1.6
                        , common-lang
@@ -46,7 +46,7 @@ test-suite test
 
 executable repl
   main-is:             Main.hs
-  build-depends:       base >= 4.8 && < 4.9
+  build-depends:       base >= 4.8 && < 4.10
                      , trifecta >=1.5 && <1.6
                      , common-lang
                      , stlc-lang

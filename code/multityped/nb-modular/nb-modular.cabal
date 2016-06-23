@@ -1,0 +1,137 @@
+name:                nb-modular
+version:             0.1.0.0
+-- synopsis:            
+-- description:         
+license:             BSD3
+license-file:        LICENSE
+author:              Dave Laing
+maintainer:          dave.laing.80@gmail.com
+-- copyright:           
+category:            Language
+build-type:          Simple
+-- extra-source-files:  
+cabal-version:       >=1.10
+
+library
+  exposed-modules:     Common
+                     , Common.Note 
+                     , Common.Term
+                     , Common.Term.Size
+                     , Common.Term.Gen
+                     , Common.Term.Infer
+                     , Common.Term.Eval
+                     , Common.Term.Eval.Value
+                     , Common.Term.Eval.SmallStep
+                     , Common.Term.Eval.BigStep
+                     , Common.Term.Parse
+                     , Common.Term.Pretty
+                     , Common.Type
+                     , Common.Type.Gen
+                     , Common.Type.Parse
+                     , Common.Type.Pretty
+                     , Common.Type.Error
+                     , Common.Type.Error.Pretty
+                     , Common.Test
+                     , Common.Test.Term
+                     , Common.Test.Term.Infer
+                     , Common.Test.Term.Eval
+                     , Common.Test.Term.Text
+                     , Common.Test.Type
+                     , Common.Test.Type.Text
+                     , Common.Recursion
+                     , Common.Repl
+                     , Components.Term.Bool
+                     , Components.Term.Bool.Data
+                     , Components.Term.Bool.Gen
+                     , Components.Term.Bool.Infer
+                     , Components.Term.Bool.Eval.Value
+                     , Components.Term.Bool.Eval.SmallStep
+                     , Components.Term.Bool.Eval.BigStep
+                     , Components.Term.Bool.Parse
+                     , Components.Term.Bool.Pretty
+                     , Components.Term.Nat
+                     , Components.Term.Nat.Data
+                     , Components.Term.Nat.Gen
+                     , Components.Term.Nat.Infer
+                     , Components.Term.Nat.Eval.Value
+                     , Components.Term.Nat.Eval.SmallStep
+                     , Components.Term.Nat.Eval.BigStep
+                     , Components.Term.Nat.Parse
+                     , Components.Term.Nat.Pretty
+                     , Components.Term.NatBool
+                     , Components.Term.NatBool.Data
+                     , Components.Term.NatBool.Gen
+                     , Components.Term.NatBool.Infer
+                     , Components.Term.NatBool.Eval.Value
+                     , Components.Term.NatBool.Eval.SmallStep
+                     , Components.Term.NatBool.Eval.BigStep
+                     , Components.Term.NatBool.Parse
+                     , Components.Term.NatBool.Pretty
+                     , Components.Term.Note
+                     , Components.Term.Note.Data
+                     , Components.Term.Note.Gen
+                     , Components.Term.Note.Infer
+                     , Components.Term.Note.Eval.Value
+                     , Components.Term.Note.Eval.SmallStep
+                     , Components.Term.Note.Eval.BigStep
+                     , Components.Term.Note.Parse
+                     , Components.Term.Note.Pretty
+                     , Components.Type.Bool
+                     , Components.Type.Bool.Data
+                     , Components.Type.Bool.Gen
+                     , Components.Type.Bool.Parse
+                     , Components.Type.Bool.Pretty
+                     , Components.Type.Nat
+                     , Components.Type.Nat.Data
+                     , Components.Type.Nat.Gen
+                     , Components.Type.Nat.Parse
+                     , Components.Type.Nat.Pretty
+                     , Components.Type.Note
+                     , Components.Type.Note.Data
+                     , Components.Type.Note.Gen
+                     , Components.Type.Note.Parse
+                     , Components.Type.Note.Pretty
+                     , Language.NB
+                     , Language.NB.Term
+                     , Language.NB.Type
+                     , Language.NB.Type.Error
+  -- other-modules:       
+  -- other-extensions:    
+  build-depends:       QuickCheck >=2.8 && <2.9
+                     , ansi-wl-pprint >=0.6 && <0.7
+                     , base >=4.8 && <4.9
+                     , bifunctors >= 5.2 && < 5.3
+                     , containers >=0.5 && <0.6
+                     , haskeline >= 0.7 && < 0.8
+                     , lens >=4.13 && <4.14
+                     , mtl >=2.2 && <2.3
+                     , parsers >=0.12 && <0.13
+                     , semigroups >= 0.18 && < 0.19
+                     , tasty              >= 0.11 && < 0.12
+                     , tasty-quickcheck   >= 0.8 && < 0.9
+                     , transformers >= 0.4 && < 0.5
+                     , trifecta >=1.5 && <1.6
+                     , unordered-containers >=0.2 && <0.3
+  hs-source-dirs:      src
+  ghc-options:         -Wall -O2
+  default-language:    Haskell2010
+
+executable repl
+  main-is:             Main.hs
+  build-depends:       base >= 4.8 && < 4.9
+                     , lens >=4.13 && <4.14
+                     , nb-modular
+  hs-source-dirs:      repl
+  ghc-options:         -Wall -O2
+  default-language:    Haskell2010
+
+test-suite test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      tests
+  main-is:             Test.hs
+  build-depends:         base               >= 4.8  && < 4.9
+                       , lens >=4.13 && <4.14
+                       , tasty              >= 0.11 && < 0.12
+                       , nb-modular
+  ghc-options:         -Wall -O2
+  default-language:    Haskell2010
