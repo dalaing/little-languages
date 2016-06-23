@@ -4,3 +4,7 @@ sandbox
 TAGS
 *.tix
 .projectile
+.stack-work
+dist-newstyle
+cabal.project.local
+
