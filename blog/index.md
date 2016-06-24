@@ -31,19 +31,26 @@ I'll post a link to the video when that becomes available.
 
 # The blog posts
 
+
 ## Part 1 - The basics
 
+Coming very soon.
+<!--
 - [The B language](./posts/b.html)
     - [The semantics of B](./posts/b/semantics.html)
     - [Testing B](./posts/b/testing.html)
     - [Parsing and Printing B](./posts/b/text.html)
-<!--
 - [The N language](./posts/n.html)
 - [The I language](./posts/i.html)
+    - [Parsing and Printing I](./posts/i/text.html)
+    - [Testing I](./posts/i/testing.html)
+
 - [The NB language](./posts/nb.html) (includes type system)
     - [Testing NB](./posts/nb/testing.html)
-    - [Better error messages](./posts/nb/srclocs.html)
-- [The IB language](./posts/ib.html)
+- [Adding annotations to the AST](./posts/nb-note/html)
+    - [Annotations for better error messages](./posts/nb/srclocs.html)
+    - [Annotations for better test generation](./posts/nb/testing.html)
+
 - [Simply-Typed Lambda Calculus](./posts/stlc.html)
     - [Using `bound` for variable substitution](./posts/stlc/bound.html) 
     - [Semantics for STLC-B](./posts/stlc/semantics.html)

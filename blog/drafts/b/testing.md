@@ -746,10 +746,17 @@ I could have removed a few of the other properties once `propSmallUnique` was wr
 I like to have `QuickCheck` tests written out explicitly for the properties that I want to hold.
 I'm fine with having a bit of redundancy between the properties if those properties are well known in the domain.
 
+# Syntax for our semantics
+
 The above tests all pass and so we should be getting confident in our little language - so let's take it our for a spin.
+
+A great way to play with a language is through a read-eval-print-loop (REPL), which is what we're going to look at next.
+This will mean we'll have to work out how to parse and print expressions in our language, which will provide some additional entertainment.
+
 [Read on!](text.html)
 
 # Exercises for the adventurous
 - Add some more properties that are reasonable for *B*.
 - Are any of the properties redundant? Think about how we might work that out.  Would you prefer a minimum set of properties, or an overlapping set of properties that map neatly to the concepts from PLT? 
 - Investigate small check.  What is the maximum depth term we need to be confident in all of our properties? 
+- Write a REPL for *B*.

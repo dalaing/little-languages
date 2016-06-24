@@ -9,6 +9,11 @@ We've just finished covering the [B language](./b.html).
 
 Now we're going to look at the *N* language, which deals with natural numbers.
 
+This is going to be a relative short tour, since you've seen most of this before.
+The important points are that we'll be dealing with inductively defined values, and we'll be looking briefly at the difference between strict and lazy evaluation.
+
+# Terms of *N*
+
 The natural numbers are defined as:
 
 - $\text{O}$, for the number zero
@@ -213,13 +218,10 @@ And that's all we need to do.  If we copy the tests and the REPL across from the
 
 That's partly due to using the same interface, but also partly due to the form and robustness of the PLT theorems that we're using for our properties.
 
-Now, if we can combine *B* and *N*, we should be in a good place.
-[Read on!](nb.html) (or possibly read the link at the end of the exercises first..)
+We are going to look at more uni-typed language before we add some new concepts into the mix.
+[Read on!](i.html) 
 
 # Exercises for the adventurous
 - Complete the `QuickCheck`, parsing and printing for *N*.
 - Devise semantics for *I*, with terms for integer literals, `+`, `-`, `*` and `^`.
 - Implement *I* in Haskell, including the semantics, `QuickCheck`, parsing and pretty-printing.
-
-Once you're done - or even if you skip the exercises - take a look at [my version of *I*](i.html).
-
