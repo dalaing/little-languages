@@ -39,111 +39,98 @@
 <p>Here are <a href="https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf">the slides</a>.</p>
 <p>I’ll post a link to the video when that becomes available.</p>
 <h1 id="the-blog-posts">The blog posts</h1>
-<h2 id="part-1---the-basics">Part 1 - The basics</h2>
-<ul>
-<li><a href="./posts/b.html">The B language</a>
-<ul>
-<li><a href="./posts/b/semantics.html">The semantics of B</a></li>
-<li><a href="./posts/b/testing.html">Testing B</a></li>
-<li><a href="./posts/b/text.html">Parsing and Printing B</a> &lt;!–</li>
-</ul></li>
-<li><a href="./posts/n.html">The N language</a></li>
-<li><a href="./posts/i.html">The I language</a></li>
-<li><a href="./posts/nb.html">The NB language</a> (includes type system)
-<ul>
-<li><a href="./posts/nb/testing.html">Testing NB</a></li>
-<li><a href="./posts/nb/srclocs.html">Better error messages</a></li>
-</ul></li>
-<li><a href="./posts/ib.html">The IB language</a></li>
-<li><a href="./posts/stlc.html">Simply-Typed Lambda Calculus</a>
-<ul>
-<li><a href="./posts/stlc/bound.html">Using <code>bound</code> for variable substitution</a></li>
-<li><a href="./posts/stlc/semantics.html">Semantics for STLC-B</a></li>
-<li><a href="./posts/stlc/contexts.html">Adding contexts</a></li>
-<li><a href="./posts/stlc/types.html">Types for STLC-B</a></li>
-<li><a href="./posts/stlc/warnings.html">Adding warnings</a></li>
-</ul></li>
-<li>LC and STLC</li>
-<li>describe LC and it’s various tricky cases in main post</li>
-<li>describe bound</li>
-<li>semantics of STLC, implementation using bound</li>
-<li>type system for STLC, implementation using reader</li>
-<li>add warnings for shadowing / unused variables</li>
-</ul>
-<h2 id="intermezzo">Intermezzo</h2>
-<ul>
-<li>lambda calculus cooked 5 ways</li>
-<li>fun with hbound and syntax helpers</li>
-<li>internal and external languages</li>
-<li>small check (if we can turn sets of rules / structures into a maximum depth)</li>
-</ul>
-<h2 id="part-2---making-things-more-modular">Part 2 - Making things more modular</h2>
-<ul>
-<li>modularity for NB (no annotations)</li>
-<li>classy prisms for the term
-<ul>
-<li>rework the rules</li>
-</ul></li>
-<li>a monoid for combining rules</li>
-<li>typeclasses for combining rules</li>
-<li>adding annotations and LC</li>
-<li>intro to constraints</li>
-<li>the impact of extra type variables on the monoid approach</li>
-<li>the impact of extra type variables on the typeclass approach</li>
-</ul>
-<h2 id="intermezzo-1">Intermezzo</h2>
-<ul>
-<li>observable sharing for CSE</li>
-<li>transforming back from the graph into a let block could be interesting</li>
-<li>code formatters and more advanced testing of text functions</li>
-</ul>
-<h2 id="part-3---extensions">Part 3 - Extensions</h2>
-<ul>
-<li>let, fix, letrec</li>
-<li>non-recursive let</li>
-<li>adding fix for letrec</li>
-<li>indentation aware parsing</li>
-<li>patterns</li>
-<li>need source locations</li>
-<li>case / alt</li>
-<li>pattern match coverage tests</li>
-<li>TLDs</li>
-<li>user defined data types</li>
-<li>recast B using data types</li>
-<li>recursive data types</li>
-<li>recast N using data types</li>
-<li>recast NB using data types from the previous recastings</li>
-<li>a basic module system</li>
-</ul>
-<h2 id="intermezzo-2">Intermezzo</h2>
-<ul>
-<li>literate documents</li>
-<li>a REPL for learning</li>
-<li>from a REPL to a debugger</li>
-<li>a DSL for SQL 92 (?)</li>
-</ul>
-<h2 id="part-4---type-inference">Part 4 - Type inference</h2>
-<ul>
-<li>constraint based type inference</li>
-<li>bidirectional type inference</li>
-<li>System F, Fc, Fw</li>
-<li>Typeclasses (?)</li>
-</ul>
-<h2 id="intermezzo-3">Intermezzo</h2>
-<ul>
-<li>strictness vs laziness via annotations type level variables</li>
-<li>affine languages</li>
-</ul>
-<h2 id="part-5---compilation-of-strict-languages">Part 5 - Compilation of strict languages</h2>
-<ul>
-<li>Tiger book approaches</li>
-</ul>
-<h2 id="part-5---compilation-of-lazy-languages">Part 5 - Compilation of lazy languages</h2>
-<ul>
-<li>PJ and lester approaches</li>
-<li>Tiger book approaches</li>
-</ul>
-<p>–&gt;</p>
+<p>Coming very soon.</p>
+<!--
+## Part 1 - The basics
+
+- [The B language](./posts/b.html)
+    - [The semantics of B](./posts/b/semantics.html)
+    - [Testing B](./posts/b/testing.html)
+    - [Parsing and Printing B](./posts/b/text.html)
+- [The N language](./posts/n.html)
+- [The I language](./posts/i.html)
+- [The NB language](./posts/nb.html) (includes type system)
+    - [Testing NB](./posts/nb/testing.html)
+    - [Better error messages](./posts/nb/srclocs.html)
+- [The IB language](./posts/ib.html)
+- [Simply-Typed Lambda Calculus](./posts/stlc.html)
+    - [Using `bound` for variable substitution](./posts/stlc/bound.html) 
+    - [Semantics for STLC-B](./posts/stlc/semantics.html)
+    - [Adding contexts](./posts/stlc/contexts.html) 
+    - [Types for STLC-B](./posts/stlc/types.html)
+    - [Adding warnings](./posts/stlc/warnings.html) 
+
+- LC and STLC
+  - describe LC and it's various tricky cases in main post
+  - describe bound
+  - semantics of STLC, implementation using bound
+  - type system for STLC, implementation using reader
+  - add warnings for shadowing / unused variables
+
+## Intermezzo 
+  - lambda calculus cooked 5 ways
+  - fun with hbound and syntax helpers
+  - internal and external languages
+  - small check (if we can turn sets of rules / structures into a maximum depth)
+
+## Part 2 - Making things more modular
+
+- modularity for NB (no annotations)
+  - classy prisms for the term
+    - rework the rules
+  - a monoid for combining rules
+  - typeclasses for combining rules
+- adding annotations and LC
+  - intro to constraints
+  - the impact of extra type variables on the monoid approach
+  - the impact of extra type variables on the typeclass approach
+
+## Intermezzo
+- observable sharing for CSE
+  - transforming back from the graph into a let block could be interesting
+- code formatters and more advanced testing of text functions
+
+## Part 3 - Extensions
+- let, fix, letrec
+  - non-recursive let
+  - adding fix for letrec
+  - indentation aware parsing
+- patterns
+  - need source locations
+- case / alt
+  - pattern match coverage tests
+- TLDs
+- user defined data types
+  - recast B using data types
+- recursive data types
+  - recast N using data types
+  - recast NB using data types from the previous recastings
+- a basic module system
+
+## Intermezzo
+- literate documents 
+- a REPL for learning
+  - from a REPL to a debugger
+- a DSL for SQL 92 (?)
+
+## Part 4 - Type inference
+- constraint based type inference
+- bidirectional type inference 
+- System F, Fc, Fw
+- Typeclasses (?) 
+
+## Intermezzo
+- strictness vs laziness via annotations type level variables
+- affine languages
+
+## Part 5 - Compilation of strict languages
+- Tiger book approaches
+
+## Part 5 - Compilation of lazy languages
+- PJ and lester approaches
+- Tiger book approaches
+
+-->
 <h1 id="for-those-of-you-playing-along-at-home">For those of you playing along at home</h1>
 <p>These posts should all be self-contained, so you probably don’t <em>need</em> the following books. I had them in my books-that-I-want queue for a long time but wasn’t sure I eas ready for them, and now I kind of wish that I dived in earlier.</p>
 <p>There are two books on PLT that are standard recommendations. The <em>reason</em> they are standard recommendations is because they are great.</p>
