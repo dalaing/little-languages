@@ -34,12 +34,10 @@
     </div>
     <div class="panel-body">
         <h1 id="cranking-up-the-testing">Cranking up the testing</h1>
-<p>There’s a problem though - <code>needsParens</code> is incorrect.</p>
-<p>A <a href="https://www.reddit.com/r/haskell/comments/4pdfkx/symbolic_computer_algebra_print_tree/">post on reddit</a> covered some similar ground, but with different code for the equivalent of <code>needsParens</code>.</p>
-<p>Clearly it’s time for more <code>QuickCheck</code> in order to sort out what is going on.</p>
 <p>We’re going to build generators for a set of operators, and use that to generate arbitrary expressions. Once we have that, we’ll check that pretty printing the expression and parsing it back in returns the original expression.</p>
 <p>We’ll also check that we either a parsing failure or a different expression if we delete any matched pair of parentheses from the pretty printed string in the middle of that round trip test.</p>
 <p>That seems like it should make sure that we’re putting parentheses in the right places, and that we’re not adding any redundant parentheses.</p>
+<h1 id="arbitrary-operators">Arbitrary operators</h1>
 <p>To start with, we’ll need an <code>Arbitrary</code> instance for <code>OperatorInfo</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Arbitrary</span> <span class="dt">OperatorInfo</span> <span class="kw">where</span>
   arbitrary <span class="fu">=</span>
@@ -87,6 +85,7 @@ shrinkOperatorMap (<span class="dt">OperatorMap</span> m) <span class="fu">=</sp
     genOperatorMap
   shrink <span class="fu">=</span>
     shrinkOperatorMap</code></pre></div>
+<h1 id="arbitrary-expressions">Arbitrary expressions</h1>
 <p>Thus armed, we create a generic expression type. We use the lowest-effort form of generics here: <code>String</code>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Expr</span> <span class="fu">=</span>
     <span class="dt">Const</span> <span class="dt">Int</span>
@@ -123,6 +122,7 @@ shrinkExpr (<span class="dt">Op</span> s e1 e2) <span class="fu">=</span>
   e2 <span class="fu">:</span>
   fmap (\e1' <span class="ot">-&gt;</span> <span class="dt">Op</span> s e1' e2) (shrinkExpr e1) <span class="fu">++</span>
   fmap (\e2' <span class="ot">-&gt;</span> <span class="dt">Op</span> s e1 e2') (shrinkExpr e2)</code></pre></div>
+<h2 id="parsing-and-printing-expressions">Parsing and printing expressions</h2>
 <p>The <code>OperatorMap</code> can be turned into a pretty printer fairly mechanically:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">toPrettyRules ::</span> <span class="dt">OperatorMap</span>
               <span class="ot">-&gt;</span> [<span class="dt">PrettyRule</span> <span class="dt">Expr</span>]
@@ -170,6 +170,7 @@ toParserRules (<span class="dt">OperatorMap</span> m) <span class="fu">=</span>
 mkExprParser m <span class="fu">=</span>
     mkParser (toParserRules m)
   <span class="kw">where</span></code></pre></div>
+<h1 id="the-properties-we-need">The properties we need</h1>
 <p>At this point, we have the tools to write the property that checks that we can make a round trip through the pretty printer and then the parser:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propPrettyParse ::</span> <span class="dt">OperatorMap</span>
                 <span class="ot">-&gt;</span> <span class="dt">Property</span>
@@ -186,7 +187,9 @@ propPrettyParse om <span class="fu">=</span>
       <span class="kw">case</span> roundTrip expr <span class="kw">of</span>
         <span class="dt">Left</span> _ <span class="ot">-&gt;</span> property <span class="dt">False</span>
         <span class="dt">Right</span> expr' <span class="ot">-&gt;</span> expr <span class="fu">===</span> expr'</code></pre></div>
-<p>We’ll do some quick and dirty utility functions to find the positions of match pairs of parentheses in a string:</p>
+<p>So far, so good.</p>
+<p>In order to test that remove parentheses in the middle of a round-trip alters the results, we’ll need some quick and dirty utility functions.</p>
+<p>The first one will find the positions of match pairs of parentheses in a string:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">findParens ::</span> <span class="dt">String</span>
            <span class="ot">-&gt;</span> [(<span class="dt">Int</span>, <span class="dt">Int</span>)]
 findParens <span class="fu">=</span>
@@ -198,7 +201,7 @@ findParens <span class="fu">=</span>
       ((o, ix) <span class="fu">:</span> done, opens, ix <span class="fu">+</span> <span class="dv">1</span>)
     f _ (done, opens, ix) <span class="fu">=</span>
       (done, opens, ix <span class="fu">+</span> <span class="dv">1</span>)</code></pre></div>
-<p>and to remove those parentheses from a string:</p>
+<p>and the second one will remove those parentheses from a string:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">removeParens ::</span> <span class="dt">String</span>
              <span class="ot">-&gt;</span> (<span class="dt">Int</span>, <span class="dt">Int</span>)
              <span class="ot">-&gt;</span> <span class="dt">String</span>
@@ -239,6 +242,7 @@ propPrettyParseParens om <span class="fu">=</span>
             <span class="dt">True</span>
           <span class="dt">Right</span> expr' <span class="ot">-&gt;</span>
             expr <span class="fu">/=</span> expr'</code></pre></div>
+<h1 id="trying-them-out">Trying them out</h1>
 <p>Let’s see how we go with these properties:</p>
 <pre><code>common
   text
@@ -297,8 +301,15 @@ needsParens arg info (<span class="dt">Just</span> argInfo) <span class="fu">=</
       +++ OK, passed 100 tests.
     pretty-parse correct parens:   OK
       +++ OK, passed 100 tests.</code></pre>
-<p>There was also a link in that Reddit thread to <a href="http://www.cs.tufts.edu/~nr/pubs/unparse-abstract.html">a paper on unparsing</a> that is also worth a read. On one hand, it would have been nice to have had the right search terms to find that earlier. On the other hand, we now have some nice tests around our unparsing utilities.</p>
-<p>Now it’s definitely time to look at combining various languages. <a href="nb.html">Read on!</a></p>
+<p>There was also a link in that Reddit thread to <a href="http://www.cs.tufts.edu/~nr/pubs/unparse-abstract.html">a paper on unparsing</a> that is also worth a read.</p>
+<p>On one hand, it would have been nice to have had the right search terms to find that earlier. On the other hand, we now have some nice tests around our unparsing utilities, and I’m much more confident in this part of the code.</p>
+<h1 id="leveling-up">Leveling up</h1>
+<p>We’ve now looked at a number of uni-typed languages. The obvious next step is to combine a few of them and see what happens.</p>
+<p>This is pretty exciting - we’ll get to look at type systems, and the links between semantics and types, and there’ll be a few other little tips and tricks in between. <!--[Read on!](../nb.html)--></p>
+<h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
+<ul>
+<li>Write a language for working with strings.</li>
+</ul>
     </div>
     
     <div class="panel-footer">

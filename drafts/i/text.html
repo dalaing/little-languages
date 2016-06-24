@@ -570,7 +570,7 @@ prettyTerm <span class="fu">=</span>
            <span class="ot">-&gt;</span> <span class="dt">Doc</span>
 prettyTerm <span class="fu">=</span>
   mkPretty prettyTermRules</code></pre></div>
-<p>Again, like with <a href="n.html"><em>N</em></a>, we don’t need to change the tests or the REPL, and they both continue to work.</p>
+<p>As was the case with <a href="n.html"><em>N</em></a>, we don’t need to change the tests or the REPL, and they both continue to work.</p>
 <p>It’s always worth having a play around in the REPL at this point, as something somewhere between a double-check and a victory lap:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> <span class="dv">2</span> <span class="fu">+</span> <span class="dv">3</span> <span class="fu">*</span> <span class="dv">5</span>
 <span class="dv">2</span> <span class="fu">+</span> <span class="dv">3</span> <span class="fu">*</span> <span class="dv">5</span> <span class="fu">==&gt;</span> <span class="dv">17</span>
@@ -580,6 +580,18 @@ prettyTerm <span class="fu">=</span>
 <span class="dv">1</span> <span class="fu">+</span> <span class="dv">2</span> <span class="fu">+</span> <span class="dv">3</span> <span class="fu">==&gt;</span> <span class="dv">6</span>
 <span class="fu">&gt;</span> <span class="dv">1</span> <span class="fu">+</span> (<span class="dv">2</span> <span class="fu">+</span> <span class="dv">3</span>)
 <span class="dv">1</span> <span class="fu">+</span> (<span class="dv">2</span> <span class="fu">+</span> <span class="dv">3</span>) <span class="fu">==&gt;</span> <span class="dv">6</span></code></pre></div>
+<h1 id="clutching-defeat-from-the-jaws-of-victory">Clutching defeat from the jaws of victory</h1>
+<p>There’s a problem though - <code>needsParens</code> is incorrect.</p>
+<p>A <a href="https://www.reddit.com/r/haskell/comments/4pdfkx/symbolic_computer_algebra_print_tree/">post on reddit</a> covered some similar ground, but with different code for the equivalent of <code>needsParens</code>.</p>
+<p>Clearly it’s time for more <code>QuickCheck</code> in order to sort out what is going on. <a href="testing.html">Read on!</a></p>
+<h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
+<ul>
+<li>Add the logic operators for conjunction and disjunction to <em>B</em> , using <code>&amp;&amp;</code> and <code>||</code> as infix operators with the same precedence and associativity as reported by GHCi with <code>:i (&amp;&amp;)</code> etc…
+<ul>
+<li>Make sure that the semantics cause them to short-circuit appropriately.</li>
+</ul></li>
+<li>Add the logic operator for negation to <em>B</em> using <code>~</code> as a prefix operator.</li>
+</ul>
     </div>
     
     <div class="panel-footer">

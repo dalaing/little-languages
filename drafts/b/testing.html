@@ -553,12 +553,16 @@ propSmallBig (<span class="dt">AnyTerm</span> tm) <span class="fu">=</span>
   Term.Eval.SmallStep.eval tm <span class="fu">===</span> Term.Eval.BigStep.eval tm</code></pre></div>
 <p>This also acts as a sanity check, and has also helped me to spot bugs sooner than I would have otherwise.</p>
 <p>I could have removed a few of the other properties once <code>propSmallUnique</code> was written, but I didn’t. I like to have <code>QuickCheck</code> tests written out explicitly for the properties that I want to hold. I’m fine with having a bit of redundancy between the properties if those properties are well known in the domain.</p>
-<p>The above tests all pass and so we should be getting confident in our little language - so let’s take it our for a spin. <a href="text.html">Read on!</a></p>
+<h1 id="syntax-for-our-semantics">Syntax for our semantics</h1>
+<p>The above tests all pass and so we should be getting confident in our little language - so let’s take it our for a spin.</p>
+<p>A great way to play with a language is through a read-eval-print-loop (REPL), which is what we’re going to look at next. This will mean we’ll have to work out how to parse and print expressions in our language, which will provide some additional entertainment.</p>
+<p><a href="text.html">Read on!</a></p>
 <h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
 <ul>
 <li>Add some more properties that are reasonable for <em>B</em>.</li>
 <li>Are any of the properties redundant? Think about how we might work that out. Would you prefer a minimum set of properties, or an overlapping set of properties that map neatly to the concepts from PLT?</li>
 <li>Investigate small check. What is the maximum depth term we need to be confident in all of our properties?</li>
+<li>Write a REPL for <em>B</em>.</li>
 </ul>
     </div>
     

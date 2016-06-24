@@ -36,6 +36,8 @@
         <h1 id="introducing-n">Introducing <em>N</em></h1>
 <p>We’ve just finished covering the <a href="./b.html">B language</a>.</p>
 <p>Now we’re going to look at the <em>N</em> language, which deals with natural numbers.</p>
+<p>This is going to be a relative short tour, since you’ve seen most of this before. The important points are that we’ll be dealing with inductively defined values, and we’ll be looking briefly at the difference between strict and lazy evaluation.</p>
+<h1 id="terms-of-n">Terms of <em>N</em></h1>
 <p>The natural numbers are defined as:</p>
 <ul>
 <li><img width="15" alt="\text{O}" height="12" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAZCAQAAACMPFaRAAAA70lEQVR4nKVUyxWEIAxMK1RiI9RhGTZhD7ZABzbAmaMXDrJDPOwnH/Ht8J4HMiETHEJkI9DMa3I4KlY6sBKvTBXfMJYYQa6o+MZEhU5aRmo21JR1duwnP3UB5TQkHohtdmpAYkNtHRNi7asdIa06urIdv072+lqYoSpLvizqbXVG1kIHh/z/WZmjoFmBDxRdXXyQLOwyP0gWl/okWVgl/NMzsbvazQM0OVm/DKFO9dh66zCXUQe8bTbmeJcGvH+9K92ihceEi56+K/ubMWF+kPjlBLFXxobgzAMvwe+905UHonUTKiKE7jgk4xDjjb8ArJGWAJB9UBEAAAAASUVORK5CYII=" class="inline-math" style="margin:0; vertical-align:-1px;" />, for the number zero</li>
@@ -141,14 +143,13 @@ valueTmSucc _ <span class="fu">=</span>
 <p>From this point, we just need to write the code for <code>QuickCheck</code> support, parsing and printing for <em>N</em> and we’re done.</p>
 <p>And that’s all we need to do. If we copy the tests and the REPL across from the <em>B</em> project into the <em>N</em> project, they’ll still work.</p>
 <p>That’s partly due to using the same interface, but also partly due to the form and robustness of the PLT theorems that we’re using for our properties.</p>
-<p>Now, if we can combine <em>B</em> and <em>N</em>, we should be in a good place. <a href="nb.html">Read on!</a> (or possibly read the link at the end of the exercises first..)</p>
+<p>We are going to look at more uni-typed language before we add some new concepts into the mix. <a href="i.html">Read on!</a></p>
 <h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
 <ul>
 <li>Complete the <code>QuickCheck</code>, parsing and printing for <em>N</em>.</li>
 <li>Devise semantics for <em>I</em>, with terms for integer literals, <code>+</code>, <code>-</code>, <code>*</code> and <code>^</code>.</li>
 <li>Implement <em>I</em> in Haskell, including the semantics, <code>QuickCheck</code>, parsing and pretty-printing.</li>
 </ul>
-<p>Once you’re done - or even if you skip the exercises - take a look at <a href="i.html">my version of <em>I</em></a>.</p>
     </div>
     
     <div class="panel-footer">
