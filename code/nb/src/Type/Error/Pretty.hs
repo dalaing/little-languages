@@ -62,13 +62,13 @@ prettyTeExpectedEq _ =
 
 -- |
 --
--- >>> render 0.5 40 (fromMaybe (text "???") . prettyTeUnknownType) $ UnknownType
--- Unknown type
-prettyTeUnknownType :: TypeError
+-- >>> render 0.5 40 (fromMaybe (text "???") . prettyTeNoMatchingTypeRule) $ NoMatchingTypeRule
+-- No matching type rule
+prettyTeNoMatchingTypeRule :: TypeError
                     -> Maybe Doc
-prettyTeUnknownType UnknownType =
-  Just $ text "Unknown type"
-prettyTeUnknownType _ =
+prettyTeNoMatchingTypeRule NoMatchingTypeRule =
+  Just $ text "No matching type rule"
+prettyTeNoMatchingTypeRule _ =
   Nothing
 
 -- | Pretty type error rules
@@ -76,7 +76,7 @@ prettyTypeErrorRules :: [TypeError -> Maybe Doc]
 prettyTypeErrorRules = [
     prettyTeUnexpected
   , prettyTeExpectedEq
-  , prettyTeUnknownType
+  , prettyTeNoMatchingTypeRule
   ]
 
 -- | Pretty prints a 'TypeError'.
@@ -91,8 +91,8 @@ prettyTypeErrorRules = [
 --   type 1: Nat
 --   type 2: Bool
 --
--- >>> render 0.5 40 prettyTypeError $ UnknownType
--- Unknown type
+-- >>> render 0.5 40 prettyTypeError $ NoMatchingTypeRule
+-- No matching type rule
 prettyTypeError :: TypeError
                 -> Doc
 prettyTypeError te =

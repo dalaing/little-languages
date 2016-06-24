@@ -32,12 +32,13 @@ import           Term.Gen              (AnyTerm (..), IllTypedTerm (..),
 import           Term.Infer            (inferTerm, inferTermRules, runInfer)
 import           Type                  (Type)
 import           Type.Gen              (genType)
-import           Type.Error            (TypeError)
+import           Type.Error            (TypeError(..))
 import           Type.Error.Gen        (AnyTypeError (..))
 
 inferTests :: TestTree
 inferTests = testGroup "infer"
   [ testProperty "patterns unique" propPatternUnique
+  , testProperty "never NoMatchingTypeRule" propNeverNoMatchingTypeRule
   , testProperty "well-typed infer" propWellTypedInfer
   , testProperty "ill-typed infer" propIllTypedInfer
   , testProperty "ill-typed error" propIllTypedError
@@ -100,6 +101,11 @@ propPatternUnique (AnyTerm tm) =
       inferTermRules
   in
     matches === 1
+
+propNeverNoMatchingTypeRule :: AnyTerm
+                            -> Bool
+propNeverNoMatchingTypeRule (AnyTerm tm) =
+  infer tm /= Left NoMatchingTypeRule
 
 -- Type safety properties
 

@@ -22,7 +22,7 @@ import           Term          (Term (..))
 
 -- | The value rule for 'TmInt'.
 valueTmInt :: Term
-             -> Maybe Term
+           -> Maybe Term
 valueTmInt (TmInt i) =
   Just (TmInt i)
 valueTmInt _ =

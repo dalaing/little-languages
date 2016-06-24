@@ -29,7 +29,7 @@ import           Type.Error           (TypeError (..), expect)
 
 -- | Infer the type of 'TmZero'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmZero $ TmZero
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . inferTmZero $ TmZero
 -- Right TyNat
 inferTmZero :: Monad m
             => Term
@@ -41,7 +41,7 @@ inferTmZero _ =
 
 -- | Infer the type of 'TmSucc'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmSucc inferTerm) $ TmSucc TmZero
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmSucc inferTerm) $ TmSucc TmZero
 -- Right TyNat
 
 -- There will be better examples when we have more than one type
@@ -58,7 +58,7 @@ inferTmSucc _ _ =
 
 -- | Infer the type of 'TmPred'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmPred inferTerm) $ TmPred TmZero
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmPred inferTerm) $ TmPred TmZero
 -- Right TyNat
 
 -- There will be better examples when we have more than one type
@@ -85,7 +85,7 @@ inferTermRules =
 -- | The type inference function for the N language.
 --
 -- This function is built from the contents of 'inferTermRules'.
--- It will throw an 'UnknownType' error if none of the rules apply - which should never happen.
+-- It will throw an 'NoMatchingTypeRule' error if none of the rules apply - which should never happen.
 --
 -- >>> runInfer . inferTerm $ TmZero
 -- Right TyNat
@@ -96,7 +96,7 @@ inferTerm :: MonadError TypeError m
           => Term
           -> m Type
 inferTerm tm =
-  fromMaybe (throwError UnknownType) .
+  fromMaybe (throwError NoMatchingTypeRule) .
   asum .
   fmap ($ tm) $
   inferTermRules

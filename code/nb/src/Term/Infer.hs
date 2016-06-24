@@ -29,7 +29,7 @@ import           Type.Error           (TypeError (..), expect, expectEq)
 
 -- | Infer the type of 'TmZero'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmZero $ TmZero
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . inferTmZero $ TmZero
 -- Right TyNat
 inferTmZero :: Monad m
             => Term
@@ -41,10 +41,10 @@ inferTmZero _ =
 
 -- | Infer the type of 'TmSucc'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmSucc inferTerm) $ TmSucc TmZero
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmSucc inferTerm) $ TmSucc TmZero
 -- Right TyNat
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmSucc inferTerm) $ TmSucc TmFalse
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmSucc inferTerm) $ TmSucc TmFalse
 -- Left (Unexpected TyBool TyNat)
 --
 inferTmSucc :: MonadError TypeError m
@@ -60,10 +60,10 @@ inferTmSucc _ _ =
 
 -- | Infer the type of 'TmPred'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmPred inferTerm) $ TmPred TmZero
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmPred inferTerm) $ TmPred TmZero
 -- Right TyNat
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmPred inferTerm) $ TmPred TmFalse
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmPred inferTerm) $ TmPred TmFalse
 -- Left (Unexpected TyBool TyNat)
 --
 inferTmPred :: MonadError TypeError m
@@ -79,7 +79,7 @@ inferTmPred _ _ =
 
 -- | Infer the type of 'TmFalse'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmFalse $ TmFalse
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . inferTmFalse $ TmFalse
 -- Right TyBool
 inferTmFalse :: Monad m
              => Term
@@ -91,7 +91,7 @@ inferTmFalse _ =
 
 -- | Infer the type of 'TmFalse'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmTrue $ TmTrue
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . inferTmTrue $ TmTrue
 -- Right TyBool
 inferTmTrue :: Monad m
             => Term
@@ -103,13 +103,13 @@ inferTmTrue _ =
 
 -- | Infer the type of 'TmIf'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmTrue
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmTrue
 -- Right TyBool
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmZero TmFalse TmTrue
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmIf inferTerm) $ TmIf TmZero TmFalse TmTrue
 -- Left (Unexpected TyNat TyBool)
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmZero
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmZero
 -- Left (ExpectedEq TyBool TyNat)
 --
 inferTmIf :: MonadError TypeError m
@@ -128,10 +128,10 @@ inferTmIf _ _ =
 
 -- | Infer the type of 'TmIsZero'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIsZero inferTerm) $ TmIsZero (TmSucc TmZero)
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmIsZero inferTerm) $ TmIsZero (TmSucc TmZero)
 -- Right TyBool
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIsZero inferTerm) $ TmIsZero TmFalse
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmIsZero inferTerm) $ TmIsZero TmFalse
 -- Left (Unexpected TyBool TyNat)
 --
 inferTmIsZero :: MonadError TypeError m
@@ -161,7 +161,7 @@ inferTermRules =
 -- | The type inference function for the NB language.
 --
 -- This function is built from the contents of 'inferTermRules'.
--- It will throw an 'UnknownType' error if none of the rules apply - which should never happen.
+-- It will throw an 'NoMatchingTypeRule' error if none of the rules apply - which should never happen.
 --
 -- >>> runInfer . inferTerm $ TmZero
 -- Right TyNat
@@ -181,7 +181,7 @@ inferTerm :: MonadError TypeError m
           => Term
           -> m Type
 inferTerm tm =
-  fromMaybe (throwError UnknownType) .
+  fromMaybe (throwError NoMatchingTypeRule) .
   asum .
   fmap ($ tm) $
   inferTermRules

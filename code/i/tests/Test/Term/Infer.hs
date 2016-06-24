@@ -29,11 +29,12 @@ import           Term.Eval.Value       (isValue)
 import           Term.Gen              (AnyTerm(..))
 import           Term.Infer            (inferTerm, inferTermRules, runInfer)
 import           Type                  (Type)
-import           Type.Error            (TypeError)
+import           Type.Error            (TypeError(..))
 
 inferTests :: TestTree
 inferTests = testGroup "infer"
   [ testProperty "patterns unique" propPatternUnique
+  , testProperty "never NoMatchingTypeRule" propNeverNoMatchingTypeRule
   , testProperty "well-typed infer" propWellTypedInfer
   , testProperty "progress" propProgress
   , testProperty "preservation" propPreservation
@@ -62,6 +63,11 @@ propPatternUnique (AnyTerm tm) =
       inferTermRules
   in
     matches === 1
+
+propNeverNoMatchingTypeRule :: AnyTerm
+                            -> Bool
+propNeverNoMatchingTypeRule (AnyTerm tm) =
+  infer tm /= Left NoMatchingTypeRule
 
 -- For now, all of our terms are well typed.
 propWellTypedInfer :: AnyTerm

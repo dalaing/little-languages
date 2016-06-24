@@ -32,5 +32,5 @@ prettyTypeError (ExpectedEq t1 t2) =
   hang 2 (text "Expected these types to be equal:" PP.<$>
           text "type 1:" <+> prettyType t1 PP.<$>
           text "type 2:" <+> prettyType t2)
-prettyTypeError UnknownType =
-  text "Unknown type"
+prettyTypeError NoMatchingTypeRule =
+  text "No matching type rule"

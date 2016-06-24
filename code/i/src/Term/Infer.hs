@@ -29,7 +29,7 @@ import           Type.Error           (TypeError (..), expect)
 
 -- | Infer the type of 'TmInt'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmInt $ (TmInt 3)
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . inferTmInt $ (TmInt 3)
 -- Right TyInt
 inferTmInt :: Monad m
              => Term
@@ -41,7 +41,7 @@ inferTmInt _ =
 
 -- | Infer the type of 'TmAdd'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmAdd inferTerm) $ (TmAdd (TmInt 2) (TmInt 5))
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmAdd inferTerm) $ (TmAdd (TmInt 2) (TmInt 5))
 -- Right TyInt
 inferTmAdd :: MonadError TypeError m
            => (Term -> m Type)       -- ^ The infer function for I.
@@ -58,7 +58,7 @@ inferTmAdd _ _ =
 
 -- | Infer the type of 'TmSub'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmSub inferTerm) $ (TmSub (TmInt 2) (TmInt 5))
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmSub inferTerm) $ (TmSub (TmInt 2) (TmInt 5))
 -- Right TyInt
 inferTmSub :: MonadError TypeError m
            => (Term -> m Type)       -- ^ The infer function for I.
@@ -75,7 +75,7 @@ inferTmSub _ _ =
 
 -- | Infer the type of 'TmMul'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmMul inferTerm) $ (TmMul (TmInt 2) (TmInt 5))
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmMul inferTerm) $ (TmMul (TmInt 2) (TmInt 5))
 -- Right TyInt
 inferTmMul :: MonadError TypeError m
            => (Term -> m Type)       -- ^ The infer function for I.
@@ -92,7 +92,7 @@ inferTmMul _ _ =
 
 -- | Infer the type of 'TmExp'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmExp inferTerm) $ (TmExp (TmInt 2) (TmInt 5))
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmExp inferTerm) $ (TmExp (TmInt 2) (TmInt 5))
 -- Right TyInt
 inferTmExp :: MonadError TypeError m
            => (Term -> m Type)       -- ^ The infer function for I.
@@ -121,7 +121,7 @@ inferTermRules =
 -- | The type inference function for the I language.
 --
 -- This function is built from the contents of 'inferTermRules'.
--- It will throw an 'UnknownType' error if none of the rules apply - which should never happen.
+-- It will throw an 'NoMatchingTypeRule' error if none of the rules apply - which should never happen.
 --
 -- >>> runInfer . inferTerm $ TmInt 3
 -- Right TyInt
@@ -132,7 +132,7 @@ inferTerm :: MonadError TypeError m
           => Term
           -> m Type
 inferTerm tm =
-  fromMaybe (throwError UnknownType) .
+  fromMaybe (throwError NoMatchingTypeRule) .
   asum .
   fmap ($ tm) $
   inferTermRules

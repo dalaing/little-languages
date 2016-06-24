@@ -29,7 +29,7 @@ import           Type.Error           (TypeError (..), expect, expectEq)
 
 -- | Infer the type of 'TmFalse'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmFalse $ TmFalse
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . inferTmFalse $ TmFalse
 -- Right TyBool
 inferTmFalse :: Monad m
              => Term
@@ -41,7 +41,7 @@ inferTmFalse _ =
 
 -- | Infer the type of 'TmFalse'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . inferTmTrue $ TmTrue
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . inferTmTrue $ TmTrue
 -- Right TyBool
 inferTmTrue :: Monad m
             => Term
@@ -53,7 +53,7 @@ inferTmTrue _ =
 
 -- | Infer the type of 'TmIf'.
 --
--- >>> runInfer . fromMaybe (throwError UnknownType) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmTrue
+-- >>> runInfer . fromMaybe (throwError NoMatchingTypeRule) . (inferTmIf inferTerm) $ TmIf TmFalse TmFalse TmTrue
 -- Right TyBool
 
 -- There will be better examples when we have more than one type
@@ -83,7 +83,7 @@ inferTermRules =
 -- | The type inference function for the B language.
 --
 -- This function is built from the contents of 'inferTermRules'.
--- It will throw an 'UnknownType' error if none of the rules apply - which should never happen.
+-- It will throw an 'NoMatchingTypeRule' error if none of the rules apply - which should never happen.
 --
 -- >>> runInfer . inferTerm $ TmTrue
 -- Right TyBool
@@ -94,7 +94,7 @@ inferTerm :: MonadError TypeError m
           => Term
           -> m Type
 inferTerm tm =
-  fromMaybe (throwError UnknownType) .
+  fromMaybe (throwError NoMatchingTypeRule) .
   asum .
   fmap ($ tm) $
   inferTermRules

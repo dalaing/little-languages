@@ -25,14 +25,14 @@ import           Type                 (Type)
 
 -- | The type errors that can occur in the B language.
 --
--- The 'UnknownType' constructor is acting like the 'Nothing' from 'Maybe'.
+-- The 'NoMatchingTypeRule' constructor is acting like the 'Nothing' from 'Maybe'.
 -- We could have left that constructor off and wrapped this type in 'Maybe', but
 -- it's probably better to be explicit in this case. The hope is that doing so will
 -- avoid a version of boolean-blindness.
 data TypeError =
     Unexpected Type Type -- ^ A type was different to what was expected.
   | ExpectedEq Type Type -- ^ Two types that were expected to be equal but were not.
-  | UnknownType          -- ^ An unknown type error.
+  | NoMatchingTypeRule   -- ^ No type rule matched the term.
   deriving (Eq, Ord, Show)
 
 -- | A helper for asserting that a particular type is expected.
