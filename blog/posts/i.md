@@ -5,7 +5,7 @@ published: 2016-06-27 12:00:00+10:00
 
 # Introducing *I*
 
-We [previously](./n.md) looked at the language *N*.
+We [previously](./n.html) looked at the language *N*.
 Now we're going to have a look at *I*, a language built around integer expressions.
 
 This will show how small-step semantics can be used to specify evaluation order, but will also give us some experience with more interesting parsers and pretty printers.

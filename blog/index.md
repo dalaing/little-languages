@@ -25,7 +25,7 @@ For composition, we'll periodically refactor the code that we have to make thing
 
 # The talk
 
-Here [is the video](https://www.youtube.com/watch?v=CZp9IFgFFts) and here are [the slides](https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf).
+Here [is the video](https://www.youtube.com/watch?v=CZp9IFgFFts), here are [the slides](https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf) and [here is the code](https://github.com/dalaing/little-languages).
 
 # The blog posts
 
