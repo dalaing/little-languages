@@ -36,26 +36,30 @@
 <p>Some of it will be madness, where I try to work out <em>if</em> I can do something without much regard for <em>whether</em> I should be doing it at all. I’ll try to remember to point out when I’m doing that.</p>
 <p>There will also be some themes that run through this project: testability and composition. We’ll be using QuickCheck to do a lot of heavy lifting for us on the testing front. For composition, we’ll periodically refactor the code that we have to make things more reusable and composable.</p>
 <h1 id="the-talk">The talk</h1>
-<p>Here are <a href="https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf">the slides</a>.</p>
-<p>I’ll post a link to the video when that becomes available.</p>
+<p>Here <a href="https://www.youtube.com/watch?v=CZp9IFgFFts">is the video</a> and here are <a href="https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf">the slides</a>.</p>
 <h1 id="the-blog-posts">The blog posts</h1>
 <h2 id="part-1---the-basics">Part 1 - The basics</h2>
-<p>Coming very soon. <!--
-- [The B language](./posts/b.html)
-    - [The semantics of B](./posts/b/semantics.html)
-    - [Testing B](./posts/b/testing.html)
-    - [Parsing and Printing B](./posts/b/text.html)
-- [The N language](./posts/n.html)
-- [The I language](./posts/i.html)
-    - [Parsing and Printing I](./posts/i/text.html)
-    - [Testing I](./posts/i/testing.html)
-
-- [The NB language](./posts/nb.html) (includes type system)
+<ul>
+<li><a href="./posts/b.html">The B language</a>
+<ul>
+<li><a href="./posts/b/semantics.html">The semantics of B</a></li>
+<li><a href="./posts/b/testing.html">Testing B</a></li>
+<li><a href="./posts/b/text.html">Parsing and Printing B</a></li>
+</ul></li>
+<li><a href="./posts/n.html">The N language</a></li>
+<li><a href="./posts/i.html">The I language</a>
+<ul>
+<li><a href="./posts/i/text.html">Parsing and Printing I</a></li>
+<li><a href="./posts/i/testing.html">Testing I</a></li>
+</ul></li>
+</ul>
+<p>With many more on the way…</p>
+<!--
+- [The NB language](./posts/nb.html)
     - [Testing NB](./posts/nb/testing.html)
-- [Adding annotations to the AST](./posts/nb-note/html)
-    - [Annotations for better error messages](./posts/nb/srclocs.html)
-    - [Annotations for better test generation](./posts/nb/testing.html)
-
+    - [Adding annotations to the AST](./posts/nb/notes.html)
+    - [Improving type errors](./posts/nb/typeerrors.html)
+    - [Improving test generation](./posts/nb/improved-testing.html)
 - [Simply-Typed Lambda Calculus](./posts/stlc.html)
     - [Using `bound` for variable substitution](./posts/stlc/bound.html) 
     - [Semantics for STLC-B](./posts/stlc/semantics.html)
@@ -133,14 +137,14 @@
 - PJ and lester approaches
 - Tiger book approaches
 
---></p>
+-->
 <h1 id="for-those-of-you-playing-along-at-home">For those of you playing along at home</h1>
 <p>These posts should all be self-contained, so you probably don’t <em>need</em> the following books. I had them in my books-that-I-want queue for a long time but wasn’t sure I eas ready for them, and now I kind of wish that I dived in earlier.</p>
 <p>There are two books on PLT that are standard recommendations. The <em>reason</em> they are standard recommendations is because they are great.</p>
 <p>“Types and Programming Lanugages” (TAPL) by Benjamin Pierce.</p>
 <p><a href="http://www.amazon.com/gp/product/0262162091/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=0262162091&amp;linkCode=as2&amp;tag=dlaingorg-20&amp;linkId=NLSJ2WBLS67F5DD6"><img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=0262162091&Format=_SL250_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=dlaingorg-20" /></a> <img src="http://ir-na.amazon-adsystem.com/e/ir?t=dlaingorg-20&l=as2&o=1&a=0262162091" width="1" height="1" border="0" alt style="border:none !important; margin:0px !important;" /></p>
 <p>“Practical Foundations For Programming Languages” (PFPL) by Robert Harper.</p>
-<p><a href="http://www.amazon.com/gp/product/1107029570/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1107029570&amp;linkCode=as2&amp;tag=dlaingorg-20&amp;linkId=CM6X564TNP6EPEBC"><img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=1107029570&Format=_SL250_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=dlaingorg-20" /></a> <img src="http://ir-na.amazon-adsystem.com/e/ir?t=dlaingorg-20&l=as2&o=1&a=1107029570" width="1" height="1" border="0" alt style="border:none !important; margin:0px !important;" /></p>
+<p><a href="https://www.amazon.com/Practical-Foundations-Programming-Languages-Robert/dp/1107150302/ref=as_li_ss_il?ie=UTF8&amp;linkCode=li3&amp;tag=dlaingorg-20&amp;linkId=4d749d71d7a1fa79bee09a1d87583662"><img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=1107150302&Format=_SL250_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=dlaingorg-20" /></a> <img src="https://ir-na.amazon-adsystem.com/e/ir?t=dlaingorg-20&l=li3&o=1&a=1107150302" width="1" height="1" border="0" alt style="border:none !important; margin:0px !important;" /></p>
 <p>If it has been a while since you’ve done mathematical proofs, I highly recommend “How To Prove It” (HTPI) by Daniel Velleman.</p>
 <p><a href="http://www.amazon.com/gp/product/0521675995/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=0521675995&amp;linkCode=as2&amp;tag=dlaingorg-20&amp;linkId=HASLFK5VF7DN7YA7"><img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=0521675995&Format=_SL250_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=dlaingorg-20" /></a> <img src="http://ir-na.amazon-adsystem.com/e/ir?t=dlaingorg-20&l=as2&o=1&a=0521675995" width="1" height="1" border="0" alt style="border:none !important; margin:0px !important;" /></p>
 <p>The second chapter of TAPL mentions all of the math that you’ll need to do all of the exercises. HTPI will get you there, and open some other doors as well.</p>

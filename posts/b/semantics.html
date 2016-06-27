@@ -30,7 +30,7 @@
         <div class="container">
             <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title"><a href="../../drafts/b/semantics.html">The semantics of B</a></h3>
+        <h3 class="panel-title"><a href="../../posts/b/semantics.html">The semantics of B</a></h3>
     </div>
     <div class="panel-body">
         <p><a href="../b.html">Previously</a> we introduced the <em>B</em> language.</p>
@@ -273,7 +273,7 @@ repl <span class="fu">=</span> mkRepl <span class="fu">$</span> booleanRules <sp
 <p>The various pieces I’m going to introduce along the way will alter how all of this looks, so I’m going to talk about this in one place once everything is position and ready to go.</p>
 <p>Until then, try to keep this goal in mind - the extra bits of complexity are there for a reason. I hope the payoff is worth the wait.</p>
 <h1 id="theorems">Theorems</h1>
-<p>We still could have messed up our rules. The patterns could overlap, we could have forgotten something, or there could be a typo in our code. We want to try to rule that out.</p>
+<p>Back in the here and now, we have more immediate concerns - we still could have messed up our rules. The patterns could overlap, we could have forgotten something, or there could be a typo in our code. We want to try to rule that out.</p>
 <p>We do this by coming up with behaviours and properties that we think should be reasonable, and then demonstrating that they are true. For instance, it’d be nice to know that our <code>eval</code> function always terminates. Failing that, it would be nice to understand the circumstances under which it fails to terminate.</p>
 <p>In the PLT space, the work of proposing and checking properties is done by coming up with theorems and proving them. These theorems are usually phrased in such a way that they will hold across a useful subset of languages that people are interested in. We can then prove those theorems hold in our language, often using proof techniques that are made familiar to us when we learn and start using those theorems.</p>
 <p>For now we have a few properties of interest.</p>
@@ -317,7 +317,8 @@ repl <span class="fu">=</span> mkRepl <span class="fu">$</span> booleanRules <sp
 <h1 id="we-have-something-to-prove">We have something to prove</h1>
 <p>If you’ve read HTPI and TAPL then you might have your pen and paper out already and be scribbling away. If you’ve been through Software Foundations, you might be typing away in Proof General.</p>
 <p>Otherwise you might be scratching your head a little. Here’s the thing - we’re not going to actually prove these theorems. Instead, we’re going to go for the easiest path we can find to high confidence that these theorems hold.</p>
-<p>To begin with, that will involve using <code>QuickCheck</code>, which is the topic of the next post. <a href="testing.html">Read on!</a></p>
+<p>To begin with, that will involve using <code>QuickCheck</code>, which is the topic of the next post.</p>
+<p><a href="testing.html">Read on!</a></p>
 <h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
 <ul>
 <li>Write the <code>QuickCheck</code> code for the properties that have been mentioned so far.</li>

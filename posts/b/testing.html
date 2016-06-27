@@ -1,0 +1,597 @@
+<!DOCTYPE html> 
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Dave Laing - Testing B</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="../../css/custom.css">
+        <link rel="stylesheet" href="../../css/syntax.css">
+        <link rel="alternate" type="application/atom+xml" title="Atom - Little Languages" href="../../atom.xml" />
+        <link rel="alternate" type="application/rss+xml" title="RSS - Little Languages" href="../../rss.xml" />
+    </head>
+    <body>
+        <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+        <div class="navbar-header">
+            <div class="navbar-brand">
+                <a href="../../">Little Languages</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li role="presentation"><a href="http://dlaing.org">Back to my main site</a></li>
+            </ul>
+        </div>
+
+        </div>
+        </nav>
+
+        <div class="container">
+            <div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><a href="../../posts/b/testing.html">Testing B</a></h3>
+    </div>
+    <div class="panel-body">
+        <h1 id="quickcheck">QuickCheck</h1>
+<p><a href="semantics.html">Previously</a> we defined the semantics for <em>B</em>, and ended up with a set of properties we wanted to check.</p>
+<p><code>QuickCheck</code> is a Haskell package for use with property-based testing.</p>
+<p>That means we can write properties like</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">sort_idempotent_prop ::</span> [<span class="dt">A</span>] <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+sort_idempotent_prop xs <span class="fu">=</span>
+  sort xs <span class="fu">==</span> sort (sort xs)</code></pre></div>
+<p>to express that sorting a list once and sorting a list twice should produce the same results and <code>QuickCheck</code> will try to find out if the property holds or not.</p>
+<p><code>QuickCheck</code> does this by testing whether the property holds for all kinds of lists of <code>A</code> - empty lists, small lists, big lists - and if the property fails to hold it will look for a minimal test case that cause the property not to hold. This can be a huge help.</p>
+<p>We’ll begin this section with a lightning tour of <code>QuickCheck</code>, since we’re going to be using it to check that our semantics are sensible.</p>
+<h2 id="gen">Gen</h2>
+<p>At the heart of <code>QuickCheck</code> is the <code>Gen</code> monad.</p>
+<p>We can play around with <code>Gen</code> in GHCi to get a feel for it. The <code>sample</code> function will come in handy for this.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> <span class="fu">:</span>t sample
+<span class="ot">sample ::</span> <span class="dt">Show</span> a <span class="ot">=&gt;</span> <span class="dt">Gen</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</code></pre></div>
+<p>It runs the given <code>Gen</code> a number of times and prints the results.</p>
+<p>The <code>pure</code> / <code>return</code> function from <code>Applicative</code> / <code>Monad</code> creates the most boring of <code>Gen</code>s:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample <span class="fu">$</span> pure (<span class="dv">2</span><span class="ot"> ::</span> <span class="dt">Int</span>)
+<span class="dv">2</span>
+<span class="dv">2</span>
+<span class="dv">2</span>
+<span class="dv">2</span>
+<span class="dv">2</span>
+<span class="dv">2</span>
+<span class="fu">...</span></code></pre></div>
+<p>We can choose from a list of elements with <code>elements</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> <span class="fu">:</span>t elements
+<span class="ot">elements ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Gen</span> a
+<span class="fu">&gt;</span> sample <span class="fu">$</span> elements [<span class="dv">2</span><span class="ot"> ::</span> <span class="dt">Int</span>, <span class="dv">3</span>]
+<span class="dv">3</span>
+<span class="dv">3</span>
+<span class="dv">2</span>
+<span class="dv">3</span>
+<span class="dv">3</span>
+<span class="dv">3</span>
+<span class="fu">...</span></code></pre></div>
+<p>and we can chose from a list of <code>Gen</code>s with <code>oneof</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> <span class="fu">:</span>t oneof
+<span class="ot">oneof ::</span> [<span class="dt">Gen</span> a] <span class="ot">-&gt;</span> <span class="dt">Gen</span> a
+<span class="fu">&gt;</span> sample <span class="fu">$</span> oneof [pure (<span class="dv">2</span><span class="ot"> ::</span> <span class="dt">Int</span>), pure <span class="dv">3</span>]
+<span class="dv">3</span>
+<span class="dv">2</span>
+<span class="dv">2</span>
+<span class="dv">3</span>
+<span class="dv">2</span>
+<span class="fu">...</span></code></pre></div>
+<p>We can take the <code>Functor</code> instance for a run:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample <span class="fu">$</span> (<span class="fu">*</span> <span class="dv">10</span>) <span class="fu">&lt;$&gt;</span> elements [<span class="dv">1</span><span class="ot"> ::</span> <span class="dt">Int</span> <span class="fu">..</span> <span class="dv">10</span>]
+<span class="dv">80</span>
+<span class="dv">30</span>
+<span class="dv">30</span>
+<span class="dv">50</span>
+<span class="dv">100</span>
+<span class="fu">...</span></code></pre></div>
+<p>and we can extend that to the <code>Applicative</code> instance:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample <span class="fu">$</span> (,) <span class="fu">&lt;$&gt;</span> elements [<span class="dv">1</span><span class="ot"> ::</span> <span class="dt">Int</span> <span class="fu">..</span> <span class="dv">10</span>] <span class="fu">&lt;*&gt;</span> elements [<span class="ch">'a'</span><span class="fu">..</span><span class="ch">'e'</span>]
+(<span class="dv">5</span>,<span class="ch">'d'</span>)
+(<span class="dv">6</span>,<span class="ch">'b'</span>)
+(<span class="dv">1</span>,<span class="ch">'d'</span>)
+(<span class="dv">4</span>,<span class="ch">'d'</span>)
+(<span class="dv">4</span>,<span class="ch">'e'</span>)
+<span class="fu">...</span></code></pre></div>
+<h2 id="arbitrary">Arbitrary</h2>
+<p><code>QuickCheck</code> also comes with an <code>Arbitrary</code> typeclass.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Arbitrary</span> a <span class="kw">where</span>
+<span class="ot">  arbitrary ::</span> <span class="dt">Gen</span> a
+<span class="ot">  shrink ::</span> a <span class="ot">-&gt;</span> [a]</code></pre></div>
+<p>This lets us package up a canonical <code>Gen</code> for our own types, and also provides a shrinking function which is used when a <code>Property</code> fails and <code>QuickCheck</code> is searching for counter-examples.</p>
+<p>There are lots of instances of <code>Arbitary</code> provided already, and it’s fairly easy to write your own.</p>
+<p>Let us have a look at what the <code>String</code> instance does:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample <span class="fu">$</span> (<span class="ot">arbitrary ::</span> <span class="dt">Gen</span> <span class="dt">String</span>)
+<span class="st">&quot;\EM\203&quot;</span>
+<span class="st">&quot;&quot;</span>
+<span class="st">&quot;\RSDi8G$&quot;</span>
+<span class="st">&quot;a&quot;</span>
+<span class="st">&quot;T\176W(&quot;</span>
+<span class="fu">...</span>
+
+<span class="fu">&gt;</span> shrink <span class="st">&quot;test&quot;</span>
+[<span class="st">&quot;&quot;</span>,<span class="st">&quot;st&quot;</span>,<span class="st">&quot;te&quot;</span>,<span class="st">&quot;est&quot;</span>,<span class="st">&quot;tst&quot;</span>,<span class="st">&quot;tet&quot;</span>,<span class="st">&quot;tes&quot;</span>,<span class="st">&quot;aest&quot;</span>,<span class="st">&quot;best&quot;</span>,<span class="st">&quot;cest&quot;</span>,<span class="st">&quot;tast&quot;</span>,<span class="st">&quot;tbst&quot;</span>,<span class="st">&quot;tcst&quot;</span>,<span class="st">&quot;teat&quot;</span>,<span class="st">&quot;tebt&quot;</span>,<span class="st">&quot;tect&quot;</span>,<span class="st">&quot;tesa&quot;</span>,<span class="st">&quot;tesb&quot;</span>,<span class="st">&quot;tesc&quot;</span>]</code></pre></div>
+<p>and what the <code>Int</code> instance does:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample <span class="fu">$</span> (<span class="ot">arbitrary ::</span> <span class="dt">Gen</span> <span class="dt">Int</span>)
+<span class="fu">-</span><span class="dv">1</span>
+<span class="fu">-</span><span class="dv">6</span>
+<span class="dv">6</span>
+<span class="fu">-</span><span class="dv">9</span>
+<span class="dv">1</span>
+<span class="fu">...</span>
+
+<span class="fu">&gt;</span> shrink (<span class="dv">10</span><span class="ot"> ::</span> <span class="dt">Int</span>)
+[<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">8</span>,<span class="dv">9</span>]</code></pre></div>
+<p><code>QuickCheck</code> will try the outputs of <code>shrink</code> in order, and we can see that the built-in instances have outputs ordered by most agressive shrinking to least aggressive shrinking.</p>
+<p>Writing our own instances is mostly straightforward, although there are a few options and tricks to be aware of.</p>
+<p>If we have a toy data structure:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Toy</span> <span class="fu">=</span> <span class="dt">ToyIB</span> <span class="dt">Int</span> <span class="dt">Bool</span>
+         <span class="fu">|</span> <span class="dt">ToyS</span> <span class="dt">String</span>
+         <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)</code></pre></div>
+<p>and want to write an <code>Arbitrary</code> instance for it:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Arbitrary</span> <span class="dt">Toy</span> <span class="kw">where</span></code></pre></div>
+<p>the <code>arbitrary</code> function is just a matter of using <code>oneof</code> and the <code>Applicative</code> interface for <code>Gen</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  arbitrary <span class="fu">=</span> 
+    oneof [
+        <span class="dt">ToyIB</span> <span class="fu">&lt;$&gt;</span> arbitrary <span class="fu">&lt;*&gt;</span> aribtrary
+      , <span class="dt">ToyS</span> <span class="fu">&lt;$&gt;</span> arbitrary
+      ]</code></pre></div>
+<p>although we can change the relative frequency of the constructors using <code>frequency</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  arbitrary <span class="fu">=</span> 
+    frequency [
+        (<span class="dv">2</span>, <span class="dt">ToyIB</span> <span class="fu">&lt;$&gt;</span> arbitrary <span class="fu">&lt;*&gt;</span> aribtrary)
+      , (<span class="dv">1</span>, <span class="dt">ToyS</span> <span class="fu">&lt;$&gt;</span> arbitrary)
+      ]</code></pre></div>
+<p>The <code>shrink</code> function requires a little more care. We could do the shrinking in the list monad, but that doesn’t do what we want when we have multiple things to shrink at once.</p>
+<p>If we try to do</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  shrink (<span class="dt">ToyIB</span> i b) <span class="fu">=</span> <span class="kw">do</span>
+    i' <span class="ot">&lt;-</span> shrink i
+    b' <span class="ot">&lt;-</span> shrink b
+    return (<span class="dt">ToyIB</span> i' b')</code></pre></div>
+<p>the shrinking will stop once we exhaust the possible shrinks of <code>i</code>.</p>
+<p>Instead, we should make use of the instances of <code>Arbitrary</code> for tuples, which do the right thing:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  shrink (<span class="dt">ToyIB</span> i b) <span class="fu">=</span> <span class="kw">do</span>
+    (i', b') <span class="ot">&lt;-</span> shrink (i, b)
+    return (<span class="dt">ToyIB</span> i' b')
+  shrink (<span class="dt">ToyS</span> s) <span class="fu">=</span> 
+    <span class="dt">ToyS</span> <span class="fu">&lt;$&gt;</span> shrink s</code></pre></div>
+<p>We could unpack that further with</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  shrink (<span class="dt">ToyIB</span> i b) <span class="fu">=</span>
+    fmap (\i' <span class="ot">-&gt;</span> <span class="dt">ToyIB</span> i' b) (shrink i) <span class="fu">++</span>
+    fmap (\b' <span class="ot">-&gt;</span> <span class="dt">ToyIB</span> i b') (shrink b)
+  shrink (<span class="dt">ToyS</span> s) <span class="fu">=</span> 
+    <span class="dt">ToyS</span> <span class="fu">&lt;$&gt;</span> shrink s</code></pre></div>
+<p>The pitfalls with shrinking are called out in more detail in the documentation for the <code>Arbitrary</code> typeclass, which also mentions the support for shrinking via generics.</p>
+<p>The other thing to watch out for comes about when you are generating a recursive data structure.</p>
+<p>If we have a <code>Tree</code> data type:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Tree</span> a <span class="fu">=</span> <span class="dt">Branch</span> (<span class="dt">Tree</span> a) (<span class="dt">Tree</span> a)
+            <span class="fu">|</span> <span class="dt">Leaf</span> a
+            <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)</code></pre></div>
+<p>and want to write an <code>Arbitrary</code> instance for it:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Arbitrary</span> a <span class="ot">=&gt;</span> <span class="dt">Arbitrary</span> (<span class="dt">Toy</span> a) <span class="kw">where</span></code></pre></div>
+<p>then a straightforward attempt at <code>arbitrary</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  arbitrary <span class="fu">=</span> 
+    oneof [
+      <span class="dt">Branch</span> <span class="fu">&lt;$&gt;</span> arbitrary <span class="fu">&lt;*&gt;</span> arbitrary
+    , <span class="dt">Leaf</span> <span class="fu">&lt;$&gt;</span> arbitrary
+    ]</code></pre></div>
+<p>will hit a snag, in that it will occasionally produce trees of infinite size.</p>
+<p>Thankfully there is a way around this. The generators in <code>QuickCheck</code> make use of an implicit size parameter, where the meaning of the size parameter is decided by the implementor of the generator.</p>
+<p>We can change the size with <code>resize</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample <span class="fu">$</span> (<span class="ot">arbitrary ::</span> <span class="dt">Gen</span> <span class="dt">Int</span>)
+<span class="fu">-</span><span class="dv">1</span>
+<span class="fu">-</span><span class="dv">6</span>
+<span class="dv">6</span>
+<span class="fu">-</span><span class="dv">9</span>
+<span class="dv">1</span>
+<span class="fu">...</span>
+<span class="fu">&gt;</span> sample <span class="fu">$</span> resize <span class="dv">1000</span> (<span class="ot">arbitrary ::</span> <span class="dt">Gen</span> <span class="dt">Int</span>)
+
+<span class="dv">433</span>
+<span class="fu">-</span><span class="dv">662</span>
+<span class="dv">972</span>
+<span class="dv">233</span>
+<span class="dv">17</span>
+<span class="fu">...</span></code></pre></div>
+<p>and we can use <code>size</code> to get access to that parameter.</p>
+<p>This is just what we need, since we can choose to interpret the (finite) size parameter as an upper bound on the size of our tree, and we’ll end up with finite sized trees.</p>
+<p>Here’s a simple approach:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  arbitrary <span class="fu">=</span> sized genTree
+    <span class="kw">where</span>
+      genTree <span class="dv">0</span> <span class="fu">=</span> 
+        <span class="dt">Leaf</span> <span class="fu">&lt;$&gt;</span> arbitrary
+      genTree s <span class="fu">=</span> 
+        <span class="kw">let</span> 
+          s2 <span class="fu">=</span> s <span class="ot">`div`</span> <span class="dv">2</span>
+          genSubTree <span class="fu">=</span> genTree s2
+        <span class="kw">in</span>
+          oneof [
+            <span class="dt">Leaf</span> <span class="fu">&lt;$&gt;</span> arbitrary
+          , <span class="dt">Branch</span> <span class="fu">&lt;$&gt;</span> genSubTree <span class="fu">&lt;*&gt;</span> genSubTree
+          ]</code></pre></div>
+<p>Note however that the size of the tree is actually bounded by the size parameter plus one.</p>
+<p>Also note that none of the trees bounded by the size 10 are going to have subtrees with sizes 8 and 2. We’ll still get those trees when the size parameter is 16 or above, but it does mean that our interpretation is a bit wobbly.</p>
+<p>We can do much better on this front. I recommend Brent Yorgey’s posts <a href="https://byorgey.wordpress.com/2013/04/25/random-binary-trees-with-a-size-limited-critical-boltzmann-sampler-2/">here</a> and <a href="https://byorgey.wordpress.com/2016/03/23/boltzmann-sampling-for-generic-arbitrary-instances/">here</a> if you’re interested, and the code <a href="https://github.com/Lysxia/generic-random">here</a>. I have some other things up my sleeve which I hope to cover later, which is why I’m leaving that alone for now.</p>
+<p>Given all of that, the implementation of <code>shrink</code> is something of a relief:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  shrink (<span class="dt">Branch</span> t1 t2) <span class="fu">=</span> 
+<span class="ot">    t1 :: t2 ::</span> fmap (\(b1, b2) <span class="ot">-&gt;</span> <span class="dt">Branch</span> b1 b2) (shrink (t1, t2))
+  shrink (<span class="dt">Leaf</span> l) <span class="fu">=</span> 
+    <span class="dt">Leaf</span> <span class="fu">&lt;$&gt;</span> shrink l</code></pre></div>
+<h2 id="properties">Properties</h2>
+<p>A <code>Property</code> is something we want to test.</p>
+<p>There is a <code>Testable</code> typeclass that converts things to <code>Property</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Testable</span> <span class="dt">Bool</span>
+<span class="kw">instance</span> <span class="dt">Testable</span> <span class="dt">Property</span>
+<span class="kw">instance</span> (<span class="dt">Arbitrary</span> a, <span class="dt">Show</span> a, <span class="dt">Testable</span> prop) <span class="ot">=&gt;</span> <span class="dt">Testable</span> (a <span class="ot">-&gt;</span> prop)</code></pre></div>
+<p>and so we can do either:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">sort_idempotent_prop ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+sort_idempotent_prop xs <span class="fu">=</span>
+  sort xs <span class="fu">==</span> sort (sort xs)</code></pre></div>
+<p>or:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">sort_idempotent_prop ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
+sort_idempotent_prop xs <span class="fu">=</span>
+  property <span class="fu">$</span> sort xs <span class="fu">==</span> sort (sort xs)</code></pre></div>
+<p>because we have an <code>Arbitrary</code> instance for <code>[Int]</code>.</p>
+<p>We can test these using <code>quickCheck</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> quickCheck sort_idempotent
+<span class="fu">+++</span> <span class="dt">OK</span>, passed <span class="dv">100</span> tests<span class="fu">.</span></code></pre></div>
+<p>If we’re putting <code>Property</code> in the signature, we might as well use some of it’s features.</p>
+<p>Let’s look at a property that fails:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_idempotent_prop ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
+reverse_idempotent_prop xs <span class="fu">=</span>
+  property <span class="fu">$</span> reverse xs <span class="fu">==</span> reverse (reverse xs)
+  
+<span class="fu">&gt;</span> quickCheck reverse_idempotent_prop
+<span class="fu">***</span> <span class="dt">Failed</span><span class="fu">!</span> <span class="dt">Falsifiable</span> (after <span class="dv">7</span> tests and <span class="dv">5</span> shrinks)<span class="fu">:</span>
+[<span class="dv">0</span>,<span class="dv">1</span>]</code></pre></div>
+<p>We can use <code>===</code> to print counterexamples when a test fails:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_idempotent_prop ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
+reverse_idempotent_prop xs <span class="fu">=</span>
+  reverse xs <span class="fu">===</span> reverse (reverse xs)
+  
+<span class="fu">&gt;</span> quickCheck reverse_idempotent_prop
+<span class="fu">***</span> <span class="dt">Failed</span><span class="fu">!</span> <span class="dt">Falsifiable</span> (after <span class="dv">5</span> tests and <span class="dv">1</span> shrink)<span class="fu">:</span>
+[<span class="dv">0</span>,<span class="dv">1</span>]
+[<span class="dv">1</span>,<span class="dv">0</span>] <span class="fu">/=</span> [<span class="dv">0</span>,<span class="dv">1</span>]</code></pre></div>
+<p>which looks simple here, but can be a huge time-saver with more complex properties.</p>
+<p>We have a couple of options for using <code>Gen</code>s to produce a <code>Property</code>.</p>
+<p>Let’s say I have the following:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genLeftSkewedTree    ::</span> <span class="dt">Arbitrary</span> a <span class="ot">=&gt;</span> <span class="dt">Gen</span> (<span class="dt">Tree</span> a)
+<span class="ot">shrinkLeftSkewedTree ::</span> <span class="dt">Tree</span> a <span class="ot">-&gt;</span> [<span class="dt">Tree</span> a]</code></pre></div>
+<p>We can wrap this up in a newtype:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">LeftSkewedTree</span> a <span class="fu">=</span> 
+  <span class="dt">LeftSkewedTree</span> {<span class="ot"> getLSTree ::</span> <span class="dt">Tree</span> a}
+  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)
+  
+<span class="kw">instance</span> <span class="dt">Arbitrary</span> a <span class="ot">=&gt;</span> <span class="dt">Arbitrary</span> (<span class="dt">LeftSkewedTree</span> a) <span class="kw">where</span>
+  arbitrary <span class="fu">=</span> <span class="dt">LeftSkewedTree</span> <span class="fu">&lt;$&gt;</span> genLeftSkewedTree
+  shrink <span class="fu">=</span> fmap <span class="dt">LeftSkewedTree</span> <span class="fu">.</span> shrinkLeftSkewedTree <span class="fu">.</span> getLSTree</code></pre></div>
+<p>and use it in a property like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myProp ::</span> <span class="dt">LeftSkewedTree</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+myProp lst <span class="fu">=</span> <span class="fu">...</span></code></pre></div>
+<p>We can also just use it directly, via <code>forAll</code> or <code>forAllShrink</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myProp' ::</span> <span class="dt">Tree</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+myProp' t <span class="fu">=</span> <span class="fu">...</span>
+
+<span class="co">-- if we care about shrinking</span>
+<span class="ot">myProp1 ::</span> <span class="dt">Property</span>
+myProp1 <span class="fu">=</span> 
+  forAllShrink genLeftSkewedTree shrinkLeftSkewedTree myProp'
+
+<span class="co">-- if we don't care about shrinking</span>
+<span class="ot">myProp2 ::</span> <span class="dt">Property</span>
+myProp2 <span class="fu">=</span> 
+  forAll genLeftSkewedTree myProp'</code></pre></div>
+<p>I tend to use the newtype approach most of the time. If something is common and I’m sure it’s sticking around, I’ll tend to accumulate functionality around the generators, and the newtype tends to help keep that in order. It also makes the properties easier to read.</p>
+<p>I tend to use <code>forAll</code> and <code>forAllShrink</code> if I need a one-off combination of <code>Gen</code>s for a property, if I can’t easily use a newtype for some reason, or if I’m prototyping something and aren’t sure if I’m going to need the <code>Gen</code> in that form when I’m done.</p>
+<p>Working with a <code>Property</code> also means we can also use <code>==&gt;</code> to filter out invalid inputs.</p>
+<p>We can take this failing property:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_head ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
+reverse_head xs <span class="fu">=</span>
+  head xs <span class="fu">===</span> last (reverse xs)
+
+<span class="fu">&gt;</span> quickCheck reverse_head
+<span class="fu">***</span> <span class="dt">Failed</span><span class="fu">!</span> <span class="dt">Exception</span><span class="fu">:</span> <span class="ch">'Prelude.head: empty list'</span> (after <span class="dv">1</span> test)<span class="fu">:</span>
+[]
+<span class="dt">Exception</span> thrown while printing test <span class="kw">case</span><span class="fu">:</span> <span class="ch">'Prelude.head: empty list'</span></code></pre></div>
+<p>and fix it up:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">reverse_head ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Property</span>
+reverse_head xs <span class="fu">=</span>
+  (not <span class="fu">.</span> null <span class="fu">$</span> xs) <span class="fu">==&gt;</span>
+    head xs <span class="fu">===</span> last (reverse xs)
+
+<span class="fu">&gt;</span> quickCheck reverse_head
+<span class="fu">+++</span> <span class="dt">OK</span>, passed <span class="dv">100</span> tests<span class="fu">.</span></code></pre></div>
+<p>If the filtering is to aggressive we may not be able to generate enough data to fulfill the test.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propReverseSingle ::</span> [<span class="dt">Int</span>]
+                  <span class="ot">-&gt;</span> <span class="dt">Property</span>
+propReverseSingle xs <span class="fu">=</span>
+  length xs <span class="fu">==</span> <span class="dv">1</span> <span class="fu">==&gt;</span> 
+    xs <span class="fu">==</span> reverse xs
+
+<span class="fu">&gt;</span> quickCheck propReverseSingle
+<span class="fu">***</span> <span class="dt">Gave</span> up<span class="fu">!</span> <span class="dt">Passed</span> only <span class="dv">43</span> tests<span class="fu">.</span></code></pre></div>
+<p>I tend to use <code>==&gt;</code> when I’m certain that I’m dealing with an edge case that makes up a small percentage of the test data (and I usually check that with <code>classify</code>, <code>collect</code> or <code>cover</code>).</p>
+<p>If that’s not the case I tend to expand my library of <code>Gen</code> related helpers.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genSingletonList ::</span> <span class="dt">Arbitrary</span> a
+                 <span class="ot">=&gt;</span> <span class="dt">Gen</span> [a]
+genSingletonList <span class="fu">=</span> <span class="kw">do</span>
+  x <span class="ot">&lt;-</span> arbitrary
+  return [x]
+
+<span class="ot">shrinkSingletonList ::</span> <span class="dt">Arbitrary</span> a
+                    <span class="ot">=&gt;</span> [a]
+                   <span class="ot">-&gt;</span> [[a]]
+shrinkSingletonList [x] <span class="fu">=</span>
+  fmap pure (shrink x)
+shrinkSingletonList _ <span class="fu">=</span>
+  []
+  
+<span class="kw">newtype</span> <span class="dt">SingletonList</span> a <span class="fu">=</span> <span class="dt">SingletonList</span> {
+<span class="ot">    getSingletonList ::</span> [a]
+  } <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Show</span>)
+
+<span class="kw">instance</span> <span class="dt">Arbitrary</span> a <span class="ot">=&gt;</span> <span class="dt">Arbitrary</span> (<span class="dt">SingletonList</span> a) <span class="kw">where</span>
+  arbitrary <span class="fu">=</span>
+    fmap <span class="dt">SingletonList</span> genSingletonList
+  shrink <span class="fu">=</span>
+    fmap <span class="dt">SingletonList</span> <span class="fu">.</span>
+    shrinkSingletonList <span class="fu">.</span>
+    getSingletonList
+
+<span class="ot">propReverseSingle ::</span> <span class="dt">SingletonList</span> <span class="dt">Int</span>
+                  <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+propReverseSingle (<span class="dt">SingletonList</span> xs) <span class="fu">=</span>
+  xs <span class="fu">==</span> reverse xs
+
+<span class="fu">&gt;</span> quickCheck propReverseSingle
+<span class="fu">+++</span> <span class="dt">OK</span>, passed <span class="dv">100</span> tests<span class="fu">.</span></code></pre></div>
+<h1 id="quickcheck-for-b">QuickCheck for <em>B</em></h1>
+<h2 id="generators">Generators</h2>
+<p>We start of with some simple helper functions, to generate each of the terms in <em>B</em>.</p>
+<p>As usual, the cases for <code>TmFalse</code> and <code>TmTrue</code> are simple:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTmFalse ::</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTmFalse <span class="fu">=</span> 
+  pure <span class="dt">TmFalse</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTmTrue ::</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTmTrue <span class="fu">=</span> 
+  pure <span class="dt">TmTrue</span></code></pre></div>
+<p>We provide a very generic generator for <code>TmIf</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTmIf ::</span> <span class="dt">Gen</span> <span class="dt">Term</span> 
+        <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span> 
+        <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span> 
+        <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTmIf g1 g2 g3 <span class="fu">=</span>
+  <span class="dt">TmIf</span> <span class="fu">&lt;$&gt;</span> g1 <span class="fu">&lt;*&gt;</span> g2 <span class="fu">&lt;*&gt;</span> g3</code></pre></div>
+<p>I find that it’s usually good to build up an army of generators, in order to make it easier to think of and add new properties as soon as you think of them.</p>
+<p>With these generators in place, we can build a generator for <code>Term</code>.</p>
+<p>Since <code>Term</code> is a recursive data type, we’ll have to take some care with <code>QuickCheck</code>’s size parameter.</p>
+<p>We’ll be interpreting the size parameter as an upper bound on the size of a <code>Term</code> - with the various caveats and addendums that were mentioned earlier in the <code>Tree</code> example - where <code>size</code> is given by:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">size ::</span> <span class="dt">Term</span> 
+     <span class="ot">-&gt;</span> <span class="dt">Int</span>
+size <span class="dt">TmFalse</span> <span class="fu">=</span> 
+  <span class="dv">1</span>
+size <span class="dt">TmTrue</span> <span class="fu">=</span> 
+  <span class="dv">1</span>
+size (<span class="dt">TmIf</span> t1 t2 t3) <span class="fu">=</span>
+  <span class="dv">1</span> <span class="fu">+</span> size t1 <span class="fu">+</span> size t2 <span class="fu">+</span> size t3</code></pre></div>
+<p>which is just counting the number of constructors used to build that particular <code>Term</code>.</p>
+<p>We end up with:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTerm ::</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTerm <span class="fu">=</span> 
+  sized genTerm'
+  
+<span class="ot">genTerm' ::</span> <span class="dt">Int</span> 
+         <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTerm' s <span class="fu">=</span> 
+    (<span class="kw">if</span> s <span class="fu">==</span> <span class="dv">0</span> <span class="kw">then</span> [] <span class="kw">else</span> nonZeroSizedGens) <span class="fu">++</span>
+    zeroSizedGens
+  <span class="kw">where</span>
+    zeroSizedGens <span class="fu">=</span> [
+        genTmFalse
+      , genTmTrue
+      ]
+    nonZeroSizedGens <span class="fu">=</span> 
+      <span class="kw">let</span>
+        s' <span class="fu">=</span> s <span class="ot">`div`</span> <span class="dv">3</span>
+        child <span class="fu">=</span> genTerm s'
+      <span class="kw">in</span> 
+        [genTmIf child child child]</code></pre></div>
+<p>This is a bit of a mess, but we can clean it up by writing helper functions to do size-aware generation for each constructor of our term that has a recursive component.</p>
+<p>In this case, we only need such a helper for ‘TmIf’.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTermTmIf ::</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span>)
+            <span class="ot">-&gt;</span> <span class="dt">Int</span>
+            <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">Gen</span> <span class="dt">Term</span>)
+genTermTmIf _  <span class="dv">0</span> <span class="fu">=</span>
+  <span class="dt">Nothing</span>
+genTermTmIf gen s <span class="fu">=</span>
+  <span class="kw">let</span>
+    child <span class="fu">=</span> gen (s <span class="ot">`div`</span> <span class="dv">3</span>)
+  <span class="kw">in</span>
+    <span class="dt">Just</span> <span class="fu">$</span> genTmIf child child child</code></pre></div>
+<p>The function gets passed a size-aware generator for terms and the size that we’re after, and returns the appropriate ‘Gen’ when the size is larger than 0.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTerm ::</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTerm <span class="fu">=</span> sized genTerm'
+
+<span class="ot">genTerm' ::</span> <span class="dt">Int</span>
+         <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Term</span>
+genTerm' s <span class="fu">=</span>
+  oneof <span class="fu">$</span> [
+      genTmFalse
+    , genTmTrue
+    ] <span class="fu">++</span> mapMaybe (\f <span class="ot">-&gt;</span> f genTerm' s) [
+      genTermTmIf
+    ]</code></pre></div>
+<h2 id="shrinking-functions">Shrinking functions</h2>
+<p>There’s nothing to shrink for the <code>TmFalse</code> and <code>TmTrue</code> cases:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTmFalse ::</span> <span class="dt">Term</span> 
+              <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">Term</span>]
+shrinkTmFalse <span class="dt">TmFalse</span> <span class="fu">=</span> 
+  <span class="dt">Just</span> []
+shrinkTmFalse _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTmTrue ::</span> <span class="dt">Term</span> 
+             <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">Term</span>]
+shrinkTmTrue <span class="dt">TmTrue</span> <span class="fu">=</span> 
+  <span class="dt">Just</span> []
+shrinkTmTrue _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<p>With <code>TmIf</code>, we want to return - the immediate sub-terms, and - versions of the <code>TmIf</code> term where each of the sub-terms have been shrunk</p>
+<p>We pass in the combined shrinking function for terms as a function argument, just like we did with the values and small-step rules:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTmIf ::</span> (<span class="dt">Term</span> <span class="ot">-&gt;</span> [<span class="dt">Term</span>]) 
+           <span class="ot">-&gt;</span> <span class="dt">Term</span> 
+           <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">Term</span>]
+shrinkTmIf shr (<span class="dt">TmIf</span> t1 t2 t3) <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span>
+  [t1, t2, t3] <span class="fu">++</span>
+  fmap (\t1' <span class="ot">-&gt;</span> <span class="dt">TmIf</span> t1' t2 t3) (shr t1) <span class="fu">++</span>
+  fmap (\t2' <span class="ot">-&gt;</span> <span class="dt">TmIf</span> t1 t2' t3) (shr t2) <span class="fu">++</span>
+  fmap (\t3' <span class="ot">-&gt;</span> <span class="dt">TmIf</span> t1 t2 t3') (shr t3)
+shrinkTmIf _ _ <span class="fu">=</span> 
+  <span class="dt">Nothing</span> </code></pre></div>
+<p>and we combine these shrinking functions together in the usual fashion:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTermRules ::</span> [<span class="dt">Term</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">Term</span>]]
+shrinkTermRules <span class="fu">=</span> [
+   shrinkTmFalse
+ , shrinkTmTrue
+ , shrinkTmIf shrinkTerm 
+ ]
+
+<span class="ot">shrinkTerm ::</span> <span class="dt">Term</span>
+           <span class="ot">-&gt;</span> [<span class="dt">Term</span>]
+shrinkTerm tm <span class="fu">=</span>
+  fromMaybe [] <span class="fu">.</span>
+  asum <span class="fu">.</span>
+  fmap (<span class="fu">$</span> tm) <span class="fu">$</span>
+  shrinkTermRules</code></pre></div>
+<p>Now we just need to wrap that up in a newtype and make an <code>Arbitrary</code> instance for it:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">AnyTerm</span> <span class="fu">=</span>
+  <span class="dt">AnyTerm</span> {<span class="ot"> getAnyTerm ::</span> <span class="dt">Term</span> }
+  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)
+
+<span class="kw">instance</span> <span class="dt">Arbitrary</span> <span class="dt">AnyTerm</span> <span class="kw">where</span>
+  arbitrary <span class="fu">=</span>
+    fmap <span class="dt">AnyTerm</span> genTerm
+  shrink <span class="fu">=</span>
+    fmap <span class="dt">AnyTerm</span> <span class="fu">.</span> shrinkTerm <span class="fu">.</span> getAnyTerm</code></pre></div>
+<h2 id="checking-our-work">Checking our work</h2>
+<p>Before we get too excited, it’s always a good idea to spend a little time in GHCi and check our working.</p>
+<p>Generating terms seems to work:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample genTerm
+<span class="dt">TmTrue</span>
+<span class="dt">TmTrue</span>
+<span class="dt">TmTrue</span>
+<span class="dt">TmTrue</span>
+<span class="dt">TmTrue</span>
+<span class="dt">TmIf</span> (<span class="dt">TmIf</span> <span class="dt">TmFalse</span> (<span class="dt">TmIf</span> <span class="dt">TmTrue</span> <span class="dt">TmTrue</span> <span class="dt">TmFalse</span>) <span class="dt">TmFalse</span>) <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>
+<span class="dt">TmFalse</span>
+<span class="dt">TmTrue</span>
+<span class="dt">TmTrue</span>
+<span class="dt">TmIf</span> <span class="dt">TmTrue</span> (<span class="dt">TmIf</span> <span class="dt">TmFalse</span> <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>) <span class="dt">TmTrue</span>
+<span class="dt">TmTrue</span></code></pre></div>
+<p>And so does shrinking terms (with some liberties taken around the formatting):</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> shrinkTerm <span class="dt">TmTrue</span>
+[]
+<span class="fu">&gt;</span> shrinkTerm <span class="fu">$</span> <span class="dt">TmIf</span> <span class="dt">TmTrue</span> (<span class="dt">TmIf</span> <span class="dt">TmFalse</span> <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>) <span class="dt">TmTrue</span>
+[ <span class="dt">TmTrue</span>
+, <span class="dt">TmIf</span> <span class="dt">TmFalse</span> <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>
+, <span class="dt">TmTrue</span>
+, <span class="dt">TmIf</span> <span class="dt">TmTrue</span> <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>
+, <span class="dt">TmIf</span> <span class="dt">TmTrue</span> <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>
+, <span class="dt">TmIf</span> <span class="dt">TmTrue</span> <span class="dt">TmTrue</span> <span class="dt">TmTrue</span>
+]</code></pre></div>
+<p>Now we’re ready to do some stuff!</p>
+<h1 id="properties-1">Properties</h1>
+<p>We’re now going to convert the various properties that we want to hold into <code>QuickCheck</code>.</p>
+<ul>
+<li><p>Every value is a normal form</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propValueNormal ::</span> <span class="dt">AnyTerm</span> <span class="ot">-&gt;</span> <span class="dt">Property</span>
+propValueNormal (<span class="dt">AnyTerm</span> tm) <span class="fu">=</span>
+  isValue tm <span class="fu">==&gt;</span> isNormalForm tm</code></pre></div></li>
+<li><p><em>B</em> has no stuck terms</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propNormalValue ::</span> <span class="dt">AnyTerm</span> <span class="ot">-&gt;</span> <span class="dt">Property</span>
+propNormalValue (<span class="dt">AnyTerm</span> tm) <span class="fu">=</span>
+  isNormalForm tm <span class="fu">==&gt;</span> isValue tm</code></pre></div></li>
+<li><p><em>B</em> is determinate</p>
+<p>Which means that for a given term, the output of all of the steps that apply to that term should agree.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propSmallDeterminate ::</span> <span class="dt">AnyTerm</span> <span class="ot">-&gt;</span> <span class="dt">Property</span>
+propSmallDeterminate (<span class="dt">AnyTerm</span> tm )<span class="fu">=</span>
+  canStep tm <span class="fu">==&gt;</span>
+<span class="kw">let</span>
+  distinctResults <span class="fu">=</span>
+    length <span class="fu">.</span>
+    group <span class="fu">.</span>
+    mapMaybe (<span class="fu">$</span> tm) <span class="fu">$</span>
+    smallStepRules
+<span class="kw">in</span>
+  distinctResults <span class="fu">===</span> <span class="dv">1</span></code></pre></div></li>
+<li><p><em>B</em> is normalizing</p>
+<p>Which we demonstrate by showing that the <code>smallStep</code> function always reduces the size of a term.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propSmallShrinks ::</span> <span class="dt">AnyTerm</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+propSmallShrinks (<span class="dt">AnyTerm</span> tm) <span class="fu">=</span>
+  <span class="kw">case</span> smallStep tm <span class="kw">of</span>
+<span class="dt">Nothing</span> <span class="ot">-&gt;</span> <span class="dt">True</span>
+<span class="dt">Just</span> tm' <span class="ot">-&gt;</span> size tm' <span class="fu">&lt;</span> size tm</code></pre></div></li>
+</ul>
+<p>We also throw in some extra tests, to make sure that we’re not going to far off track.</p>
+<p>We check that for each term, there is exactly one rule from the value or small step rules that holds:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propSmallUnique ::</span> <span class="dt">AnyTerm</span> <span class="ot">-&gt;</span> <span class="dt">Property</span>
+propSmallUnique (<span class="dt">AnyTerm</span> tm) <span class="fu">=</span>
+  <span class="kw">let</span>
+    matches <span class="fu">=</span>
+      length <span class="fu">.</span>
+      mapMaybe (<span class="fu">$</span> tm) <span class="fu">$</span>
+      valueRules <span class="fu">++</span> smallStepRules
+  <span class="kw">in</span>
+    matches <span class="fu">===</span> <span class="dv">1</span></code></pre></div>
+<p>which will confirm that the rules are distinct and exhaustive.</p>
+<p>Something a little weaker than this is implied by the first few rules, so this is mostly redundant. I’m throwing it in here as an early-warning canary, but I’ll take it out if it gets in my way. It’s already paid for itself as I’ve experimented with various things.</p>
+<p>We also check that the small step evaluation function matches the big step evaluation function:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">propSmallBig ::</span> <span class="dt">AnyTerm</span> <span class="ot">-&gt;</span> <span class="dt">Property</span>
+propSmallBig (<span class="dt">AnyTerm</span> tm) <span class="fu">=</span>
+  Term.Eval.SmallStep.eval tm <span class="fu">===</span> Term.Eval.BigStep.eval tm</code></pre></div>
+<p>This also acts as a sanity check, and has also helped me to spot bugs sooner than I would have otherwise.</p>
+<p>I could have removed a few of the other properties once <code>propSmallUnique</code> was written, but I didn’t. I like to have <code>QuickCheck</code> tests written out explicitly for the properties that I want to hold. I’m fine with having a bit of redundancy between the properties if those properties are well known in the domain.</p>
+<h1 id="syntax-for-our-semantics">Syntax for our semantics</h1>
+<p>The above tests all pass and so we should be getting confident in our little language - so let’s take it our for a spin.</p>
+<p>A great way to play with a language is through a read-eval-print-loop (REPL), which is what we’re going to look at next. This will mean we’ll have to work out how to parse and print expressions in our language, which will provide some additional entertainment.</p>
+<p><a href="text.html">Read on!</a></p>
+<h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
+<ul>
+<li>Add some more properties that are reasonable for <em>B</em>.</li>
+<li>Are any of the properties redundant? Think about how we might work that out. Would you prefer a minimum set of properties, or an overlapping set of properties that map neatly to the concepts from PLT?</li>
+<li>Investigate small check. What is the maximum depth term we need to be confident in all of our properties?</li>
+<li>Write a REPL for <em>B</em>.</li>
+</ul>
+    </div>
+    
+    <div class="panel-footer">
+        <h5>Posted on June 27, 2016 </h5>
+    </div>
+    
+</div>
+
+            <div class="row">
+                <div class="col-md-5"> Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a> </div>
+                <div class="col-md-7">
+                    This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>
+                    <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-59162164-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+    </body>
+</html>
