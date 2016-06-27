@@ -985,6 +985,7 @@ At this point we have some familiarity with the basic pieces we'll be using when
 We're going to step things up to include languages with multiple types shortly, but before then we're going to look at a few more uni-typed languages in order to fill up our bag of tricks.
 
 To begin with, we'll look at *N*, the language of natural numbers.
+
 [Read on!](../n.html)
 
 # Exercises for the adventurous 

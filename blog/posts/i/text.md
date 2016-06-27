@@ -750,6 +750,7 @@ There's a problem though - `needsParens` is incorrect.
 A [post on reddit](https://www.reddit.com/r/haskell/comments/4pdfkx/symbolic_computer_algebra_print_tree/) covered some similar ground, but with different code for the equivalent of `needsParens`.
 
 Clearly it's time for more `QuickCheck` in order to sort out what is going on.
+
 [Read on!](testing.html)
 
 # Exercises for the adventurous

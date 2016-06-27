@@ -362,6 +362,7 @@ The obvious next step is to combine a few of them and see what happens.
 
 This is pretty exciting - we'll get to look at type systems, and the links between semantics and types, and there'll be a few other little tips and tricks in between.
 <!--[Read on!](../nb.html)-->
+Coming soon...
 
 # Exercises for the adventurous
 - Write a language for working with strings.

@@ -25,17 +25,12 @@ For composition, we'll periodically refactor the code that we have to make thing
 
 # The talk
 
-Here are [the slides](https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf).
-
-I'll post a link to the video when that becomes available.
+Here [is the video](https://www.youtube.com/watch?v=CZp9IFgFFts) and here are [the slides](https://github.com/dalaing/little-languages/raw/master/talks/ylj16/slides.pdf).
 
 # The blog posts
 
-
 ## Part 1 - The basics
 
-Coming very soon.
-<!--
 - [The B language](./posts/b.html)
     - [The semantics of B](./posts/b/semantics.html)
     - [Testing B](./posts/b/testing.html)
@@ -45,12 +40,14 @@ Coming very soon.
     - [Parsing and Printing I](./posts/i/text.html)
     - [Testing I](./posts/i/testing.html)
 
-- [The NB language](./posts/nb.html) (includes type system)
-    - [Testing NB](./posts/nb/testing.html)
-- [Adding annotations to the AST](./posts/nb-note/html)
-    - [Annotations for better error messages](./posts/nb/srclocs.html)
-    - [Annotations for better test generation](./posts/nb/testing.html)
+With many more on the way...
 
+<!--
+- [The NB language](./posts/nb.html)
+    - [Testing NB](./posts/nb/testing.html)
+    - [Adding annotations to the AST](./posts/nb/notes.html)
+    - [Improving type errors](./posts/nb/typeerrors.html)
+    - [Improving test generation](./posts/nb/improved-testing.html)
 - [Simply-Typed Lambda Calculus](./posts/stlc.html)
     - [Using `bound` for variable substitution](./posts/stlc/bound.html) 
     - [Semantics for STLC-B](./posts/stlc/semantics.html)
@@ -143,10 +140,11 @@ The _reason_ they are standard recommendations is because they are great.
 [<img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=0262162091&Format=_SL250_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=dlaingorg-20" />](http://www.amazon.com/gp/product/0262162091/ref=as_li_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=0262162091&linkCode=as2&tag=dlaingorg-20&linkId=NLSJ2WBLS67F5DD6)
 <img src="http://ir-na.amazon-adsystem.com/e/ir?t=dlaingorg-20&l=as2&o=1&a=0262162091" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
 
+
 "Practical Foundations For Programming Languages" (PFPL) by Robert Harper.
 
-[<img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=1107029570&Format=_SL250_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=dlaingorg-20" />](http://www.amazon.com/gp/product/1107029570/ref=as_li_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=1107029570&linkCode=as2&tag=dlaingorg-20&linkId=CM6X564TNP6EPEBC)
-<img src="http://ir-na.amazon-adsystem.com/e/ir?t=dlaingorg-20&l=as2&o=1&a=1107029570" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+[<img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=1107150302&Format=_SL250_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=dlaingorg-20" />](https://www.amazon.com/Practical-Foundations-Programming-Languages-Robert/dp/1107150302/ref=as_li_ss_il?ie=UTF8&linkCode=li3&tag=dlaingorg-20&linkId=4d749d71d7a1fa79bee09a1d87583662)
+<img src="https://ir-na.amazon-adsystem.com/e/ir?t=dlaingorg-20&l=li3&o=1&a=1107150302" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
 
 If it has been a while since you've done mathematical proofs, I highly recommend "How To Prove It" (HTPI) by Daniel Velleman.
 

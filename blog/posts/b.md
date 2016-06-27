@@ -167,6 +167,7 @@ At this point we're even a bit unclear about what the output of our evaluation f
 
 This is where semantics comes in.
 There are a few different flavours of semantics, but we'll be focusing on small-step operational semantics, and they're the topic of the next post.
+
 [Read on!](b/semantics.html)
 
 # Exercises for the adventurous

@@ -182,6 +182,7 @@ At this point we can turn the handle to write the code we need to test this with
 
 The parsing and printing code will be a bit more challenging.
 Fortunately there are some great libraries for this, which is where we're going next.
+
 [Read on!](i/text.html)
 
 # Exercises for the adventurous

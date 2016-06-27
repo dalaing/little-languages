@@ -437,7 +437,7 @@ I hope the payoff is worth the wait.
 
 # Theorems
 
-We still could have messed up our rules.
+Back in the here and now, we have more immediate concerns - we still could have messed up our rules.
 The patterns could overlap, we could have forgotten something, or there could be a typo in our code.
 We want to try to rule that out.
 
@@ -556,6 +556,7 @@ Here's the thing - we're not going to actually prove these theorems.
 Instead, we're going to go for the easiest path we can find to high confidence that these theorems hold.
 
 To begin with, that will involve using `QuickCheck`, which is the topic of the next post.
+
 [Read on!](testing.html)
 
 # Exercises for the adventurous
