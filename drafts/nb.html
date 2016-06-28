@@ -4,7 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Dave Laing - NB - our first combination</title>
+        <title>Dave Laing - NB - our first combination of types</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="../css/custom.css">
@@ -30,7 +30,7 @@
         <div class="container">
             <div class="panel panel-default">
     <div class="panel-heading">
-        <h3 class="panel-title"><a href="../drafts/nb.html">NB - our first combination</a></h3>
+        <h3 class="panel-title"><a href="../drafts/nb.html">NB - our first combination of types</a></h3>
     </div>
     <div class="panel-body">
         <p>Previously we’ve looked at a couple of different little languages - <a href="b.html"><em>B</em></a>, <a href="n.html"><em>N</em></a> and <a href="i.html"><em>I</em></a>.</p>
@@ -112,8 +112,35 @@
 <h1 id="typing-in-haskell">Typing in Haskell</h1>
 <p>The general approach that we’re going to take to set up this rule system in Haskell is similar to what we have done so far.</p>
 <p>We’re going to create a set of rules that will be combined to create a type inference function. Since some of those rules are inductively defined, they will be given the type inference function as an input. This is fine, because of Haskell’s laziness.</p>
-<h2 id="type-errors">Type errors</h2>
 <p>While we ignored the ill-typed terms when specifying the typing rules, they’re the first thing we need to deal with when writing code for our type system.</p>
+<h2 id="type-errors">Type errors</h2>
+<p>We’ll be doing our error handling with <code>MonadError</code> from <a href="https://hackage.haskell.org/package/mtl-2.2.1/docs/Control-Monad-Except.html">Control.Monad.Except</a> from the <code>mtl</code> package.</p>
+<p>The <code>MonadError</code> class takes two type parameters - the error type and the monad type.</p>
+<p>If we have some error type:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">MyErrorType</span> <span class="fu">=</span> 
+    <span class="dt">UnsupportedUniverse</span>
+  <span class="fu">|</span> <span class="dt">UnknownPotato</span></code></pre></div>
+<p>and we’re operation in some monad stack <code>m</code> with <code>MonadError MyErrorType m</code> in the context, we can raise errors in that context with <code>throwError</code>.</p>
+<p>This is what it tends to look like:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myErrorFunction ::</span> <span class="dt">MonadError</span> <span class="dt">MyErrorType</span> m 
+                <span class="ot">=&gt;</span> m <span class="dt">Int</span>
+myErrorFunction <span class="fu">=</span>
+  <span class="kw">if</span> (<span class="dv">1</span> <span class="fu">==</span> <span class="dv">2</span>)
+  <span class="kw">then</span> throwError <span class="dt">UnsupportedUniverse</span>
+  <span class="kw">else</span> return <span class="dv">3</span></code></pre></div>
+<p>We’ll often write little helper functions to check our error conditions:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">checkUniverse ::</span> <span class="dt">MonadError</span> <span class="dt">MyErrorType</span> m
+              <span class="ot">=&gt;</span> m ()
+checkUniverse <span class="fu">=</span>
+  when (<span class="dv">1</span> <span class="fu">==</span> <span class="dv">2</span>) <span class="fu">$</span>
+    throwError <span class="dt">UnsupportedUniverse</span></code></pre></div>
+<p>in which case our old function would turn into</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myErrorFunction ::</span> <span class="dt">MonadError</span> <span class="dt">MyErrorType</span> m 
+                <span class="ot">=&gt;</span> m <span class="dt">Int</span>
+myErrorFunction <span class="fu">=</span> <span class="kw">do</span>
+  checkUniverse
+  return <span class="dv">3</span></code></pre></div>
+<p>Our <em>actual</em> error type will look like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">TypeError</span> <span class="fu">=</span>
     <span class="dt">Unexpected</span> <span class="dt">Type</span> <span class="dt">Type</span>
   <span class="fu">|</span> <span class="dt">ExpectedEq</span> <span class="dt">Type</span> <span class="dt">Type</span>
@@ -121,7 +148,8 @@
   <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Ord</span>, <span class="dt">Show</span>)</code></pre></div>
 <p>We’re including <code>NoMatchingTypeRule</code> here so that we have a value we can return if no rule applies to a term. We <em>could</em> have left that out and used <code>Maybe TypeErrro</code> in its place but we didn’t. This is mostly to avoid a form of Boolean blindness - we don’t want people (i.e. me, later on) - thinking that we are missing a <code>TypeError</code>, so we encode the reason or reasons that lead to us not having more information available.</p>
 <p>Later on we’ll test that type inference never results in <code>NoMatchingTypeRule</code>, after which we’ll breathe a sigh of relief.</p>
-<p>TODO explain error handling</p>
+<p>We’ll also introduce two helper functions to check for our error conditions.</p>
+<p>The first is used to check that we’re dealing with the type that we expect:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">expect ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
        <span class="ot">=&gt;</span> <span class="dt">Type</span>
        <span class="ot">-&gt;</span> <span class="dt">Type</span>
@@ -129,6 +157,7 @@
 expect actual expected <span class="fu">=</span>
   unless (actual <span class="fu">==</span> expected) <span class="fu">$</span>
     throwError <span class="fu">$</span> <span class="dt">Unexpected</span> actual expected</code></pre></div>
+<p>and the other is used to check that two types are equal:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">expectEq ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
          <span class="ot">=&gt;</span> <span class="dt">Type</span>
          <span class="ot">-&gt;</span> <span class="dt">Type</span>
@@ -137,6 +166,9 @@ expectEq ty1 ty2 <span class="fu">=</span>
   unless (ty1 <span class="fu">==</span> ty2) <span class="fu">$</span>
     throwError <span class="fu">$</span> <span class="dt">ExpectedEq</span> ty1 ty2</code></pre></div>
 <h2 id="typing-rules-1">Typing rules</h2>
+<p>We’re going to bring the type checking rules across to Haskell, using <code>Maybe</code> to determine which rules apply and using <code>MonadError TypeError m</code> to do our error handling. We could be doing all sorts of things with <code>m</code> later on, so we leave it generic for now.</p>
+<p>The first few rules don’t have any need for any error handling, so we relax the constraint to <code>Monad m</code>:</p>
+<p><img width="116" alt=" \prftree[r]{T-Zero} {\text{O} \colon \text{Nat}} " height="22" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOgAAAAtCAQAAAAOhe/0AAAFIUlEQVR4nO1cy5XrIAylFSqhEepwGWnCPaQFOnADXrP0xovkgTA2H/GxnZk580bXmwQbZpILQroSYYzgIZjqusbqKCPTlWv6ps9CMBjY21yr+dI9dS9omff3Gt7r6igKnnmzxbx6mjH99ezoS/goLBXPqMURGEIYwtuEvgyBKRZoF/f/TUIvVGYQc0IZexhq6qO8mcxa3fpU9/5BwjkoQ1YMjFBm1ll9lHyfFGC86xOB8HHM2crCCa2b3DmbFn6c3AwTvhQ5UTihM+PVUdK7DzK3P4NeQlV1raXEcTC3r+okIHwTcELPwYUxuRl2GM2Oa+NTFfi/g2lVW4tAI18JIZSNakvjElDcJ3SoRJ/SuEnzRqSl3dOmIcSxe66EfT0Op7hpWzYbIeB17lMTCrhPaDn6lKY9JFpF61jDuxlev0DccOBmxCUy35O5T5R24i6hquIOLYnfK0ClCntO2/2Heecpm017PD3sHr3SDt2He4SKTQLEMEb0OSyBJKGQ+86A5+NNmcJFKOAeoa43bg7nwIyGbZ4Yhdx31OWyBUp+LUPwv169lFzDiJrbcTOYr82khtcUPK9QU72irc7x4mnj37vaKBOqt5zKccVw0We+t/lp9EYItZffH3FC8R15IB2qF2VCVWO9T4XoMyS0ph0RoV+CqyZ32PKoObywv6C74QGc0AVtHT8gf/wRXCOUw16HRZ9yH02h/ipvmFyFihR4KwHBNUJd9IkFEvP+xbuEWkr5c1eLcEIF5v7Aur0sAfJk8/6/cYVQWYw+n9FKGjOjywMNCCcUax8axruCEWQnV10zG7OiPqBPHM7FlEVsadHWd0OA6TwbtGPR5wClY6mqm2q0OuilYQ/Gvt9Q9fUC4gUepPlwK4ulKm0Gu6v2S2bLp9yHTZ18DlkH5/7n1QRfiTQkeTe9Ug9Z6OuveK8bmN6WyBSk12s9XK+F6a3X2qhBLGAEI5LPg6nzY7agNjcfG2u4lEsUv8aNF5e2MNfroij/YOUE7XLaJGGwKeO5GE1d8eAGqhAowWkepYUtPhLUKpijuLZyjdAHEVrCxDDd/8DcuN8DV9RRKnW8QuhPOFG/AqLpDrgSqEtb8w5fpYPnJ84Taq0KEYpCNU0qL8pcZ/6KL6nA6lfPE1qK4ghbdUvdy1wL4bcVIfr806OODjO7OaECQh0bu+aWQWyT8MhlUDY/AJYaSlEqI14KikmOsDAyN7spoeMesw0gdcjoniV6hX3dSxZUcbNDniA0Dfx5V1+HkNDc7MaEisi826fzkIpMbgHDCULx3EDf1xqXLqdmVyfPxlExVlFDhBZwhtA78kJaix6b3ZzQME+BJY+I0AL6zOb9ozgpoXHGIqaLJ7ouEXoKr2Q9XH2mjvy0SFjRioctHGR9d6qaCO3GjDo8IdwqvqcVYcd/ln2aYPmG2Uwje7JD0go9B7wY8dwTbWCEyj15lJrcGf5emAomQk9g7dBy7xnc0gE9X8oR06VZnKFvE0r1NhHqWm1b6+1B6cSlO+oTEpIXFR+EqqiNCC1iKqS1LHRVDer1fEuEHmb3eDJdj0eLjtqI0ArwMxVOAsAqGRz6pT9Mk3VICczPcWiE0DHoJejHnjC4wzM8aysXKPVLfyMY1pInHf8ukEjS7RNUO1kjzANJkAdFkvUD9H8YAxSFuZOKwnyla7NAqafiKD4jgtcUxSZTghtmQ5bndoJSgp4bi/CuqO1nqgV/ESR8iRp+LO0n572vDj6AZVTkn6kfDvAPPmZYMyckmpMAAAAASUVORK5CYII=" class="display-math" style="margin:0; vertical-align:-1px;" /></p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmZero ::</span> <span class="dt">Monad</span> m
             <span class="ot">=&gt;</span> <span class="dt">Term</span>
             <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
@@ -144,6 +176,24 @@ inferTmZero <span class="dt">TmZero</span> <span class="fu">=</span> <span class
   return <span class="dt">TyNat</span>
 inferTmZero _ <span class="fu">=</span>
   <span class="dt">Nothing</span></code></pre></div>
+<p><img width="144" alt=" \prftree[r]{T-False} {\text{false} \colon \text{Bool}} " height="22" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASEAAAAtCAQAAABLoRVfAAAFPklEQVR4nO2cy7WrOgyGaYVK3Ah1UEaaoAdacAc0wJghEwbh+gXYssBiB4hzj36vc1ZCjCH4iyVLWrsoWM9JFJLUmsNRGsIIaQ2mvdU/1g+pLmbVpqJbp/ptjvTr+8G8P57WBj3Ttt4cnUn30hZj8lqszCTVlLXBkSGacKEQo0yrNGfW0fHSgFGR74cR+ilJtf6EihEqipeCgDIWjpCG6I0ex8dghH5KUuERCkOoUAhQxtpDqEh6U/4YjNBPqY8MDI7QJ4ZM60VyqBmhH1Q8XThCvTJGKR0hJCKDuT8GI/RToiIkCb5MjFDjrXG8Cv0zwhGiKEYoBk+o/Z+O/nQ7vlGMUG1cfh0ceKmVMASxUZ/o0aQal5WNrkSoAwg1q+9Vqz3eiGz0IUK9GmMxoW0QdqzU+b1DR59Fc9dZD+g6hGqwlRdqyv13b9WghxUiJEEwQa6fVSCKrc+De0vWl/QpQqNLVEyIWZsDaLoorAkRGoHhKtfPRjC2MDF2Vhb6FKFWTa1uL5PagAjNnteCuc7hsbfCIlyn7DrWIMDQI+Csm3WlLzQG70oQyEwj1BlUGg8jC2BvcnGh+nhNG7jd0NJO5707Mq3SJFRtAvcYIeFStxqk3kNJH+3carc0jRsIHNTcbmjpze8RQoOb0K2dRahWKLzVdL+U0UmvQjYkuV1tcqZqRhCifTvWAzpCSEarWvjpfnRaqzTGRq5rCQUhq3otGrHu+ByvOKx8dKUhi0fuQP9jhEJMhHGZtb8zgpFYWekuhGxxWwn6D+5VfExrBvsx4dxoaYIHUCUbsjx0F0LxmrMdGXZ6xTFnGymybjYEpj0foa7U7XIk4GrdiVAYyxkICEFD93aYNJEp07WR6WoCT7XZ5ulqOopNtK7f84Xdzc7WWiKlXlfo8+8pXFQZRo3TKp3Du+fm2pVjWyc69fOfjKkqvRiPjQQtKMxm97ap9cxXWLKr49anlpPaMVglHLit/3cKu4XZS4zRJrQ1j+r9h4k61iffE27X5xP7nnizj81KZSDTG/rWJWArkycbvK16eL7+X6dmW/PNBi/lar/tYAybzuTHpXMJTc7REkUYMj/S9ypRJGoaKhcgu+Nq+VbclO5HtOlo6pfP7DmYmRJ/iwfV3kMS5NNzQ0gvy3fEN/JGKBM1f3pI+SFkA/WUwvazV2OEEvrbQ8oRIetDXLurZIQIYoRSV2OEEvq/IFQWcxQrueZqjNCBtP/dmfA2zM0+W9hd7uwQ9q6MIWSPx/GhyqUzu93Y0VEPRigh/eAm44SG9S9PF3aPaJYGF45QY47CsXWYbSnUEuY1/CapHowQQfFDerqwuyyof61iGcHvK9R4nYkJwRWuNPj7d96pu6lO9WCECMITds8WdssTER3p4j9+0ytoGyHUR4HSEtQPp3swQgThCOVb2I0bMlv94mNYo8bR/zmkezBCJMUP6fHC7tP3i+/IpiDF0aEJDz/Dne7BCJG0/5AeK+w+fb+432Rd6gXPCb2OX6qV7sEIkbRXX5trYfc+QmFkCM+YWUBqYg9GiCTMkOVc2L2P0FLgUK6vGaFHFD+kvAu70whZQffaqjnVgxEiCT6k3Au79xESgSHDJ98/mu7BCJEEH9J3Crtpf35yuTKOUBeYJhH9FOx9baHNdA9GiCQMoacLuz9PcCwGCH6T0FDVRWyi0z0YoYTCEu1vFHafS3BYdz0co1pXoBDOMCdnky3nesCnwwIKS7S3vNbThd20WJEEV/bbZFCPVZu/0GOvPaEp3v0eqQJ41qEyKey+RPbaR/ef7vEP6z+rB0Us6KXmAgAAAABJRU5ErkJggg==" class="display-math" style="margin:0; vertical-align:-1px;" /></p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmFalse ::</span> <span class="dt">Monad</span> m
+             <span class="ot">=&gt;</span> <span class="dt">Term</span>
+             <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
+inferTmFalse <span class="dt">TmFalse</span> <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span>
+  return <span class="dt">TyBool</span>
+inferTmFalse _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<p><img width="139" alt=" \prftree[r]{T-True} {\text{true} \colon \text{Bool}} " height="22" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARcAAAAtCAQAAAAuTOcgAAAEVUlEQVR4nO1cybWrMAx1K1TiRqiDMtIEPaQFd0ADrFmyYZF8D5B4kMwQOYT3db15MYrsE914kO6LEIzykEJtam1hH4xLoBFP3SbRvYL6sD396/VgXw+FfTAuAaXDeA96XGh9SE2FXKgpfDAuAaXXhBBpqIW4ibGwD8YloHQYQ0ChFnp7KeuDcQn0oo564FDnNhIKH4xLIA0hHOpeVEV9MC6BraFW+v5T0gfjooBDTeOjEa29WEuxZGvauf8WZWbSngWtPlgPujkvjJNRki6Dvh2ZJ40+7ZgTz3IFH5LMzGIZrly17u1nmpj3cuLvdJSky/LspoNu8LDJPAeVkCPuqbX9ED2P72SML6M0XUyQu/kUYzac2uvP02W069Ib0uaSGafiG3SBgrxGlxZ4nyFQfIlnfBXfoEuP9Ofo0gPv65Pygz0GcaNp6sNQb8UaXaB5rNHlMW9ifutSXw03srZl4cZD7Z74bb+P43R5AnQxja/TpwIPtUpWq/0+PqPLltWR8VX86mY02tWF8WP4VbqYV6kEouLN6FycRZd7Qpc+6JH2sBuT486Z3XNxFl2aiC5Gfxf2tMl2VOn15s9UuVv0OpsKiijgvD/EJ7oSF6Qkm0HoY7D5EyjIo7d6VNrupl8/gvUklHkamz+UpJP6G6PmUpl/BbzbfMHjo5BAMJ7HZEnfiviS/DxwF1nzEfbH85S6Z7IyB2ULkM3L8p36b4QpPior+ExlWSuQ4vcVFApcmOs57VRitCur1qSXH6qQvIo8mm9pLnATh+nijnb0mYSr06Uobhemi0trU8udmS4ZqEvTxd0faA9rTBcUlf5uMl3S0ZguILAb/G8Bo0sl3L+K0o/GdEkg5zC8L6jLTR6TD9MKiCtvxDwwurj+NP9Sz6W8Ds3N5CyYLgBcAmyy384l+bUs6ph8mFZAPIIVDAgwXVrbG3uu9LjjnByQ9u94q1qzYLqgwDcjTD5MJSCuRF7vEfv3LaX21tl1MV63TEo7TGp3ei71LgumCwqcLph8mE5AvP3cpOb8it/MOndP6NInJTRzmJ88eqxbMF1Q5OkCHyK/LyCGNyNpvfqzb8DtrfOqJOsWTJcM8nSB5MNkAuKds4RvRlNQBujAooBP/HULpksGebrgTwgExDtnCZ9y3HF3IeIEjuLKbNVGC6ZLBiXoQi8gxukSZl7gClIj3hXZdQumSwal6EKb+sPpshT0q8zITBcyhKSIL7/H6EIvIF6ny3vkdM7tLgumSwYl6EIvIMbpIoPNCA6037tuwXTJ4Ahd6ATEW4VZOF26YHuRwZF1gVlRbpstmC4ZtN5HI4MtBKcLlYD40yLAsonkSd5Ec9lmwXQBUXkrQfhDVrh8mEZAvKcI0ItUplC/VpZwjmGFypUj9ll0dnv7M+p4WtT6o5nmxPqCvHyYSkC8JRejorn4zfzGNeS30eMO88gTWNzELcIRfl/FfArqA1mRogLij+HP7qjFf4d/5UqNCHyVmFMAAAAASUVORK5CYII=" class="display-math" style="margin:0; vertical-align:-1px;" /></p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmTrue ::</span> <span class="dt">Monad</span> m
+            <span class="ot">=&gt;</span> <span class="dt">Term</span>
+            <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
+inferTmTrue <span class="dt">TmTrue</span> <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span>
+  return <span class="dt">TyBool</span>
+inferTmTrue _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<p>Once we start working with terms that contain other terms, we need to pass in the combined inference rule and use that to check the sub-terms have the expected type:</p>
+<p><img width="124" alt=" \prftree[r]{T-Succ} {\text{t} \colon \text{Nat}} {\text{S t} \colon \text{Nat}} " height="33" src="data:image/png;base64,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" class="display-math" style="margin:0; vertical-align:-1px;" /></p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmSucc ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
             <span class="ot">=&gt;</span> (<span class="dt">Term</span> <span class="ot">-&gt;</span> m <span class="dt">Type</span>)
             <span class="ot">-&gt;</span> <span class="dt">Term</span>
@@ -154,6 +204,7 @@ inferTmSucc infer (<span class="dt">TmSucc</span> tm) <span class="fu">=</span> 
   return <span class="dt">TyNat</span>
 inferTmSucc _ _ <span class="fu">=</span>
   <span class="dt">Nothing</span></code></pre></div>
+<p><img width="148" alt=" \prftree[r]{T-Pred} {\text{t} \colon \text{Nat}} {\text{pred t} \colon \text{Nat}} " height="36" src="data:image/png;base64,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" class="display-math" style="margin:0; vertical-align:-4px;" /></p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmPred ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
             <span class="ot">=&gt;</span> (<span class="dt">Term</span> <span class="ot">-&gt;</span> m <span class="dt">Type</span>)
             <span class="ot">-&gt;</span> <span class="dt">Term</span>
@@ -164,20 +215,8 @@ inferTmPred infer (<span class="dt">TmPred</span> tm) <span class="fu">=</span> 
   return <span class="dt">TyNat</span>
 inferTmPred _ _ <span class="fu">=</span>
   <span class="dt">Nothing</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmFalse ::</span> <span class="dt">Monad</span> m
-             <span class="ot">=&gt;</span> <span class="dt">Term</span>
-             <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
-inferTmFalse <span class="dt">TmFalse</span> <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span>
-  return <span class="dt">TyBool</span>
-inferTmFalse _ <span class="fu">=</span>
-  <span class="dt">Nothing</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmTrue ::</span> <span class="dt">Monad</span> m
-            <span class="ot">=&gt;</span> <span class="dt">Term</span>
-            <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)
-inferTmTrue <span class="dt">TmTrue</span> <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span>
-  return <span class="dt">TyBool</span>
-inferTmTrue _ <span class="fu">=</span>
-  <span class="dt">Nothing</span></code></pre></div>
+<p>Finally, when inferring the type of an <code>if</code> expressions, we need to check that the test sub-term has type <code>Bool</code> and that the two branches have the same type:</p>
+<p><img width="199" alt=" \prftree[r]{T-If} {t_1 \colon \text{Bool}} {t_2 \colon \text{T}} {t_3 \colon \text{T}} {\text{if $t_1$ then $t_2$ else $t_3$} \colon \text{T}} " height="36" src="data:image/png;base64,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" class="display-math" style="margin:0; vertical-align:-3px;" /></p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmIf ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
           <span class="ot">=&gt;</span> (<span class="dt">Term</span> <span class="ot">-&gt;</span> m <span class="dt">Type</span>)
           <span class="ot">-&gt;</span> <span class="dt">Term</span>
@@ -191,6 +230,38 @@ inferTmIf infer (<span class="dt">TmIf</span> tm1 tm2 tm3) <span class="fu">=</s
   return ty3
 inferTmIf _ _ <span class="fu">=</span>
   <span class="dt">Nothing</span></code></pre></div>
+<p>Now we pull our usual stunt.</p>
+<p>We build the list of rules:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTermRules ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
+               <span class="ot">=&gt;</span> [<span class="dt">Term</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m <span class="dt">Type</span>)]
+inferTermRules <span class="fu">=</span>
+  [ inferTmZero
+  , inferTmSucc inferTerm
+  , inferTmPred inferTerm
+  , inferTmFalse
+  , inferTmTrue
+  , inferTmIf inferTerm
+  ]</code></pre></div>
+<p>and use <code>Alternative</code> to combine those rules:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTerm ::</span> <span class="dt">MonadError</span> <span class="dt">TypeError</span> m
+          <span class="ot">=&gt;</span> <span class="dt">Term</span>
+          <span class="ot">-&gt;</span> m <span class="dt">Type</span>
+inferTerm tm <span class="fu">=</span>
+  fromMaybe (throwError <span class="dt">NoMatchingTypeRule</span>) <span class="fu">.</span>
+  asum <span class="fu">.</span>
+  fmap (<span class="fu">$</span> tm) <span class="fu">$</span>
+  inferTermRules</code></pre></div>
+<p>We’re still not running with a concrete <code>Monad</code>, but we can deal with that using <code>runExcept</code>.</p>
+<p>We’ll give a different name here, because <code>runInfer</code> is likely to change as we push on with this series:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">runInfer ::</span> <span class="dt">Except</span> e a
+         <span class="ot">-&gt;</span> <span class="dt">Either</span> e a
+runInfer <span class="fu">=</span> runExcept</code></pre></div>
+<p>We can now test our new function out:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> runInfer <span class="fu">.</span> inferTerm <span class="fu">$</span> <span class="dt">TmSucc</span> (<span class="dt">TmSucc</span> (<span class="dt">TmPred</span> <span class="dt">TmZero</span>))
+<span class="dt">Right</span> <span class="dt">TyNat</span>
+
+<span class="fu">&gt;</span> runInfer <span class="fu">.</span> inferTerm <span class="fu">$</span> <span class="dt">TmIf</span> <span class="dt">TmZero</span> <span class="dt">TmFalse</span> <span class="dt">TmTrue</span>
+<span class="dt">Left</span> (<span class="dt">Unexpected</span> <span class="dt">TyNat</span> <span class="dt">TyBool</span>)</code></pre></div>
 <h1 id="adding-iszero">Adding <code>isZero</code></h1>
 <p>At the moment we can come up with terms that will turn a <code>Bool</code> into <code>Nat</code>, like we do with <code>TmIf TmTrue TmZero (TmSucc TmZero)</code>.</p>
 <p>It would be nice to be able to turn a <code>Nat</code> into a <code>Bool</code>. We’re about to take a look at the properties of type systems, so anything we can add that will exercise the type system a little more will help us iron out any kinks.</p>
@@ -241,14 +312,182 @@ inferTmIsZero infer (<span class="dt">TmIsZero</span> tm) <span class="fu">=</sp
   return <span class="dt">TyBool</span>
 inferTmIsZero _ _ <span class="fu">=</span>
   <span class="dt">Nothing</span></code></pre></div>
+<p>There’s nothing new to the parsing and pretty printing for <code>isZero</code>, although it could be a nice typing exercise if you wanted to try adding it yourself.</p>
 <h1 id="updating-the-repl">Updating the REPL</h1>
-<p>Much like the The parsing and pretty printing rules</p>
-<p>TODO printing out the type information</p>
+<p>Now that we have the ability to type-check expressions, we’re going to update the REPL.</p>
+<p>It used to be that when you entered an expression into the REPL, it showed the term before and after the evaluation step in the result:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> <span class="kw">if</span> isZero <span class="dt">O</span> <span class="kw">then</span> <span class="dt">O</span> <span class="kw">else</span> <span class="dt">S</span> <span class="dt">O</span>
+<span class="kw">if</span> isZero <span class="dt">O</span> <span class="kw">then</span> <span class="dt">O</span> <span class="kw">else</span> <span class="dt">S</span> <span class="dt">O</span> <span class="fu">==&gt;</span> <span class="dt">O</span></code></pre></div>
+<p>We’re going to change that so that it shows the result of evaluation the term along with the type of the term:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> <span class="kw">if</span> isZero <span class="dt">O</span> <span class="kw">then</span> <span class="dt">O</span> <span class="kw">else</span> <span class="dt">S</span> <span class="dt">O</span>
+<span class="dt">O</span> <span class="fu">:</span> <span class="dt">Nat</span></code></pre></div>
+<p>or an error message if the type-checking failed:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> <span class="kw">if</span> <span class="dt">O</span> <span class="kw">then</span> <span class="dt">O</span> <span class="kw">else</span> <span class="dt">S</span> <span class="dt">O</span>
+<span class="dt">Unexpected</span> <span class="kw">type</span><span class="fu">:</span>
+  actual<span class="fu">:</span>   <span class="dt">Nat</span>
+  expected<span class="fu">:</span> <span class="dt">Bool</span></code></pre></div>
+<h2 id="pretty-printing-types">Pretty printing types</h2>
+<p>The first thing we’ll need to do is write a pretty printer for types.</p>
+<p>We’ve got really simple types at the moment, but we package them pretty printing into rules nonetheless:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTyNat ::</span> <span class="dt">Type</span>
+            <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>
+prettyTyNat <span class="dt">TyNat</span> <span class="fu">=</span>
+  <span class="dt">Just</span> <span class="fu">$</span> reservedConstructor <span class="st">&quot;Nat&quot;</span>
+prettyTyNat _ <span class="fu">=</span>
+  <span class="dt">Nothing</span>
+
+<span class="ot">prettyTyBool ::</span> <span class="dt">Type</span>
+             <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>
+prettyTyBool <span class="dt">TyBool</span> <span class="fu">=</span>
+  <span class="dt">Just</span> <span class="fu">$</span> reservedConstructor <span class="st">&quot;Bool&quot;</span>
+prettyTyBool _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<p>and combine them as usual:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTypeRules ::</span> [<span class="dt">Type</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>]
+prettyTypeRules <span class="fu">=</span>
+  [ prettyTyNat
+  , prettyTyBool
+  ]
+
+<span class="ot">prettyType ::</span> <span class="dt">Type</span>
+           <span class="ot">-&gt;</span> <span class="dt">Doc</span>
+prettyType tm <span class="fu">=</span>
+  fromMaybe (text <span class="st">&quot;???&quot;</span>) <span class="fu">.</span>
+  asum <span class="fu">.</span>
+  fmap (<span class="fu">$</span> tm) <span class="fu">$</span>
+  prettyTypeRules</code></pre></div>
+<h2 id="pretty-printing-errors">Pretty printing errors</h2>
+<p>With pretty printers for the types, we can go on to write pretty printers for the type errors.</p>
+<p>We can do something relatively simple here:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTeUnexpected ::</span> <span class="dt">TypeError</span>
+                   <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>
+prettyTeUnexpected (<span class="dt">Unexpected</span> ac ex) <span class="fu">=</span>
+  <span class="dt">Just</span> <span class="fu">.</span> hang <span class="dv">2</span> <span class="fu">$</span>
+    text <span class="st">&quot;Unexpected type:&quot;</span> <span class="fu">PP.&lt;$&gt;</span>
+    text <span class="st">&quot;actual:&quot;</span> <span class="fu">&lt;+&gt;</span> prettyType ac <span class="fu">PP.&lt;$&gt;</span>
+    text <span class="st">&quot;expected:&quot;</span> <span class="fu">&lt;+&gt;</span> prettyType ex
+prettyTeUnexpected _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<p>which will give us output that looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="dt">Unexpected</span> <span class="kw">type</span><span class="fu">:</span>
+  actual<span class="fu">:</span> <span class="dt">Nat</span>
+  expected<span class="fu">:</span> <span class="dt">Bool</span></code></pre></div>
+<p>We’re really after something like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="dt">Unexpected</span> <span class="kw">type</span><span class="fu">:</span>
+  actual<span class="fu">:</span>   <span class="dt">Nat</span>
+  expected<span class="fu">:</span> <span class="dt">Bool</span></code></pre></div>
+<p>Why? Because if I’m going to use a pretty printing library, I want to spend a little time to try to make things pretty!</p>
+<p>We’ll put together a little helper function to take care of this.</p>
+<p>The idea is that we have a list of pairs, where the first element of the pair is a label and the second element of the pair is the <code>Doc</code> we want to label. This will use <code>fill</code>, which adds whitespace on the right-hand side of some text until it has a certain length, and <code>vcat</code>, which vertically concatenates a list of documents.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">tabulate ::</span> [(<span class="dt">String</span>, <span class="dt">Doc</span>)] <span class="ot">-&gt;</span> <span class="dt">Doc</span>
+tabulate xs <span class="fu">=</span>
+    vcat <span class="fu">.</span>
+    fmap pad <span class="fu">$</span>
+    xs
+  <span class="kw">where</span>
+    maxLength <span class="fu">=</span>
+      maximum <span class="fu">.</span>
+      fmap (length <span class="fu">.</span> fst) <span class="fu">$</span>
+      xs
+    pad (label, doc) <span class="fu">=</span>
+      fill maxLength (text label) <span class="fu">&lt;+&gt;</span> doc</code></pre></div>
+<p>We find the maximum length of all of the labels, and then use fill to pad out the label before appending the corresponding <code>Doc</code>. After that we use <code>vcat</code> to turn the whole thing into a single <code>Doc</code>.</p>
+<p>Now we can have another go at our rules:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTeUnexpected ::</span> <span class="dt">TypeError</span>
+                   <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>
+prettyTeUnexpected (<span class="dt">Unexpected</span> ac ex) <span class="fu">=</span>
+  <span class="dt">Just</span> <span class="fu">.</span> hang <span class="dv">2</span> <span class="fu">$</span>
+    text <span class="st">&quot;Unexpected type:&quot;</span> <span class="fu">PP.&lt;$&gt;</span>
+    tabulate [
+        (<span class="st">&quot;actual:&quot;</span>,   prettyType ac)
+      , (<span class="st">&quot;expected:&quot;</span>, prettyType ex)
+      ]
+prettyTeUnexpected _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTeExpectedEq ::</span> <span class="dt">TypeError</span>
+                   <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>
+prettyTeExpectedEq (<span class="dt">ExpectedEq</span> t1 t2) <span class="fu">=</span>
+  <span class="dt">Just</span> <span class="fu">.</span> hang <span class="dv">2</span> <span class="fu">$</span>
+    text <span class="st">&quot;Expected these types to be equal:&quot;</span> <span class="fu">PP.&lt;$&gt;</span>
+    tabulate [
+        (<span class="st">&quot;type 1:&quot;</span>, prettyType t1)
+      , (<span class="st">&quot;type 2:&quot;</span>, prettyType t2)
+      ]
+prettyTeExpectedEq _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTeNoMatchingTypeRule ::</span> <span class="dt">TypeError</span>
+                    <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>
+prettyTeNoMatchingTypeRule <span class="dt">NoMatchingTypeRule</span> <span class="fu">=</span>
+  <span class="dt">Just</span> <span class="fu">$</span> text <span class="st">&quot;No matching type rule&quot;</span>
+prettyTeNoMatchingTypeRule _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<p>Which get the usual treatment to create our pretty printing function:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTypeErrorRules ::</span> [<span class="dt">TypeError</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> <span class="dt">Doc</span>]
+prettyTypeErrorRules <span class="fu">=</span> [
+    prettyTeUnexpected
+  , prettyTeExpectedEq
+  , prettyTeNoMatchingTypeRule
+  ]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">prettyTypeError ::</span> <span class="dt">TypeError</span>
+                <span class="ot">-&gt;</span> <span class="dt">Doc</span>
+prettyTypeError te <span class="fu">=</span>
+  fromMaybe (text <span class="st">&quot;???&quot;</span>) <span class="fu">.</span>
+  asum <span class="fu">.</span>
+  fmap (<span class="fu">$</span> te) <span class="fu">$</span>
+  prettyTypeErrorRules</code></pre></div>
+<h2 id="the-change-to-the-repl">The change to the REPL</h2>
+<p>The main loop of the REPL will remain unchanged, but the function at the heart of it will.</p>
+<p>Previously we had this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">parseAndEval ::</span> <span class="dt">String</span>
+             <span class="ot">-&gt;</span> <span class="dt">Doc</span>
+parseAndEval s <span class="fu">=</span>
+  <span class="kw">case</span> parseFromString parseTerm s <span class="kw">of</span>
+    <span class="dt">Left</span> d <span class="ot">-&gt;</span> 
+      d
+    <span class="dt">Right</span> tm <span class="ot">-&gt;</span> 
+      prettyTerm tm <span class="fu">&lt;+&gt;</span> text <span class="st">&quot;==&gt;&quot;</span> <span class="fu">&lt;+&gt;</span> prettyTerm (eval tm)</code></pre></div>
+<p>and now we want to type-check the term after we have parsed it but before we evaluate it.</p>
+<p>Between <code>inferTerm</code>, <code>prettyTypeError</code> and <code>prettyType</code>, we have the pieces we need to make this happen:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">parseAndEval ::</span> <span class="dt">String</span>
+             <span class="ot">-&gt;</span> <span class="dt">Doc</span>
+parseAndEval s <span class="fu">=</span>
+  <span class="kw">case</span> parseFromString parseTerm s <span class="kw">of</span>
+    <span class="dt">Left</span> d <span class="ot">-&gt;</span> 
+      d
+    <span class="dt">Right</span> tm <span class="ot">-&gt;</span> 
+      <span class="kw">case</span> runInfer <span class="fu">.</span> inferTerm <span class="fu">$</span> tm <span class="kw">of</span>
+        <span class="dt">Left</span> e <span class="ot">-&gt;</span> 
+          prettyTypeError e
+        <span class="dt">Right</span> ty <span class="ot">-&gt;</span>
+          prettyTerm (eval tm) <span class="fu">&lt;+&gt;</span> text <span class="st">&quot;:&quot;</span> <span class="fu">&lt;+&gt;</span> prettyType ty</code></pre></div>
 <h1 id="properties-of-type-systems">Properties of type systems</h1>
-<p>Type safety</p>
-<p>Progress</p>
-<p>Preservation</p>
-<p>Why this makes sense</p>
+<p>The main property we are after here is type safety.</p>
+<p>A lot of thought went into the definition that we use for type safety, which is:</p>
+<blockquote>
+<p>Well typed terms do not get stuck</p>
+</blockquote>
+<p>This is usually demonstrated by showing that two other properties hold: progress and preservation.</p>
+<ul>
+<li><p>Progress</p>
+<p>Every well-typed term is either a value, or can take a small step.</p></li>
+<li><p>Preservation</p>
+<p>For every well-typed term that can take a small step, the type of the term is the same before and after the step.</p></li>
+</ul>
+<p>This is enough to show that well-typed terms do not get stuck.</p>
+<p>Imagine we have an arbitrary well-typed term.</p>
+<p>If the term is a value, then it doesn’t get stuck.</p>
+<p>If it isn’t in a value, then by the progress property we know it can take a step.</p>
+<p>The result of taking a step will be another well-typed term, thanks to the preservation property, and so we’re back where we started except that we’re one step further along in the evaluation process.</p>
+<h1 id="test-the-type-system">Test the type system</h1>
+<p>This means we’re going to need to be able to generate well-typed terms.</p>
+<p>If we think back to the start of this post, we also seem to need well-typed terms to make some of our existing tests pass.</p>
+<p>We don’t have small step rules for the ill-typed terms, and so we need to update the properties that state:</p>
+<ul>
+<li>all terms which are normal forms are also values</li>
+<li>all terms have exactly one small-step rule that applies to them</li>
+</ul>
+<p>to apply only to well-typed terms.</p>
+<p>There’s a few things we’ll need to do in order to make this happen, starting with some new generators.</p>
 <p><a href="nb/testing.html">Read on!</a></p>
 <h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
 <ul>
@@ -263,7 +502,7 @@ inferTmIsZero _ _ <span class="fu">=</span>
     </div>
     
     <div class="panel-footer">
-        <h5>Posted on May 27, 2016 </h5>
+        <h5>Posted on July  1, 2016 </h5>
     </div>
     
 </div>
