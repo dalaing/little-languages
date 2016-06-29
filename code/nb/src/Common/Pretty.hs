@@ -28,6 +28,7 @@ import           Text.Trifecta.Highlight      (withHighlight)
 
 -- $setup
 -- >>> import Text.PrettyPrint.ANSI.Leijen
+-- >>> let render r w f d = putStr $ displayS (renderPretty r w (plain (f d))) ""
 
 -- | Converts a 'Doc' to a 'String' after stripping out any colours or other escape codes.
 --
@@ -90,7 +91,14 @@ operator =
   withHighlight Operator .
   text
 
--- |
+-- | Combines a list of labels and `Doc`s into a single `Doc`.
+--
+-- The labels are padded on the right so that they all have the same length.
+--
+-- >>> render 0.5 40 tabulate [("label1:", text "doc 1"), ("label12:", text "doc 2"), ("label123:", text "doc 3")]
+-- label1:   doc 1
+-- label12:  doc 2
+-- label123: doc 3
 tabulate :: [(String, Doc)] -> Doc
 tabulate xs =
     vcat .

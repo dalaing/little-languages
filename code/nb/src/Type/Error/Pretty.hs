@@ -29,7 +29,7 @@ import           Type.Pretty                  (prettyType)
 -- >>> import Text.PrettyPrint.ANSI.Leijen
 -- >>> let render r w f d = putStr $ displayS (renderPretty r w (plain (f d))) ""
 
--- |
+-- | A pretty printer for 'Unexpected'
 --
 -- >>> render 0.5 40 (fromMaybe (text "???") . prettyTeUnexpected) $ Unexpected TyNat TyBool
 -- Unexpected type:
@@ -47,7 +47,7 @@ prettyTeUnexpected (Unexpected ac ex) =
 prettyTeUnexpected _ =
   Nothing
 
--- |
+-- | A pretty printer for 'ExpectedEq'
 --
 -- >>> render 0.5 40 (fromMaybe (text "???") . prettyTeExpectedEq) $ ExpectedEq TyNat TyBool
 -- Expected these types to be equal:
@@ -65,7 +65,7 @@ prettyTeExpectedEq (ExpectedEq t1 t2) =
 prettyTeExpectedEq _ =
   Nothing
 
--- |
+-- | A pretty printer for 'NoMatchingTypeRule'
 --
 -- >>> render 0.5 40 (fromMaybe (text "???") . prettyTeNoMatchingTypeRule) $ NoMatchingTypeRule
 -- No matching type rule
@@ -76,7 +76,7 @@ prettyTeNoMatchingTypeRule NoMatchingTypeRule =
 prettyTeNoMatchingTypeRule _ =
   Nothing
 
--- | Pretty type error rules
+-- | The set of pretty printing rules for type errors of the NB language.
 prettyTypeErrorRules :: [TypeError -> Maybe Doc]
 prettyTypeErrorRules = [
     prettyTeUnexpected
@@ -84,7 +84,10 @@ prettyTypeErrorRules = [
   , prettyTeNoMatchingTypeRule
   ]
 
--- | Pretty prints a 'TypeError'.
+-- | The pretty printer for type errors of the NB language.
+--
+-- This function is built from the contents of 'prettyTypeErrorRules'.
+-- It will print "???" if none of the rules apply - which should never happen.
 --
 -- >>> render 0.5 40 prettyTypeError $ Unexpected TyNat TyBool
 -- Unexpected type:

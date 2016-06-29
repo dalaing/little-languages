@@ -15,30 +15,33 @@ module Common.Pretty (
   , constructor
   , reservedOperator
   , operator
+  , tabulate
   , PrettyRule(..)
   , mkPretty
   ) where
 
 -- from 'base'
-import           Data.Foldable (asum)
-import           Data.Maybe (fromMaybe)
+import           Data.Foldable                (asum)
+import           Data.Maybe                   (fromMaybe)
 
 -- from 'ansi-wl-pprint'
-import           Text.PrettyPrint.ANSI.Leijen (Doc, displayS, plain,
-                                               renderPretty, text, parens)
+import           Text.PrettyPrint.ANSI.Leijen (Doc, displayS, fill, parens,
+                                               plain, renderPretty, text, vcat,
+                                               (<+>))
 
 -- from 'parsers'
-import           Text.Parser.Expression       (Assoc(..))
+import           Text.Parser.Expression       (Assoc (..))
 import           Text.Parser.Token.Highlight  (Highlight (..))
 
 -- from 'trifecta'
 import           Text.Trifecta.Highlight      (withHighlight)
 
 -- local
-import           Common.Text                  (OperatorInfo(..))
+import           Common.Text                  (OperatorInfo (..))
 
 -- $setup
 -- >>> import Text.PrettyPrint.ANSI.Leijen
+-- >>> let render r w f d = putStr $ displayS (renderPretty r w (plain (f d))) ""
 
 -- | Converts a 'Doc' to a 'String' after stripping out any colours or other escape codes.
 --
@@ -100,6 +103,27 @@ operator :: String
 operator =
   withHighlight Operator .
   text
+
+-- | Combines a list of labels and `Doc`s into a single `Doc`.
+--
+-- The labels are padded on the right so that they all have the same length.
+--
+-- >>> render 0.5 40 tabulate [("label1:", text "doc 1"), ("label12:", text "doc 2"), ("label123:", text "doc 3")]
+-- label1:   doc 1
+-- label12:  doc 2
+-- label123: doc 3
+tabulate :: [(String, Doc)] -> Doc
+tabulate xs =
+    vcat .
+    fmap pad $
+    xs
+  where
+    pad (label, doc) =
+      fill maxLength (text label) <+> doc
+    maxLength =
+      maximum .
+      fmap (length . fst) $
+      xs
 
 -- | Rules for pretty printing languages.
 data PrettyRule a =
