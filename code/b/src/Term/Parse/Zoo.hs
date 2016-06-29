@@ -510,7 +510,9 @@ parseTermToken =
 -- if False potato False else True<EOF>
 --          ^
 -- >>> parse parseTermTokenName "if potato then FalseelseTrue"
--- Success (TmIf (TmVar "potato") TmFalse TmTrue)
+-- Failure (interactive):1:16: error: expected: term
+-- if potato then FalseelseTrue<EOF>
+--                ^
 --
 parseTermTokenName :: (Monad m, TokenParsing m) => m Term
 parseTermTokenName =
