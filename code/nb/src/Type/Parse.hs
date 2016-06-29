@@ -36,7 +36,7 @@ import           Type                        (Type (..))
 -- >>> import Text.PrettyPrint.ANSI.Leijen
 -- >>> let parse p s = case parseString p (Columns 0 0) s of Failure d -> Failure (plain d); Success s -> Success s
 
--- | The tokenizer style for types in the N language.
+-- | The tokenizer style for types in the NB language.
 typeStyle :: TokenParsing m
           => IdentifierStyle m
 typeStyle =

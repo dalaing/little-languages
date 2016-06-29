@@ -5,7 +5,7 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 
-Type errors for the B language.
+Type errors for the I language.
 -}
 {-# LANGUAGE FlexibleContexts      #-}
 module Type.Error (
@@ -23,7 +23,7 @@ import           Control.Monad.Except (MonadError, throwError)
 -- local
 import           Type                 (Type)
 
--- | The type errors that can occur in the B language.
+-- | The type errors that can occur in the I language.
 --
 -- The 'NoMatchingTypeRule' constructor is acting like the 'Nothing' from 'Maybe'.
 -- We could have left that constructor off and wrapped this type in 'Maybe', but

@@ -10,17 +10,19 @@ module Test.Term (
   ) where
 
 -- from 'tasty'
-import           Test.Tasty      (TestTree, testGroup)
+import           Test.Tasty          (TestTree, testGroup)
 
 -- local
-import           Test.Term.Eval  (evalTests)
-import           Test.Term.Infer (inferTests)
-import           Test.Term.Text  (textTests)
+import           Test.Term.Eval      (evalTests)
+import           Test.Term.Infer     (inferTests)
+import           Test.Term.Structure (structureTests)
+import           Test.Term.Text      (textTests)
 
 termTests :: TestTree
 termTests =
   testGroup "term"
-    [ evalTests
+    [ structureTests
+    , evalTests
     , inferTests
     , textTests
     ]

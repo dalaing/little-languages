@@ -49,18 +49,32 @@ genTypeError =
 -- |
 shrinkTypeErrorUnexpected :: TypeError
                           -> Maybe [TypeError]
-shrinkTypeErrorUnexpected (Unexpected ty1 ty2) = Just $
-  fmap (\s1 -> Unexpected s1 ty2) (shrinkType ty1) ++
-  fmap (\s2 -> Unexpected ty1 s2) (shrinkType ty2)
+shrinkTypeErrorUnexpected (Unexpected ty1 ty2) =
+  let
+    valid (Unexpected u1 u2) =
+      u1 /= u2
+    valid _ =
+      False
+  in
+    Just . filter valid $
+      fmap (\s1 -> Unexpected s1 ty2) (shrinkType ty1) ++
+      fmap (\s2 -> Unexpected ty1 s2) (shrinkType ty2)
 shrinkTypeErrorUnexpected _ =
   Nothing
 
 -- |
 shrinkTypeErrorExpectedEq :: TypeError
                           -> Maybe [TypeError]
-shrinkTypeErrorExpectedEq (ExpectedEq ty1 ty2) = Just $
-  fmap (\s1 -> ExpectedEq s1 ty2) (shrinkType ty1) ++
-  fmap (\s2 -> ExpectedEq ty1 s2) (shrinkType ty2)
+shrinkTypeErrorExpectedEq (ExpectedEq ty1 ty2) =
+  let
+    valid (ExpectedEq u1 u2) =
+      u1 /= u2
+    valid _ =
+      False
+  in
+    Just . filter valid $
+      fmap (\s1 -> ExpectedEq s1 ty2) (shrinkType ty1) ++
+      fmap (\s2 -> ExpectedEq ty1 s2) (shrinkType ty2)
 shrinkTypeErrorExpectedEq _ =
   Nothing
 

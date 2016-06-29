@@ -46,17 +46,17 @@ genType =
 genNotTypeTyNat :: Type
                 -> Maybe (Gen Type)
 genNotTypeTyNat TyNat =
-  Just genTyBool
-genNotTypeTyNat _ =
   Nothing
+genNotTypeTyNat _ =
+  Just genTyNat
 
 -- |
 genNotTypeTyBool :: Type
                  -> Maybe (Gen Type)
 genNotTypeTyBool TyBool =
-  Just genTyNat
-genNotTypeTyBool _ =
   Nothing
+genNotTypeTyBool _ =
+  Just genTyBool
 
 -- |
 genNotType :: Type

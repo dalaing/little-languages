@@ -49,6 +49,7 @@ test-suite test
   hs-source-dirs:      tests
   main-is:             Test.hs
   other-modules:       Test.Term
+                     , Test.Term.Structure
                      , Test.Term.Eval
                      , Test.Term.Infer
                      , Test.Term.Text

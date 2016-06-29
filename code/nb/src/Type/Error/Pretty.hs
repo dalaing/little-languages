@@ -16,10 +16,11 @@ import           Data.Foldable                (asum)
 import           Data.Maybe                   (fromMaybe)
 
 -- from 'ansi-wl-pprint'
-import           Text.PrettyPrint.ANSI.Leijen (Doc, hang, text, (<+>))
+import           Text.PrettyPrint.ANSI.Leijen (Doc, hang, text)
 import qualified Text.PrettyPrint.ANSI.Leijen as PP ((<$>))
 
 -- local
+import           Common.Pretty                (tabulate)
 import           Type.Error                   (TypeError (..))
 import           Type.Pretty                  (prettyType)
 
@@ -32,15 +33,17 @@ import           Type.Pretty                  (prettyType)
 --
 -- >>> render 0.5 40 (fromMaybe (text "???") . prettyTeUnexpected) $ Unexpected TyNat TyBool
 -- Unexpected type:
---   actual: Nat
+--   actual:   Nat
 --   expected: Bool
 prettyTeUnexpected :: TypeError
                    -> Maybe Doc
 prettyTeUnexpected (Unexpected ac ex) =
   Just . hang 2 $
     text "Unexpected type:" PP.<$>
-    text "actual:" <+> prettyType ac PP.<$>
-    text "expected:" <+> prettyType ex
+    tabulate [
+        ("actual:", prettyType ac)
+      , ("expected:", prettyType ex)
+      ]
 prettyTeUnexpected _ =
   Nothing
 
@@ -55,8 +58,10 @@ prettyTeExpectedEq :: TypeError
 prettyTeExpectedEq (ExpectedEq t1 t2) =
   Just . hang 2 $
     text "Expected these types to be equal:" PP.<$>
-    text "type 1:" <+> prettyType t1 PP.<$>
-    text "type 2:" <+> prettyType t2
+    tabulate [
+        ("type 1:", prettyType t1)
+      , ("type 2:", prettyType t2)
+      ]
 prettyTeExpectedEq _ =
   Nothing
 
@@ -83,7 +88,7 @@ prettyTypeErrorRules = [
 --
 -- >>> render 0.5 40 prettyTypeError $ Unexpected TyNat TyBool
 -- Unexpected type:
---   actual: Nat
+--   actual:   Nat
 --   expected: Bool
 --
 -- >>> render 0.5 40 prettyTypeError $ ExpectedEq TyNat TyBool

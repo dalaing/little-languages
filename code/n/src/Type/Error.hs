@@ -5,7 +5,7 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 
-Type errors for the B language.
+Type errors for the N language.
 -}
 {-# LANGUAGE FlexibleContexts      #-}
 module Type.Error (

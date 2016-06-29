@@ -14,7 +14,7 @@ module Term (
   , subTerms
   ) where
 
--- | The terms in the language B.
+-- | The terms in the B language.
 data Term =
     TmFalse             -- ^ The Boolean literal 'false'.
   | TmTrue              -- ^ The Boolean literal 'true'.

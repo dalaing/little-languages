@@ -15,12 +15,13 @@ module Common.Pretty (
   , constructor
   , reservedOperator
   , operator
+  , tabulate
   ) where
 
 -- from 'ansi-wl-pprint'
 import           Text.Parser.Token.Highlight  (Highlight (..))
-import           Text.PrettyPrint.ANSI.Leijen (Doc, displayS, plain,
-                                               renderPretty, text)
+import           Text.PrettyPrint.ANSI.Leijen (Doc, displayS, fill, plain,
+                                               renderPretty, text, vcat, (<+>))
 
 -- from 'trifecta'
 import           Text.Trifecta.Highlight      (withHighlight)
@@ -88,3 +89,17 @@ operator :: String
 operator =
   withHighlight Operator .
   text
+
+-- |
+tabulate :: [(String, Doc)] -> Doc
+tabulate xs =
+    vcat .
+    fmap pad $
+    xs
+  where
+    pad (label, doc) =
+      fill maxLength (text label) <+> doc
+    maxLength =
+      maximum .
+      fmap (length . fst) $
+      xs

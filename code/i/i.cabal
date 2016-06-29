@@ -50,6 +50,7 @@ test-suite test
   other-modules:       Test.Common
                      , Test.Common.Text
                      , Test.Term
+                     , Test.Term.Structure
                      , Test.Term.Eval
                      , Test.Term.Infer
                      , Test.Term.Text

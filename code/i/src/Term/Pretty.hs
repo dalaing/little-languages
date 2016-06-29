@@ -5,7 +5,7 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 
-Pretty printers for terms of the B language.
+Pretty printers for terms of the I language.
 -}
 {-# LANGUAGE FlexibleContexts #-}
 module Term.Pretty (

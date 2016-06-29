@@ -11,7 +11,7 @@ module Type (
     Type(..)
   ) where
 
--- | The types in the language I.
+-- | The types in the I language.
 data Type =
   TyInt -- ^ The type of integers.
   deriving (Eq, Ord, Show)

@@ -23,7 +23,7 @@ import           Control.Monad.Except (MonadError, throwError)
 -- local
 import           Type                 (Type)
 
--- | The type errors that can occur in the B language.
+-- | The type errors that can occur in the NB language.
 --
 -- The 'NoMatchingTypeRule' constructor is acting like the 'Nothing' from 'Maybe'.
 -- We could have left that constructor off and wrapped this type in 'Maybe', but

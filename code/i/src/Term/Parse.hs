@@ -5,7 +5,7 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 
-Parsers for terms of the B language.
+Parsers for terms of the I language.
 -}
 module Term.Parse (
     parseTermRules

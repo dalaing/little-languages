@@ -39,7 +39,7 @@ eSucc _ =
   Nothing
 
 -- | The big-step rule for 'pred O'.
-ePredZero :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
+ePredZero :: (Term -> Maybe Term) -- ^ The big-step function for the N language.
           -> Term
           -> Maybe Term
 ePredZero step (TmPred tm) =
@@ -50,7 +50,7 @@ ePredZero _ _ =
   Nothing
 
 -- | The big-step rule for 'pred S'.
-ePredSucc :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
+ePredSucc :: (Term -> Maybe Term) -- ^ The big-step function for the N language.
           -> Term
           -> Maybe Term
 ePredSucc step (TmPred tm) =

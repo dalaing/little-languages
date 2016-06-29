@@ -11,7 +11,7 @@ module Type (
     Type(..)
   ) where
 
--- | The types in the language NB.
+-- | The types in the NB language.
 data Type =
     TyNat  -- ^ The type of natural numbers.
   | TyBool -- ^ The type of Booleans.

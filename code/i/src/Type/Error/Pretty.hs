@@ -5,7 +5,7 @@ Maintainer  : dave.laing.80@gmail.com
 Stability   : experimental
 Portability : non-portable
 
-Pretty printers for type errors in the B language.
+Pretty printers for type errors in the I language.
 -}
 module Type.Error.Pretty (
     prettyTypeError

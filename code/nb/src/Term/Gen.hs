@@ -614,14 +614,17 @@ genIllTypedTmIf :: TypeError
                 -> (Type -> Int -> Gen Term) -- ^ The function for generating well-typed terms of the NB language.
                 -> Int
                 -> Maybe (Gen Term)
-genIllTypedTmIf (ExpectedEq ty1 ty2) _ gen s = Just $
-  let
-    size = s `div` 3
-    childB = gen TyBool size
-    child1 = gen ty1 size
-    child2 = gen ty2 size
-  in
-    genTmIf childB child1 child2
+genIllTypedTmIf (ExpectedEq ty1 ty2) ty gen s
+  | ty == ty1 || ty == ty2 = Just $
+    let
+      size = s `div` 3
+      childB = gen TyBool size
+      child1 = gen ty1 size
+      child2 = gen ty2 size
+    in
+      genTmIf childB child1 child2
+  | otherwise =
+    Nothing
 genIllTypedTmIf (Unexpected tyB TyBool) ty gen s = Just $ do
   let
     size = s `div` 3
@@ -644,7 +647,7 @@ genIllTypedTmIsZero _ _ _ _ =
 
 -- |
 --
--- Where possible, the term will have 
+-- Where possible, the term will have
 genIllTypedTerm :: TypeError
                 -> Type
                 -> Gen Term

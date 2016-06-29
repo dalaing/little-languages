@@ -175,6 +175,9 @@ inferTermRules =
 -- >>> runInfer . inferTerm $ TmIf TmFalse TmFalse TmTrue
 -- Right TyBool
 --
+-- >>> runInfer . inferTerm $ TmIf TmZero TmFalse TmTrue
+-- Left (Unexpected TyNat TyBool)
+--
 -- >>> runInfer . inferTerm $ TmIsZero (TmSucc TmZero)
 -- Right TyBool
 inferTerm :: MonadError TypeError m

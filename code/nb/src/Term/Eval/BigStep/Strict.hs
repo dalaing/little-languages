@@ -31,7 +31,7 @@ eZero _ =
   Nothing
 
 -- | The big-step rule for 'TmSucc'.
-eSucc :: (Term -> Maybe Term) -- ^ The big-step function for the N language.
+eSucc :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
       -> Term
       -> Maybe Term
 eSucc step (TmSucc tm) =
@@ -40,7 +40,7 @@ eSucc _ _ =
   Nothing
 
 -- | The big-step rule for 'pred O'.
-ePredZero :: (Term -> Maybe Term) -- ^ The big-step function for the N language.
+ePredZero :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
           -> Term
           -> Maybe Term
 ePredZero step (TmPred tm) =
@@ -51,7 +51,7 @@ ePredZero _ _ =
   Nothing
 
 -- | The big-step rule for 'pred S'.
-ePredSucc :: (Term -> Maybe Term) -- ^ The big-step function for the N language.
+ePredSucc :: (Term -> Maybe Term) -- ^ The big-step function for the NB language.
           -> Term
           -> Maybe Term
 ePredSucc step (TmPred tm) =
@@ -191,10 +191,10 @@ bigStep tm =
   fmap ($ tm) $
   bigStepRules
 
--- | Evaluates a term in the N language.
+-- | Evaluates a term in the NB language.
 --
 -- The evaluation will continue for as long as there are small-step rules that apply.
--- Evaluation of finite terms is guaranteed to terminates for the N language.
+-- Evaluation of finite terms is guaranteed to terminates for the NB language.
 --
 -- This evaluation function is implemented in terms of the 'bigStep' function, and
 -- consequently relies on 'bigStepRules'.

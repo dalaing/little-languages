@@ -11,7 +11,7 @@ module Type (
     Type(..)
   ) where
 
--- | The types in the language N.
+-- | The types in the N language.
 data Type =
   TyNat -- ^ The type of natural numbers.
   deriving (Eq, Ord, Show)

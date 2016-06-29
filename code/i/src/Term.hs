@@ -14,7 +14,7 @@ module Term (
   , subTerms
   ) where
 
--- | The terms in the language I.
+-- | The terms in the I language.
 data Term =
     TmInt Int              -- ^ An integer literal.
   | TmAdd Term Term        -- ^ Addition.

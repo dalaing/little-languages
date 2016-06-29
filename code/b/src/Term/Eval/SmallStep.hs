@@ -7,12 +7,6 @@ Portability : non-portable
 
 Small-step rules and helpers for the B language.
 
-<<images/ss-iftrue.png>>
-
-<<images/ss-iffalse.png>>
-
-<<images/ss-if.png>>
-
 -}
 module Term.Eval.SmallStep (
     smallStepRules
@@ -30,8 +24,6 @@ import           Data.Maybe    (isJust, isNothing)
 import           Term          (Term (..))
 
 -- | The small-step rule for the 'if true' case.
---
--- <<images/ss-iftrue.png>>
 eIfTrue :: Term
         -> Maybe Term
 eIfTrue (TmIf TmTrue t2 _) =

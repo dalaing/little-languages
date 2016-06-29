@@ -31,7 +31,7 @@ valueTmZero _ =
   Nothing
 
 -- | The value rule for 'TmSucc'.
-valueTmSucc :: (Term -> Maybe Term) -- ^ The value function for the N language.
+valueTmSucc :: (Term -> Maybe Term) -- ^ The value function for the NB language.
             -> Term
             -> Maybe Term
 valueTmSucc val (TmSucc tm) =

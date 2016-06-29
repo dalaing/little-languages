@@ -14,7 +14,7 @@ module Term (
   , subTerms
   ) where
 
--- | The terms in the language NB.
+-- | The terms in the NB language.
 data Term =
     TmZero              -- ^ The natural number zero.
   | TmSucc Term         -- ^ The successor of a natural number.
