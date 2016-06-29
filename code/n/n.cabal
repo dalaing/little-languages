@@ -52,6 +52,14 @@ test-suite test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      tests
   main-is:             Test.hs
+  other-modules:       Test.Term
+                     , Test.Term.Eval
+                     , Test.Term.Eval.Lazy
+                     , Test.Term.Eval.Strict
+                     , Test.Term.Infer
+                     , Test.Term.Text
+                     , Test.Type
+                     , Test.Type.Text
   build-depends:         base               >= 4.8  && < 4.9
                        , tasty              >= 0.11 && < 0.12
                        , tasty-quickcheck   >= 0.8 && < 0.9
