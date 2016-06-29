@@ -9,7 +9,8 @@ Portability : non-portable
 import Test.DocTest
 
 main :: IO ()
-main = doctest $ "-isrc" :
+main = doctest [ "-isrc", "src"]
+{-
   [ "Common.Parse"
   , "Common.Pretty"
   , "Term"
@@ -25,4 +26,5 @@ main = doctest $ "-isrc" :
   , "Type.Error"
   , "Type.Error.Pretty"
   ]
+ -} 
 

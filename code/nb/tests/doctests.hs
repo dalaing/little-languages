@@ -9,19 +9,14 @@ Portability : non-portable
 import Test.DocTest
 
 main :: IO ()
-main = doctest $ "-isrc" :
+main = doctest [ "-isrc", "src"]
+{-
   [ "Common.Parse"
   , "Common.Pretty"
   , "Term"
   , "Term.Eval.Value"
-  , "Term.Eval.Value.Lazy"
-  , "Term.Eval.Value.Strict"
   , "Term.Eval.SmallStep"
-  , "Term.Eval.SmallStep.Lazy"
-  , "Term.Eval.SmallStep.Strict"
   , "Term.Eval.BigStep"
-  , "Term.Eval.BigStep.Lazy"
-  , "Term.Eval.BigStep.Strict"
   , "Term.Infer"
   , "Term.Parse"
   , "Term.Pretty"
@@ -31,4 +26,5 @@ main = doctest $ "-isrc" :
   , "Type.Error"
   , "Type.Error.Pretty"
   ]
+ -} 
 
