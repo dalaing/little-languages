@@ -216,9 +216,9 @@ parseTmFalse <span class="fu">=</span>
           <span class="ot">-&gt;</span> m <span class="dt">Term</span>
 parseTmIf parse <span class="fu">=</span>
   <span class="dt">TmIf</span> <span class="fu">&lt;$</span>
-    symbol <span class="st">&quot;if&quot;</span>   <span class="fu">&lt;*</span> parse <span class="fu">&lt;*</span>
-    symbol <span class="st">&quot;then&quot;</span> <span class="fu">&lt;*</span> parse <span class="fu">&lt;*</span>
-    symbol <span class="st">&quot;else&quot;</span> <span class="fu">&lt;*</span> parse
+    symbol <span class="st">&quot;if&quot;</span>   <span class="fu">&lt;*&gt;</span> parse <span class="fu">&lt;*</span>
+    symbol <span class="st">&quot;then&quot;</span> <span class="fu">&lt;*&gt;</span> parse <span class="fu">&lt;*</span>
+    symbol <span class="st">&quot;else&quot;</span> <span class="fu">&lt;*&gt;</span> parse
     <span class="fu">&lt;?&gt;</span> <span class="st">&quot;if-then-else&quot;</span></code></pre></div>
 <p>We still have our list of rules:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">parseTermRules ::</span> (<span class="dt">Monad</span> m, <span class="dt">TokenParsing</span> m) 
@@ -331,9 +331,9 @@ parseTmFalse <span class="fu">=</span>
           <span class="ot">-&gt;</span> m <span class="dt">Term</span>
 parseTmIf parse <span class="fu">=</span>
   <span class="dt">TmIf</span> <span class="fu">&lt;$</span>
-    reservedIdentifier <span class="st">&quot;if&quot;</span>   <span class="fu">&lt;*</span> parse <span class="fu">&lt;*</span>
-    reservedIdentifier <span class="st">&quot;then&quot;</span> <span class="fu">&lt;*</span> parse <span class="fu">&lt;*</span>
-    reservedIdentifier <span class="st">&quot;else&quot;</span> <span class="fu">&lt;*</span> parse
+    reservedIdentifier <span class="st">&quot;if&quot;</span>   <span class="fu">&lt;*&gt;</span> parse <span class="fu">&lt;*</span>
+    reservedIdentifier <span class="st">&quot;then&quot;</span> <span class="fu">&lt;*&gt;</span> parse <span class="fu">&lt;*</span>
+    reservedIdentifier <span class="st">&quot;else&quot;</span> <span class="fu">&lt;*&gt;</span> parse
     <span class="fu">&lt;?&gt;</span> <span class="st">&quot;if-then-else&quot;</span></code></pre></div>
 <p>and now we don’t have to be wary of the order in which we combine the parsing rules.</p>
 <h1 id="pretty-printing-b">Pretty Printing <em>B</em></h1>

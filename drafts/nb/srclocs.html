@@ -33,21 +33,66 @@
         <h3 class="panel-title"><a href="../../drafts/nb/srclocs.html">NB - tracking source locations</a></h3>
     </div>
     <div class="panel-body">
-        <p><a href="types.html">Previously</a></p>
+        <p>We have just added <a href="annotations.html">annotations to <em>NB</em></a>, and then used those annotations to <a href="improved-testing.html">improve our testing</a>.</p>
+<p>We can also use these annotations in order to get much nicer error messages.</p>
 <h1 id="trifecta-and-source-locations">Trifecta and source locations</h1>
-<h1 id="annotating-the-terms">Annotating the terms</h1>
-<p>TODO mention various options in passing TODO mention that we have an optional annotation as one reason, and that we have something up our sleeve for later as the other reason</p>
-<h1 id="updating-the-existing-code">Updating the existing code</h1>
-<h2 id="from-the-parser-to-the-terms">From the parser to the terms</h2>
-<h2 id="from-the-terms-to-the-types">From the terms to the types</h2>
-<h2 id="from-the-types-to-the-pretty-printer">From the types to the pretty printer</h2>
-<h2 id="updating-the-tests">Updating the tests?</h2>
+<p>TODO link to introduction to trifecta post</p>
+<h1 id="from-the-parser-to-the-terms">From the parser to the terms</h1>
+<p>TODO explain spanned</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">withSpan ::</span> <span class="dt">DeltaParsing</span> m
+         <span class="ot">=&gt;</span> m (<span class="dt">Term</span> <span class="dt">Span</span>)
+         <span class="ot">-&gt;</span> m (<span class="dt">Term</span> <span class="dt">Span</span>)
+withSpan p <span class="fu">=</span> <span class="kw">do</span>
+  (tm <span class="fu">:~</span> sp) <span class="ot">&lt;-</span> spanned p
+  return <span class="fu">$</span> <span class="dt">TmNote</span> sp tm</code></pre></div>
+<p>TODO explain having two parsing functions</p>
+<h2 id="tokens-and-spans">Tokens and spans</h2>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">trimTrailingWhitespace ::</span> <span class="dt">Span</span>
+                       <span class="ot">-&gt;</span> <span class="dt">B.ByteString</span>
+                       <span class="ot">-&gt;</span> <span class="dt">Span</span>
+trimTrailingWhitespace (<span class="dt">Span</span> s e l) bs <span class="fu">=</span>
+    <span class="dt">Span</span> s e' l
+  <span class="kw">where</span>
+    e' <span class="fu">=</span> s <span class="fu">&lt;&gt;</span> delta (B.take n bs)
+    n <span class="fu">=</span>
+      B.length bs <span class="fu">-</span> w
+    w <span class="fu">=</span>
+      B.length <span class="fu">.</span>
+      C.takeWhile isSpace <span class="fu">.</span>
+      B.reverse <span class="fu">$</span>
+      bs</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">withTokenSpan ::</span> <span class="dt">DeltaParsing</span> m
+              <span class="ot">=&gt;</span> m a
+              <span class="ot">-&gt;</span> m (a, <span class="dt">Span</span>)
+withTokenSpan p <span class="fu">=</span> <span class="kw">do</span>
+  (a <span class="fu">:~</span> span, bs) <span class="ot">&lt;-</span> slicedWith (,) <span class="fu">.</span> spanned <span class="fu">$</span> p
+  return (a, trimTrailingWhitespace span bs)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">withSpan ::</span> <span class="dt">DeltaParsing</span> m
+         <span class="ot">=&gt;</span> m (<span class="dt">Term</span> <span class="dt">Span</span>)
+         <span class="ot">-&gt;</span> m (<span class="dt">Term</span> <span class="dt">Span</span>)
+withSpan p <span class="fu">=</span> <span class="kw">do</span>
+  (tm, sp) <span class="ot">&lt;-</span> withTokenSpan p
+  return <span class="fu">$</span> <span class="dt">TmNote</span> sp tm</code></pre></div>
+<h1 id="from-the-terms-to-the-types">From the terms to the types</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">inferTmNote ::</span> <span class="dt">MonadError</span> (<span class="dt">TypeError</span> <span class="dt">Span</span>) m
+            <span class="ot">=&gt;</span> (<span class="dt">Term</span> <span class="dt">Span</span> <span class="ot">-&gt;</span> m (<span class="dt">Type</span> <span class="dt">Span</span>))
+            <span class="ot">-&gt;</span> <span class="dt">Term</span> <span class="dt">Span</span>
+            <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (m (<span class="dt">Type</span> <span class="dt">Span</span>))
+inferTmNote infer (<span class="dt">TmNote</span> n tm) <span class="fu">=</span> <span class="dt">Just</span> <span class="fu">$</span> <span class="kw">do</span>
+  ty <span class="ot">&lt;-</span> infer tm
+  return <span class="fu">$</span> <span class="dt">TyNote</span> n ty
+inferTmNote _ _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<h1 id="from-the-types-to-the-pretty-printer">From the types to the pretty printer</h1>
+<h1 id="the-impact-on-the-repl">The impact on the REPL</h1>
+<h1 id="updating-the-tests">Updating the tests</h1>
 <p>involves parsing, then making sure that each of the subterms can be parsed with the snippet of text at it’s source location</p>
-<h2 id="updating-the-repl">Updating the REPL</h2>
+<p><a href="srclocs.html">Read on!</a></p>
+<h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
     </div>
     
     <div class="panel-footer">
-        <h5>Posted on May 27, 2016 </h5>
+        <h5>Posted on July  1, 2016 </h5>
     </div>
     
 </div>

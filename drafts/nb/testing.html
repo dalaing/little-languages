@@ -34,19 +34,154 @@
     </div>
     <div class="panel-body">
         <h1 id="a-new-suite-of-generators">A new suite of generators</h1>
-<h2 id="well-typed-terms">Well typed terms</h2>
-<h2 id="terms-containing-other-terms">Terms containing other terms</h2>
-<h2 id="ill-typed-terms">Ill typed terms</h2>
+<p><a href="../nb.html">Previously</a> we introduced our first type system, in the language <em>NB</em>.</p>
+<p>This means we now have type-checking in our arsenal, and we can talk about whether a term is well-typed or ill-typed.</p>
+<p>Along with that, we have some new properties that we’d like to test, to make sure that we’ve implemented these new concepts correctly. For that we need some new generators.</p>
+<h2 id="generating-types">Generating types</h2>
+<h3 id="lets-generate-a-type">Let’s generate a type</h3>
+<p>We need to be able to generate arbitrary types.</p>
+<p>We have a simple type system so far, so we end up with simple rules for generating types:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTyNat ::</span> <span class="dt">Gen</span> <span class="dt">Type</span>
+genTyNat <span class="fu">=</span>
+  pure <span class="dt">TyNat</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTyBool ::</span> <span class="dt">Gen</span> <span class="dt">Type</span>
+genTyBool <span class="fu">=</span>
+  pure <span class="dt">TyBool</span></code></pre></div>
+<p>and we can combine them using <code>oneof</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genType ::</span> <span class="dt">Gen</span> <span class="dt">Type</span>
+genType <span class="fu">=</span>
+  oneof
+    [ genTyNat
+    , genTyBool
+    ]</code></pre></div>
+<p>We don’t have any obvious ways of shrinking these types, but we have the usual default rules - that return an empty-list and stop the shrinking process - for our types in the code repository.</p>
+<h3 id="no-not-that-one">No, not that one</h3>
+<p>We also need to be able to generate types that is different from some given type.</p>
+<p>The types we are dealing with will eventually be coming from different packages that describe the rules for the particular language fragments. With that in mind, it would seem like a win if we could create the rule for generating types other than <code>TyNat</code></p>
+<ul>
+<li>by only referring to <code>TyNat</code></li>
+<li>in a manner that could be sensibly packaged with the other rules for the <em>N</em> language</li>
+</ul>
+<p>After a bit of poking around we come up with this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genNotTypeTyNat ::</span> <span class="dt">Type</span>
+                <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">Gen</span> <span class="dt">Type</span>)
+genNotTypeTyNat <span class="dt">TyNat</span> <span class="fu">=</span>
+  <span class="dt">Nothing</span>
+genNotTypeTyNat _ <span class="fu">=</span>
+  <span class="dt">Just</span> genTyNat</code></pre></div>
+<p>which we repeat for <code>TyBool</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genNotTypeTyBool ::</span> <span class="dt">Type</span>
+                 <span class="ot">-&gt;</span> <span class="dt">Maybe</span> (<span class="dt">Gen</span> <span class="dt">Type</span>)
+genNotTypeTyBool <span class="dt">TyBool</span> <span class="fu">=</span>
+  <span class="dt">Nothing</span>
+genNotTypeTyBool _ <span class="fu">=</span>
+  <span class="dt">Just</span> genTyBool</code></pre></div>
+<p>These combine nicely:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genNotType ::</span> <span class="dt">Type</span>
+           <span class="ot">-&gt;</span> <span class="dt">Gen</span> <span class="dt">Type</span>
+genNotType ty <span class="fu">=</span>
+  oneof <span class="fu">.</span>
+  mapMaybe (<span class="fu">$</span> ty) <span class="fu">$</span> [
+    genNotTypeTyNat
+  , genNotTypeTyBool
+  ]</code></pre></div>
+<p>and appear to do what we want:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample (genNotType <span class="dt">TyNat</span>)
+<span class="dt">TyBool</span>
+<span class="dt">TyBool</span>
+<span class="dt">TyBool</span>
+<span class="dt">TyBool</span>
+<span class="dt">TyBool</span>
+<span class="fu">...</span></code></pre></div>
+<p>We couldn’t shrink the outputs of <code>genType</code> because there were no smaller types.</p>
+<p>That is true again here, but it’s also the case that we don’t have the information that we would need to do the shrinking anyhow.</p>
+<p>Once we have composite types, we could end where a shrink brings us back to the type we were trying to avoid.</p>
+<p>Imagine this interaction:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="fu">&gt;</span> sample (genNotType <span class="dt">TyNat</span>)
+<span class="dt">TyPair</span> <span class="dt">TyNat</span> <span class="dt">TyBool</span>
+
+<span class="fu">&gt;</span> shrink (<span class="dt">TyPair</span> <span class="dt">TyNat</span> <span class="dt">TyBool</span>)
+[<span class="dt">TyNat</span>, <span class="dt">TyBool</span>]</code></pre></div>
+<p>We need more information to be able to avoid this, and so we’ll leave the shrinking of these things alone for a post or two.</p>
+<h2 id="generating-type-errors">Generating type errors</h2>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTypeErrorUnexpected ::</span> <span class="dt">Gen</span> <span class="dt">TypeError</span>
+genTypeErrorUnexpected <span class="fu">=</span> <span class="kw">do</span>
+  ty1 <span class="ot">&lt;-</span> genType
+  ty2 <span class="ot">&lt;-</span> genNotType ty1
+  return <span class="fu">$</span> <span class="dt">Unexpected</span> ty1 ty2</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTypeErrorExpectedEq ::</span> <span class="dt">Gen</span> <span class="dt">TypeError</span>
+genTypeErrorExpectedEq <span class="fu">=</span> <span class="kw">do</span>
+  ty1 <span class="ot">&lt;-</span> genType
+  ty2 <span class="ot">&lt;-</span> genNotType ty1
+  return <span class="fu">$</span> <span class="dt">ExpectedEq</span> ty1 ty2</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTypeError ::</span> <span class="dt">Gen</span> <span class="dt">TypeError</span>
+genTypeError <span class="fu">=</span>
+  oneof [
+    genTypeErrorUnexpected
+  , genTypeErrorExpectedEq
+  ]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTypeErrorUnexpected ::</span> <span class="dt">TypeError</span>
+                          <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">TypeError</span>]
+shrinkTypeErrorUnexpected (<span class="dt">Unexpected</span> ty1 ty2) <span class="fu">=</span>
+  <span class="kw">let</span>
+    valid (<span class="dt">Unexpected</span> u1 u2) <span class="fu">=</span>
+      u1 <span class="fu">/=</span> u2
+    valid _ <span class="fu">=</span>
+      <span class="dt">False</span>
+  <span class="kw">in</span>
+    <span class="dt">Just</span> <span class="fu">.</span> filter valid <span class="fu">$</span>
+      fmap (\s1 <span class="ot">-&gt;</span> <span class="dt">Unexpected</span> s1 ty2) (shrinkType ty1) <span class="fu">++</span>
+      fmap (\s2 <span class="ot">-&gt;</span> <span class="dt">Unexpected</span> ty1 s2) (shrinkType ty2)
+shrinkTypeErrorUnexpected _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTypeErrorExpectedEq ::</span> <span class="dt">TypeError</span>
+                          <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">TypeError</span>]
+shrinkTypeErrorExpectedEq (<span class="dt">ExpectedEq</span> ty1 ty2) <span class="fu">=</span>
+  <span class="kw">let</span>
+    valid (<span class="dt">ExpectedEq</span> u1 u2) <span class="fu">=</span>
+      u1 <span class="fu">/=</span> u2
+    valid _ <span class="fu">=</span>
+      <span class="dt">False</span>
+  <span class="kw">in</span>
+    <span class="dt">Just</span> <span class="fu">.</span> filter valid <span class="fu">$</span>
+      fmap (\s1 <span class="ot">-&gt;</span> <span class="dt">ExpectedEq</span> s1 ty2) (shrinkType ty1) <span class="fu">++</span>
+      fmap (\s2 <span class="ot">-&gt;</span> <span class="dt">ExpectedEq</span> ty1 s2) (shrinkType ty2)
+shrinkTypeErrorExpectedEq _ <span class="fu">=</span>
+  <span class="dt">Nothing</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTypeErrorRules ::</span> [<span class="dt">TypeError</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">TypeError</span>]]
+shrinkTypeErrorRules <span class="fu">=</span> [
+    shrinkTypeErrorUnexpected
+  , shrinkTypeErrorExpectedEq
+  ]
+
+<span class="ot">shrinkTypeError ::</span> <span class="dt">TypeError</span>
+                <span class="ot">-&gt;</span> [<span class="dt">TypeError</span>]
+shrinkTypeError te <span class="fu">=</span>
+  fromMaybe [] <span class="fu">.</span>
+  asum <span class="fu">.</span>
+  fmap (<span class="fu">$</span> te) <span class="fu">$</span>
+  shrinkTypeErrorRules</code></pre></div>
+<h1 id="generating-terms">Generating terms</h1>
+<h2 id="generating-well-typed-terms">Generating well-typed terms</h2>
+<h2 id="generating-ill-typed-terms">Generating ill-typed terms</h2>
+<p>One option (ish)</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  ty <span class="ot">&lt;-</span> genType
+  nty <span class="ot">&lt;-</span> genNotType ty
+  tm <span class="ot">&lt;-</span> genWellTyped ty
+  genContaining nty tm</code></pre></div>
+<h2 id="generating-terms-containing-other-terms">Generating terms containing other terms</h2>
+<p>One of the issues with <code>genIllTypedTerm</code> is that the type errors are all occurring at the outermost constructor of the term.</p>
+<p>If could generate one term which contains a given term, we could cause the type error to occur further down in the AST.</p>
+<p>There are other reasons to want this machinery, which will come up shortly, so we’ll</p>
 <h1 id="writing-the-properties">Writing the properties</h1>
 <h2 id="progress">Progress</h2>
 <h2 id="preservation">Preservation</h2>
 <h2 id="double-checking-our-generators">Double-checking our generators</h2>
-<p>This should have given a boost to our confidence in <em>NB</em>.</p>
-<p>As usual, we should try some things out in the REPL.</p>
-<p>TODO going right TODO type errors, and their horribleness TODO link to page on srclocs</p>
 <h1 id="fixing-the-old-properties">Fixing the old properties</h1>
 <p>TODO the things that were broken at the start of the nb post, that rely on well-typed terms</p>
 <h1 id="improving-the-shrinking">Improving the shrinking</h1>
+<p>TODO results of inferWellTyped / inferIllTyped / inferContaining</p>
+<p>We can do better on this front, but doing so will mean we need to be able to annotate the terms in our AST.</p>
 <p><a href="annotations.html">Read on!</a></p>
 <h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
     </div>
