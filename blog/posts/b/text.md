@@ -254,9 +254,9 @@ parseTmIf :: (Monad m, TokenParsing m)
           -> m Term
 parseTmIf parse =
   TmIf <$
-    symbol "if"   <* parse <*
-    symbol "then" <* parse <*
-    symbol "else" <* parse
+    symbol "if"   <*> parse <*
+    symbol "then" <*> parse <*
+    symbol "else" <*> parse
     <?> "if-then-else"
 ```
 
@@ -404,9 +404,9 @@ parseTmIf :: (Monad m, TokenParsing m)
           -> m Term
 parseTmIf parse =
   TmIf <$
-    reservedIdentifier "if"   <* parse <*
-    reservedIdentifier "then" <* parse <*
-    reservedIdentifier "else" <* parse
+    reservedIdentifier "if"   <*> parse <*
+    reservedIdentifier "then" <*> parse <*
+    reservedIdentifier "else" <*> parse
     <?> "if-then-else"
 ```
 and now we don't have to be wary of the order in which we combine the parsing rules.
