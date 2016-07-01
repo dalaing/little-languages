@@ -36,19 +36,19 @@ Here [is the video](https://www.youtube.com/watch?v=CZp9IFgFFts), here are [the 
     - [Testing B](./posts/b/testing.html)
         - [An introduction to `QuickCheck`](./posts/packages/quickcheck.html)
     - [Parsing and Printing B](./posts/b/text.html)
-- [The N language](./posts/n.html)
-- [The I language](./posts/i.html)
+- [The N language](./posts/n.html) 
+- [The I language](./posts/i.html) 
     - [Parsing and Printing I](./posts/i/text.html)
     - [Testing I](./posts/i/testing.html)
+- [The NB language](./posts/nb.html)
 
 With many more on the way...
 
 <!--
-- [The NB language](./posts/nb.html)
     - [Testing NB](./posts/nb/testing.html)
-    - [Adding annotations to the AST](./posts/nb/annotation.html)
-    - [Improving test generation](./posts/nb/improved-testing.html)
-    - [Improving type errors](./posts/nb/typeerrors.html)
+- [Adding annotations to the AST](./posts/nb-note.html)
+    - [Improving test generation](./posts/nb-note/testing.html)
+    - [Improving type errors](./posts/nb-note/typeerrors.html)
 - [Simply-Typed Lambda Calculus](./posts/stlc.html)
     - [Using `bound` for variable substitution](./posts/stlc/bound.html) 
     - [Semantics for STLC-B](./posts/stlc/semantics.html)
