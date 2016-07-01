@@ -1,5 +1,5 @@
 ---
-title: An introduction to QuickCheck
+title: An introduction to `QuickCheck`
 published: 2016-06-28 12:00:00+10:00
 ---
 
