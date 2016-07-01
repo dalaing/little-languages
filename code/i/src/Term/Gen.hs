@@ -194,7 +194,7 @@ shrinkTerm tm =
   fmap ($ tm) $
   shrinkTermRules
 
--- | A newtype wrapped for generating terms of the I language.
+-- | A newtype wrapper for generating terms of the I language.
 newtype AnyTerm = AnyTerm {
     getAnyTerm :: Term
   } deriving (Eq, Show)

@@ -30,7 +30,7 @@ shrinkType :: Type
 shrinkType _ =
   []
 
--- | A newtype wrapped for generating types of the B language.
+-- | A newtype wrapper for generating types of the B language.
 newtype AnyType = AnyType {
     getAnyType :: Type
   } deriving (Eq, Show)
