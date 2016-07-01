@@ -7,6 +7,8 @@ published: 2016-06-27 12:00:00+10:00
 
 Throughout this series, I'll be introducing the mathematical notational and the Haskell code side-by-side.
 
+The code for *B* is available [here](https://github.com/dalaing/little-languages/tree/master/code/b).
+
 For an easy win, let's start with the type system.
 
 We'll refer to the types using variants on $T$, like $T_1$, $T_2$, etc...

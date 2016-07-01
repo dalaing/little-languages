@@ -8,6 +8,8 @@ published: 2016-06-27 12:00:00+10:00
 We [previously](./n.html) looked at the language *N*.
 Now we're going to have a look at *I*, a language built around integer expressions.
 
+The code for *I* is available [here](https://github.com/dalaing/little-languages/tree/master/code/i).
+
 This will show how small-step semantics can be used to specify evaluation order, but will also give us some experience with more interesting parsers and pretty printers.
 
 # Term of *I*

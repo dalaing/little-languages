@@ -9,6 +9,8 @@ We've just finished covering the [B language](./b.html).
 
 Now we're going to look at the *N* language, which deals with natural numbers.
 
+The code for *N* is available [here](https://github.com/dalaing/little-languages/tree/master/code/n).
+
 This is going to be a relative short tour, since you've seen most of this before.
 The important points are that we'll be dealing with inductively defined values, and we'll be looking briefly at the difference between strict and lazy evaluation.
 
