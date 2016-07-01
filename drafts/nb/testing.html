@@ -36,7 +36,8 @@
         <h1 id="a-new-suite-of-generators">A new suite of generators</h1>
 <p><a href="../nb.html">Previously</a> we introduced our first type system, in the language <em>NB</em>.</p>
 <p>This means we now have type-checking in our arsenal, and we can talk about whether a term is well-typed or ill-typed.</p>
-<p>Along with that, we have some new properties that we’d like to test, to make sure that we’ve implemented these new concepts correctly. For that we need some new generators.</p>
+<p>Along with that, we have some new properties that we’d like to test, in order to make sure that we’ve implemented these new concepts correctly.</p>
+<p>For that we’re going to need some new generators.</p>
 <h2 id="generating-types">Generating types</h2>
 <h3 id="lets-generate-a-type">Let’s generate a type</h3>
 <p>We need to be able to generate arbitrary types.</p>
@@ -104,22 +105,14 @@ genNotType ty <span class="fu">=</span>
 [<span class="dt">TyNat</span>, <span class="dt">TyBool</span>]</code></pre></div>
 <p>We need more information to be able to avoid this, and so we’ll leave the shrinking of these things alone for a post or two.</p>
 <h2 id="generating-type-errors">Generating type errors</h2>
+<p>We’re also going to need to be able to generate arbitrary type errors.</p>
+<p>The two interesting type errors we have both require two types that are different - otherwise there wouldn’t have been an error in the first place - and this is something we can handle now that we have <code>genNotType</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTypeErrorUnexpected ::</span> <span class="dt">Gen</span> <span class="dt">TypeError</span>
 genTypeErrorUnexpected <span class="fu">=</span> <span class="kw">do</span>
   ty1 <span class="ot">&lt;-</span> genType
   ty2 <span class="ot">&lt;-</span> genNotType ty1
   return <span class="fu">$</span> <span class="dt">Unexpected</span> ty1 ty2</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTypeErrorExpectedEq ::</span> <span class="dt">Gen</span> <span class="dt">TypeError</span>
-genTypeErrorExpectedEq <span class="fu">=</span> <span class="kw">do</span>
-  ty1 <span class="ot">&lt;-</span> genType
-  ty2 <span class="ot">&lt;-</span> genNotType ty1
-  return <span class="fu">$</span> <span class="dt">ExpectedEq</span> ty1 ty2</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">genTypeError ::</span> <span class="dt">Gen</span> <span class="dt">TypeError</span>
-genTypeError <span class="fu">=</span>
-  oneof [
-    genTypeErrorUnexpected
-  , genTypeErrorExpectedEq
-  ]</code></pre></div>
+<p>We also have to take care that we don’t accidentally end up with an invalid type error during shrinking, and so we filter the results to make sure of that:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTypeErrorUnexpected ::</span> <span class="dt">TypeError</span>
                           <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">TypeError</span>]
 shrinkTypeErrorUnexpected (<span class="dt">Unexpected</span> ty1 ty2) <span class="fu">=</span>
@@ -134,56 +127,39 @@ shrinkTypeErrorUnexpected (<span class="dt">Unexpected</span> ty1 ty2) <span cla
       fmap (\s2 <span class="ot">-&gt;</span> <span class="dt">Unexpected</span> ty1 s2) (shrinkType ty2)
 shrinkTypeErrorUnexpected _ <span class="fu">=</span>
   <span class="dt">Nothing</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTypeErrorExpectedEq ::</span> <span class="dt">TypeError</span>
-                          <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">TypeError</span>]
-shrinkTypeErrorExpectedEq (<span class="dt">ExpectedEq</span> ty1 ty2) <span class="fu">=</span>
-  <span class="kw">let</span>
-    valid (<span class="dt">ExpectedEq</span> u1 u2) <span class="fu">=</span>
-      u1 <span class="fu">/=</span> u2
-    valid _ <span class="fu">=</span>
-      <span class="dt">False</span>
-  <span class="kw">in</span>
-    <span class="dt">Just</span> <span class="fu">.</span> filter valid <span class="fu">$</span>
-      fmap (\s1 <span class="ot">-&gt;</span> <span class="dt">ExpectedEq</span> s1 ty2) (shrinkType ty1) <span class="fu">++</span>
-      fmap (\s2 <span class="ot">-&gt;</span> <span class="dt">ExpectedEq</span> ty1 s2) (shrinkType ty2)
-shrinkTypeErrorExpectedEq _ <span class="fu">=</span>
-  <span class="dt">Nothing</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">shrinkTypeErrorRules ::</span> [<span class="dt">TypeError</span> <span class="ot">-&gt;</span> <span class="dt">Maybe</span> [<span class="dt">TypeError</span>]]
-shrinkTypeErrorRules <span class="fu">=</span> [
-    shrinkTypeErrorUnexpected
-  , shrinkTypeErrorExpectedEq
-  ]
-
-<span class="ot">shrinkTypeError ::</span> <span class="dt">TypeError</span>
-                <span class="ot">-&gt;</span> [<span class="dt">TypeError</span>]
-shrinkTypeError te <span class="fu">=</span>
-  fromMaybe [] <span class="fu">.</span>
-  asum <span class="fu">.</span>
-  fmap (<span class="fu">$</span> te) <span class="fu">$</span>
-  shrinkTypeErrorRules</code></pre></div>
+<p>We do the same for the <code>ExpectedEq</code> type error, and then combine the generating functions and shrinking functions in the usual manner.</p>
 <h1 id="generating-terms">Generating terms</h1>
+<p>The terms that we can currently generate are now a little bit too random for some of our needs.</p>
+<p>TODO motivate the army of generators, all of the various arguments to the generators</p>
 <h2 id="generating-well-typed-terms">Generating well-typed terms</h2>
+<h2 id="generating-terms-containing-other-terms">Generating terms containing other terms</h2>
+<p>One of the issues with <code>genIllTypedTerm</code> is that the type errors are all occurring at the outermost constructor of the term.</p>
+<p>If could generate one term which contains a given term, we could cause the type error to occur further down in the AST.</p>
+<p>There are other reasons to want this machinery, which will come up shortly, so we’ll</p>
 <h2 id="generating-ill-typed-terms">Generating ill-typed terms</h2>
 <p>One option (ish)</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">  ty <span class="ot">&lt;-</span> genType
   nty <span class="ot">&lt;-</span> genNotType ty
   tm <span class="ot">&lt;-</span> genWellTyped ty
   genContaining nty tm</code></pre></div>
-<h2 id="generating-terms-containing-other-terms">Generating terms containing other terms</h2>
-<p>One of the issues with <code>genIllTypedTerm</code> is that the type errors are all occurring at the outermost constructor of the term.</p>
-<p>If could generate one term which contains a given term, we could cause the type error to occur further down in the AST.</p>
-<p>There are other reasons to want this machinery, which will come up shortly, so we’ll</p>
+<p>TODO note that by generating based on type errors we can control the distribution of errors</p>
+<p>TODO note somewhere in here that having some data structures to group all these things together would be handy…</p>
 <h1 id="writing-the-properties">Writing the properties</h1>
 <h2 id="progress">Progress</h2>
 <h2 id="preservation">Preservation</h2>
 <h2 id="double-checking-our-generators">Double-checking our generators</h2>
+<p>TODO the gens are pretty crazy, there was some simlarity between the gens, the infer function, and the double checking properties, but that’s so that we can be confident in them - progress and preservation are what is important and neither is closely related to the implementation of infer etc…, so it’s not like we’re a snake eating its own tail.</p>
 <h1 id="fixing-the-old-properties">Fixing the old properties</h1>
 <p>TODO the things that were broken at the start of the nb post, that rely on well-typed terms</p>
 <h1 id="improving-the-shrinking">Improving the shrinking</h1>
 <p>TODO results of inferWellTyped / inferIllTyped / inferContaining</p>
 <p>We can do better on this front, but doing so will mean we need to be able to annotate the terms in our AST.</p>
-<p><a href="annotations.html">Read on!</a></p>
+<!-- [Read on!](annotations.html) -->
+<p>Coming soon…</p>
 <h1 id="exercises-for-the-adventurous">Exercises for the adventurous</h1>
+<ul>
+<li>TODO alternative form of ill-typed, does anything fail? gather stats on the frequencies of the different errors with and without the different form of genIllTyped, maybe crank up the number of tests, compare and contrast</li>
+</ul>
     </div>
     
     <div class="panel-footer">
