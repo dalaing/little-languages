@@ -19,27 +19,29 @@ import           Test.Tasty            (TestTree, testGroup)
 import           Test.Tasty.QuickCheck (testProperty)
 
 -- from 'QuickCheck'
-import           Test.QuickCheck       (Arbitrary (..), Property, property,
-                                        (.||.), (===), forAllShrink)
+import           Test.QuickCheck       (Arbitrary (..), Property, forAll,
+                                        forAllShrink, property, (.||.), (===))
 
 -- local
 import           Term                  (Term)
 import           Term.Eval.SmallStep   (canStep, smallStep)
 import           Term.Eval.Value       (isValue)
 import           Term.Gen              (AnyTerm (..), IllTypedTerm (..),
-                                        WellTypedTerm (..), genIllTypedTerm,
+                                        WellTypedTerm (..), genContainingTerm,
+                                        genIllTypedTerm, genWellTypedTerm,
                                         shrinkIllTypedTerm)
 import           Term.Infer            (inferTerm, inferTermRules, runInfer)
 import           Type                  (Type)
-import           Type.Gen              (genType)
-import           Type.Error            (TypeError(..))
+import           Type.Error            (TypeError (..))
 import           Type.Error.Gen        (AnyTypeError (..))
+import           Type.Gen              (genType)
 
 inferTests :: TestTree
 inferTests = testGroup "infer"
   [ testProperty "patterns unique" propPatternUnique
   , testProperty "never NoMatchingTypeRule" propNeverNoMatchingTypeRule
   , testProperty "well-typed infer" propWellTypedInfer
+  , testProperty "well-typed containing infer" propWellTypedContainingInfer
   , testProperty "ill-typed infer" propIllTypedInfer
   , testProperty "ill-typed error" propIllTypedError
   , testProperty "progress" propProgress
@@ -74,6 +76,18 @@ propWellTypedInfer wttm =
   all
     (isRight . infer . getWellTypedTerm)
     (wttm : shrink wttm)
+
+propWellTypedContainingInfer :: Property
+propWellTypedContainingInfer =
+  forAll genWellTypedContaining $ \ (ty, tm) ->
+    Right ty == infer tm
+  where
+    genWellTypedContaining = do
+      ty <- genType
+      tm <- genWellTypedTerm ty
+      ty2 <- genType
+      tm2 <- genContainingTerm ty tm ty2
+      return (ty2, tm2)
 
 propIllTypedInfer :: IllTypedTerm
                   -> Bool

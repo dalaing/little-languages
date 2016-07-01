@@ -24,21 +24,21 @@ import           Test.QuickCheck (Gen, Arbitrary(..), oneof)
 import           Type.Error      (TypeError (..))
 import           Type.Gen        (genType, genNotType, shrinkType)
 
--- |
+-- | Generates 'Unexpected' type errors.
 genTypeErrorUnexpected :: Gen TypeError
 genTypeErrorUnexpected = do
   ty1 <- genType
   ty2 <- genNotType ty1
   return $ Unexpected ty1 ty2
 
--- |
+-- | Generates 'ExpectedEq' type errors.
 genTypeErrorExpectedEq :: Gen TypeError
 genTypeErrorExpectedEq = do
   ty1 <- genType
   ty2 <- genNotType ty1
   return $ ExpectedEq ty1 ty2
 
--- |
+-- | Generates type errors of the NB language.
 genTypeError :: Gen TypeError
 genTypeError =
   oneof [
@@ -46,7 +46,7 @@ genTypeError =
   , genTypeErrorExpectedEq
   ]
 
--- |
+-- | Shrinks 'Unexpected' type errors.
 shrinkTypeErrorUnexpected :: TypeError
                           -> Maybe [TypeError]
 shrinkTypeErrorUnexpected (Unexpected ty1 ty2) =
@@ -62,7 +62,7 @@ shrinkTypeErrorUnexpected (Unexpected ty1 ty2) =
 shrinkTypeErrorUnexpected _ =
   Nothing
 
--- |
+-- | Shrinks 'ExpectedEq' type errors.
 shrinkTypeErrorExpectedEq :: TypeError
                           -> Maybe [TypeError]
 shrinkTypeErrorExpectedEq (ExpectedEq ty1 ty2) =
@@ -78,14 +78,14 @@ shrinkTypeErrorExpectedEq (ExpectedEq ty1 ty2) =
 shrinkTypeErrorExpectedEq _ =
   Nothing
 
--- |
+-- | The set of shrinking rules for type errors of the NB language.
 shrinkTypeErrorRules :: [TypeError -> Maybe [TypeError]]
 shrinkTypeErrorRules = [
     shrinkTypeErrorUnexpected
   , shrinkTypeErrorExpectedEq
   ]
 
--- |
+-- | Shrinks type errors of the NB language.
 shrinkTypeError :: TypeError
                 -> [TypeError]
 shrinkTypeError te =
@@ -94,7 +94,7 @@ shrinkTypeError te =
   fmap ($ te) $
   shrinkTypeErrorRules
 
--- |
+-- | A newtype wrapper for generating type errors of the NB language.
 newtype AnyTypeError = AnyTypeError {
     getAnyTypeError :: TypeError
   } deriving (Eq, Ord, Show)
@@ -106,4 +106,3 @@ instance Arbitrary AnyTypeError where
     fmap AnyTypeError .
     shrinkTypeError .
     getAnyTypeError
-

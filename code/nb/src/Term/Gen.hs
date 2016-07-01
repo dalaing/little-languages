@@ -408,7 +408,9 @@ instance Arbitrary WellTypedTerm where
     shrinkWellTypedTerm .
     getWellTypedTerm
 
--- |
+-- | Generates a term contained in 'TmZero', with a given type.
+--
+-- The term can only ever by 'TmZero' and the type can only ever by 'TyNat'.
 genContainingTmZero :: Type
                     -> Term
                     -> Type
@@ -418,11 +420,11 @@ genContainingTmZero TyNat TmZero TyNat =
 genContainingTmZero _ _ _ =
   Nothing
 
--- |
+-- | Generates a term contained in 'TmSucc', with a given type.
 genContainingTmSucc :: Type
                     -> Term
                     -> Type
-                    -> (Type -> Term -> Type -> Int -> Gen Term)
+                    -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
                     -> Int
                     -> Maybe (Gen Term)
 genContainingTmSucc TyNat tm tyO genContaining s =
@@ -430,11 +432,11 @@ genContainingTmSucc TyNat tm tyO genContaining s =
 genContainingTmSucc _ _ _ _ _ =
   Nothing
 
--- |
+-- | Generates a term contained in 'TmPred', with a given type.
 genContainingTmPred :: Type
                     -> Term
                     -> Type
-                    -> (Type -> Term -> Type -> Int -> Gen Term)
+                    -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
                     -> Int
                     -> Maybe (Gen Term)
 genContainingTmPred TyNat tm tyO genContaining s =
@@ -442,7 +444,9 @@ genContainingTmPred TyNat tm tyO genContaining s =
 genContainingTmPred _ _ _ _ _ =
   Nothing
 
--- |
+-- | Generates a term contained in 'TmFalse', with a given type.
+--
+-- The term can only ever by 'TmFalse' and the type can only ever by 'TyBool'.
 genContainingTmFalse :: Type
                      -> Term
                      -> Type
@@ -452,7 +456,9 @@ genContainingTmFalse TyBool TmFalse TyBool =
 genContainingTmFalse _ _ _ =
   Nothing
 
--- |
+-- | Generates a term contained in 'TmTrue', with a given type.
+--
+-- The term can only ever by 'TmTrue' and the type can only ever by 'TyBool'.
 genContainingTmTrue :: Type
                     -> Term
                     -> Type
@@ -462,12 +468,12 @@ genContainingTmTrue TyBool TmTrue TyBool =
 genContainingTmTrue _ _ _ =
   Nothing
 
--- |
+-- | Generates a term contained in the "if" part of 'TmIf', with a given type.
 genContainingTmIfTest :: Type
                       -> Term
                       -> Type
-                      -> (Type -> Term -> Type -> Int -> Gen Term)
-                      -> (Type -> Int -> Gen Term)
+                      -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
+                      -> (Type -> Int -> Gen Term)                 -- ^ The function for generating well-typed terms of the NB language.
                       -> Int
                       -> Maybe (Gen Term)
 genContainingTmIfTest tyI tm tyO genContaining genWellTyped s = Just $
@@ -479,12 +485,12 @@ genContainingTmIfTest tyI tm tyO genContaining genWellTyped s = Just $
   in
     genTmIf genTest genThen genElse
 
--- |
+-- | Generates a term contained in the "then" part of 'TmIf', with a given type.
 genContainingTmIfThen :: Type
                       -> Term
                       -> Type
-                      -> (Type -> Term -> Type -> Int -> Gen Term)
-                      -> (Type -> Int -> Gen Term)
+                      -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
+                      -> (Type -> Int -> Gen Term)                 -- ^ The function for generating well-typed terms of the NB language.
                       -> Int
                       -> Maybe (Gen Term)
 genContainingTmIfThen tyI tm tyO genContaining genWellTyped s = Just $
@@ -496,12 +502,12 @@ genContainingTmIfThen tyI tm tyO genContaining genWellTyped s = Just $
   in
     genTmIf genTest genThen genElse
 
--- |
+-- | Generates a term contained in the "else" part of 'TmIf', with a given type.
 genContainingTmIfElse :: Type
                       -> Term
                       -> Type
-                      -> (Type -> Term -> Type -> Int -> Gen Term)
-                      -> (Type -> Int -> Gen Term)
+                      -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
+                      -> (Type -> Int -> Gen Term)                 -- ^ The function for generating well-typed terms of the NB language.
                       -> Int
                       -> Maybe (Gen Term)
 genContainingTmIfElse tyI tm tyO genContaining genWellTyped s = Just $
@@ -513,11 +519,11 @@ genContainingTmIfElse tyI tm tyO genContaining genWellTyped s = Just $
   in
     genTmIf genTest genThen genElse
 
--- |
+-- | Generates a term contained in 'TmIsZero', with a given type.
 genContainingTmIsZero :: Type
                       -> Term
                       -> Type
-                      -> (Type -> Term -> Type -> Int -> Gen Term)
+                      -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
                       -> Int
                       -> Maybe (Gen Term)
 genContainingTmIsZero TyNat tm tyO genContaining s =
@@ -525,23 +531,42 @@ genContainingTmIsZero TyNat tm tyO genContaining s =
 genContainingTmIsZero _ _ _ _ _ =
   Nothing
 
--- |
-genContainingTerm :: Type
-                  -> Term
-                  -> Type
+-- | Generates terms of the NB language which contain a particular term.
+--
+-- The contained term and its type are given, as is the type of the containing term to generate.
+--
+-- The QuickCheck size parameter is interpreted as an upper bound on the
+-- difference between the size of the contained term and the containing term.
+genContainingTerm :: Type -- ^ The type of the contained term
+                  -> Term -- ^ The contained term
+                  -> Type -- ^ The type of the containing term
                   -> Gen Term
 genContainingTerm tyI tmI tyO =
   sized (genContainingTerm' tyI tmI tyO)
 
--- |
+-- | Helper function to generate terms of the NB language which contain a particular term and have a specific size.
 genContainingTerm' :: Type
                    -> Term
                    -> Type
                    -> Int
                    -> Gen Term
+genContainingTerm' tyI tmI tyO 0
+  | tyI == tyO =
+    pure tmI
+  | otherwise =
+    -- if the size is zero and the types don't match, we use the various rules that can
+    -- cause a change of type with the minimum amount of fuel to get over the line
+    oneof $
+      mapMaybe (\f -> f tyI tmI tyO genContainingTerm' 1) [
+          genContainingTmIsZero
+        ] ++
+      mapMaybe (\f -> f tyI tmI tyO genContainingTerm' genWellTypedTerm' 3) [
+          genContainingTmIfTest
+        , genContainingTmIfThen
+        , genContainingTmIfElse
+        ]
 genContainingTerm' tyI tmI tyO s =
   oneof $
-    if s == 0 then [pure tmI] else [] ++
     mapMaybe (\f -> f tyI tmI tyO) [
         genContainingTmZero
       , genContainingTmFalse
@@ -558,7 +583,7 @@ genContainingTerm' tyI tmI tyO s =
       , genContainingTmIfElse
       ]
 
--- |
+-- | Shrinks terms of the NB language which contain a particular term.
 
 -- we need annotations before we can do more here
 shrinkContainingTerm :: Term
@@ -566,7 +591,7 @@ shrinkContainingTerm :: Term
 shrinkContainingTerm _ =
   []
 
--- |
+-- | A newtype wrapper for generating a term of the NB language which contains a particular term.
 data ContainingTerm = ContainingTerm {
     outerTerm :: Term
   , innerTerm :: Term
@@ -586,7 +611,7 @@ instance Arbitrary ContainingTerm where
     shrinkTerm $
     o
 
--- | Generate a 'TmSucc' term that will cause a given type error, if possible.
+-- | Generate a 'TmSucc' term that will cause a given type error.
 genIllTypedTmSucc :: TypeError
                   -> Type
                   -> (Type -> Int -> Gen Term) -- ^ The function for generating well-typed terms of the NB language.
@@ -597,7 +622,7 @@ genIllTypedTmSucc (Unexpected ty TyNat) TyNat gen s = Just $
 genIllTypedTmSucc _ _ _ _ =
   Nothing
 
--- | Generate a 'TmPred' term that will cause a given type error, if possible.
+-- | Generate a 'TmPred' term that will cause a given type error.
 genIllTypedTmPred :: TypeError
                   -> Type
                   -> (Type -> Int -> Gen Term) -- ^ The function for generating well-typed terms of the NB language.
@@ -608,7 +633,7 @@ genIllTypedTmPred (Unexpected ty TyNat) TyNat gen s = Just $
 genIllTypedTmPred _ _ _ _ =
   Nothing
 
--- | Generate a 'TmIf' term that will cause a given type error, if possible.
+-- | Generate a 'TmIf' term that will cause a given type error.
 genIllTypedTmIf :: TypeError
                 -> Type
                 -> (Type -> Int -> Gen Term) -- ^ The function for generating well-typed terms of the NB language.
@@ -634,7 +659,7 @@ genIllTypedTmIf (Unexpected tyB TyBool) ty gen s = Just $ do
 genIllTypedTmIf _ _ _ _ =
   Nothing
 
--- | Generate a 'TmIsZero' term that will cause a given type error, if possible.
+-- | Generate a 'TmIsZero' term that will cause a given type error.
 genIllTypedTmIsZero :: TypeError
                     -> Type
                     -> (Type -> Int -> Gen Term) -- ^ The function for generating well-typed terms of the NB language.
@@ -645,16 +670,22 @@ genIllTypedTmIsZero (Unexpected ty TyNat) TyBool gen s = Just $
 genIllTypedTmIsZero _ _ _ _ =
   Nothing
 
--- |
+-- | Generates ill-typed terms of the NB language.
 --
--- Where possible, the term will have
+-- The terms will have the given type error, and would otherwise have the given type.
+--
+-- This allows us to use the term elsewhere - like with 'genContainingTerm' - and not
+-- introduce any additional type errors.
+--
+-- The QuickCheck size parameter is interpreted as an upper bound on the
+-- size of the term.
 genIllTypedTerm :: TypeError
                 -> Type
                 -> Gen Term
 genIllTypedTerm te ty =
    sized (genIllTypedTerm' te ty)
 
--- |
+-- | Helper function to generate ill-typed terms of the NB language with a specific size.
 genIllTypedTerm' :: TypeError
                  -> Type
                  -> Int
@@ -668,7 +699,7 @@ genIllTypedTerm' te ty s =
     , genIllTypedTmIsZero
     ]
 
--- |
+-- | Shrinks ill-typed terms of the NB language.
 
 -- we need annotations before we can do more here
 shrinkIllTypedTerm :: Term
@@ -676,7 +707,7 @@ shrinkIllTypedTerm :: Term
 shrinkIllTypedTerm _ =
   []
 
--- |
+-- | A newtype wrapper for generating ill-typed terms of the NB language.
 newtype IllTypedTerm = IllTypedTerm {
     getIllTypedTerm :: Term
   } deriving (Eq, Ord, Show)

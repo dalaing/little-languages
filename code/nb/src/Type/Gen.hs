@@ -42,32 +42,6 @@ genType =
     , genTyBool
     ]
 
--- |
-genNotTypeTyNat :: Type
-                -> Maybe (Gen Type)
-genNotTypeTyNat TyNat =
-  Nothing
-genNotTypeTyNat _ =
-  Just genTyNat
-
--- |
-genNotTypeTyBool :: Type
-                 -> Maybe (Gen Type)
-genNotTypeTyBool TyBool =
-  Nothing
-genNotTypeTyBool _ =
-  Just genTyBool
-
--- |
-genNotType :: Type
-           -> Gen Type
-genNotType ty =
-  oneof .
-  mapMaybe ($ ty) $ [
-    genNotTypeTyNat
-  , genNotTypeTyBool
-  ]
-
 -- | Shrinks 'TyNat' types.
 shrinkTyNat :: Type
             -> Maybe [Type]
@@ -101,7 +75,7 @@ shrinkType ty =
   fmap ($ ty) $
   shrinkTypeRules
 
--- | A newtype wrapped for generating types of the NB language.
+-- | A newtype wrapper for generating types of the NB language.
 newtype AnyType = AnyType {
     getAnyType :: Type
   } deriving (Eq, Show)
@@ -110,4 +84,33 @@ instance Arbitrary AnyType where
   arbitrary =
     fmap AnyType genType
   shrink =
-    fmap AnyType . shrinkType . getAnyType
+    fmap AnyType .
+    shrinkType .
+    getAnyType
+
+-- | Generates types other than 'TyNat'
+genNotTypeTyNat :: Type
+                -> Maybe (Gen Type)
+genNotTypeTyNat TyNat =
+  Nothing
+genNotTypeTyNat _ =
+  Just genTyNat
+
+-- | Generates types other than 'TyBool'
+genNotTypeTyBool :: Type
+                 -> Maybe (Gen Type)
+genNotTypeTyBool TyBool =
+  Nothing
+genNotTypeTyBool _ =
+  Just genTyBool
+
+-- | Generates a type different to the given type.
+genNotType :: Type
+           -> Gen Type
+genNotType ty =
+  oneof .
+  mapMaybe ($ ty) $ [
+    genNotTypeTyNat
+  , genNotTypeTyBool
+  ]
+
