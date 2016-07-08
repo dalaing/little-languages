@@ -427,8 +427,10 @@ genContainingTmSucc :: Type
                     -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
                     -> Int
                     -> Maybe (Gen Term)
+genContainingTmSucc _ _ _ _ 0 =
+  Nothing
 genContainingTmSucc TyNat tm tyO genContaining s =
-  Just $ genContaining TyNat (TmSucc tm) tyO (s - 1 `max` 0)
+  Just $ genContaining TyNat (TmSucc tm) tyO (s - 1)
 genContainingTmSucc _ _ _ _ _ =
   Nothing
 
@@ -439,8 +441,10 @@ genContainingTmPred :: Type
                     -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
                     -> Int
                     -> Maybe (Gen Term)
+genContainingTmPred _ _ _ _ 0 =
+  Nothing
 genContainingTmPred TyNat tm tyO genContaining s =
-  Just $ genContaining TyNat (TmPred tm) tyO (s - 1 `max` 0)
+  Just $ genContaining TyNat (TmPred tm) tyO (s - 1)
 genContainingTmPred _ _ _ _ _ =
   Nothing
 
@@ -476,6 +480,8 @@ genContainingTmIfTest :: Type
                       -> (Type -> Int -> Gen Term)                 -- ^ The function for generating well-typed terms of the NB language.
                       -> Int
                       -> Maybe (Gen Term)
+genContainingTmIfTest _ _ _ _ _ 0 =
+  Nothing
 genContainingTmIfTest tyI tm tyO genContaining genWellTyped s = Just $
   let
     childSize = s `div` 3
@@ -493,6 +499,8 @@ genContainingTmIfThen :: Type
                       -> (Type -> Int -> Gen Term)                 -- ^ The function for generating well-typed terms of the NB language.
                       -> Int
                       -> Maybe (Gen Term)
+genContainingTmIfThen _ _ _ _ _ 0 =
+  Nothing
 genContainingTmIfThen tyI tm tyO genContaining genWellTyped s = Just $
   let
     childSize = s `div` 3
@@ -510,6 +518,8 @@ genContainingTmIfElse :: Type
                       -> (Type -> Int -> Gen Term)                 -- ^ The function for generating well-typed terms of the NB language.
                       -> Int
                       -> Maybe (Gen Term)
+genContainingTmIfElse _ _ _ _ _ 0 =
+  Nothing
 genContainingTmIfElse tyI tm tyO genContaining genWellTyped s = Just $
   let
     childSize = s `div` 3
@@ -526,8 +536,10 @@ genContainingTmIsZero :: Type
                       -> (Type -> Term -> Type -> Int -> Gen Term) -- ^ The function for generating terms of the NB language which contain a particular term.
                       -> Int
                       -> Maybe (Gen Term)
+genContainingTmIsZero _ _ _ _ 0 =
+  Nothing
 genContainingTmIsZero TyNat tm tyO genContaining s =
-  Just $ genContaining TyBool (TmIsZero tm) tyO (s - 1 `max` 0)
+  Just $ genContaining TyBool (TmIsZero tm) tyO (s - 1)
 genContainingTmIsZero _ _ _ _ _ =
   Nothing
 
