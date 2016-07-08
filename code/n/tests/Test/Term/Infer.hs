@@ -81,9 +81,7 @@ propWellTypedInfer (AnyTerm tm) =
 propProgress :: AnyTerm
              -> Property
 propProgress (AnyTerm tm) =
-  case infer tm of
-    Left _ -> property True
-    Right _ -> isValue tm .||. canStep tm
+  isValue tm .||. canStep tm
 
 -- Assumes we are dealing with a well-typed term.
 propPreservation :: AnyTerm

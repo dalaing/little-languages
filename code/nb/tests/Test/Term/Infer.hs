@@ -126,9 +126,7 @@ propNeverNoMatchingTypeRule (AnyTerm tm) =
 propProgress :: WellTypedTerm
              -> Property
 propProgress (WellTypedTerm tm) =
-  case infer tm of
-    Left _ -> property True
-    Right _ -> isValue tm .||. canStep tm
+  isValue tm .||. canStep tm
 
 propPreservation :: WellTypedTerm
                  -> Property
